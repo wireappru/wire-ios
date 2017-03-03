@@ -745,6 +745,7 @@
     UIPopoverPresentationController* popoverPresentationController = pollController.popoverPresentationController;
     popoverPresentationController.sourceView = sender.superview;
     popoverPresentationController.sourceRect = sender.frame;
+    pollController.conversation = self.conversation;
     pollController.title = self.conversation.displayName;
     [self.parentViewController presentViewController:pollController animated:YES completion:nil];
 //    [[ZMUserSession sharedSession] performChanges:^{

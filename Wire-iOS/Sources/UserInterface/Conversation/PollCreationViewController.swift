@@ -18,6 +18,7 @@ import CoreLocation
 @objc final public class PollCreationViewController: UIViewController {
     
     private var stackView: UIView!
+    var conversation: ZMConversation!
     
     public init(forPopoverPresentation popover: Bool) {
         super.init(nibName: nil, bundle: nil)
@@ -39,6 +40,7 @@ import CoreLocation
         let container = UIView()
         let stack = UIStackView()
         stack.axis = .vertical
+        stack.spacing = 5.0
         self.view.addSubview(container)
         
         constrain(self.view, container) {
@@ -78,6 +80,8 @@ import CoreLocation
         
         let sendButton = IconButton()
         sendButton.setIcon(.send, with: .medium, for: .normal)
+        sendButton.addTarget(self, action: #selector(self.sendButtonTapped(_:)), for: .touchUpInside)
+
         toolbar.addSubview(sendButton)
         
         constrain(toolbar, dismissButton, sendButton) {
@@ -94,12 +98,12 @@ import CoreLocation
             dismiss.width == 40.0
         }
         
-        // last entry in stack is the "add more" button
         let addButton = IconButton()
         addButton.setIcon(.plusCircled, with: .tiny, for: .normal)
         
         self.stackView = stack
         
+        addOptionButtonTapped(self)
         addOptionButtonTapped(self)
         addOptionButtonTapped(self)
     }
@@ -112,8 +116,8 @@ import CoreLocation
         if #available(iOS 9.0, *) {
             guard let stack = self.stackView as? UIStackView else { return }
             let text = UITextField()
-            text.placeholder = "Option \(stack.arrangedSubviews.count)"
-            
+            text.placeholder = "Option \(stack.arrangedSubviews.count+1)"
+            stack.addArrangedSubview(text)
         }
     }
     
@@ -121,7 +125,10 @@ import CoreLocation
         return UIViewController.wr_supportedInterfaceOrientations()
     }
 
-    public func pollCreationSendButtonTapped(_ viewController: PollCreationViewController) {
+    public func sendButtonTapped(_ viewController: PollCreationViewController) {
+        ZMUserSession.shared()?.performChanges {
+            self.conversation.appendPoll(options: ["Cat", "Dog", "Bird"])
+        }
         dismiss(animated: true, completion: nil)
     }
 }
