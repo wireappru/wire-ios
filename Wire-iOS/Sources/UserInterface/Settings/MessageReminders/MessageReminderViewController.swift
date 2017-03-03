@@ -23,6 +23,13 @@ import Cartography
 import WireExtensionComponents
 import CocoaLumberjackSwift
 
+class MessageReminderCell : UITableViewCell {
+
+    @IBOutlet var titleLabel : UILabel?
+    @IBOutlet var messageLabel : UILabel?
+
+}
+
 
 @objc class MessageReminderViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     var clientsTableView: UITableView?
@@ -41,43 +48,21 @@ import CocoaLumberjackSwift
             self.clientsTableView?.setEditing(self.editingList, animated: true)
         }
     }
-    var clients: [UserClient] = [] {
-        didSet {
-            self.sortedClients = self.clients.filter(clientFilter).sorted(by: clientSorter)
-            self.clientsTableView?.reloadData();
-        }
-    }
-
-    private let clientSorter: (UserClient, UserClient) -> Bool
-    private let clientFilter: (UserClient) -> Bool
+    var items: [ToDoItem] = []
 
     var sortedClients: [UserClient] = []
     
-    let selfClient: UserClient?
     let detailedView: Bool
-    var credentials: ZMEmailCredentials?
     
-    required init(clientsList: [UserClient]?, credentials: ZMEmailCredentials? = .none, detailedView: Bool = false, showTemporary: Bool = true) {
-        let selfClient = ZMUserSession.shared()!.selfUserClient()
-        self.selfClient = selfClient
+    required init(detailedView: Bool = false) {
         self.detailedView = detailedView
-        self.credentials = credentials
-
-        clientFilter = { $0 != selfClient && (showTemporary || !$0.isTemporary) }
-        clientSorter = {
-            guard let leftDate = $0.activationDate, let rightDate = $1.activationDate else { return false }
-            return leftDate.compare(rightDate) == .orderedDescending
-        }
-
+        
         super.init(nibName: nil, bundle: nil)
         self.title = NSLocalizedString("registration.devices.title", comment:"")
         self.edgesForExtendedLayout = []
-
-        self.initalizeProperties(clientsList ?? [])
         
-        if clientsList == nil {
-            self.showLoadingView = true
-            ZMUserSession.shared()?.fetchAllClients()
+        if let session =  ZMUserSession.shared() {
+            self.items = ToDoItem.allItems(inUserSession: session)
         }
     }
     
@@ -87,11 +72,6 @@ import CocoaLumberjackSwift
     
     required init(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    fileprivate func initalizeProperties(_ clientsList: [UserClient]) {
-        self.clients = clientsList
-        self.editingList = false
     }
     
     override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
@@ -121,14 +101,6 @@ import CocoaLumberjackSwift
         super.viewWillAppear(animated)
         self.clientsTableView?.reloadData()
     }
-    
-    func openDetailsOfClient(_ client: UserClient) {
-        if let navigationController = self.navigationController {
-            let clientViewController = SettingsClientViewController(userClient: client, credentials: self.credentials)
-            clientViewController.view.backgroundColor = self.view.backgroundColor
-            navigationController.pushViewController(clientViewController, animated: true)
-        }
-    }
 
     fileprivate func createTableView() {
         let tableView = UITableView(frame: CGRect.zero, style: .grouped);
@@ -137,7 +109,8 @@ import CocoaLumberjackSwift
         tableView.dataSource = self
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 80
-        tableView.register(ClientTableViewCell.self, forCellReuseIdentifier: ClientTableViewCell.zm_reuseIdentifier)
+        tableView.register(UINib(nibName: "MessageReminderCell", bundle: nil), forCellReuseIdentifier: "MessageReminderCell")
+        
         tableView.isEditing = self.editingList
         tableView.backgroundColor = UIColor.clear
         tableView.separatorColor = UIColor(white: 1, alpha: 0.1)
@@ -157,15 +130,6 @@ import CocoaLumberjackSwift
         }
     }
     
-    fileprivate func convertSection(_ section: Int) -> Int {
-        if let _ = self.selfClient {
-            return section
-        }
-        else {
-            return section + 1
-        }
-    }
-    
     // MARK: - Actions
     
     func startEditing(_ sender: AnyObject!) {
@@ -179,11 +143,6 @@ import CocoaLumberjackSwift
     func backPressed(_ sender: AnyObject!) {
         self.navigationController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
-    
-    func deleteUserClient(_ userClient: UserClient, credentials: ZMEmailCredentials) {
-        self.showLoadingView = true
-        ZMUserSession.shared()?.delete([userClient], with: credentials);
-    }
 
     func displayError(_ message: String) {
         let alert = UIAlertController(title: "", message: message, preferredStyle: .alert)
@@ -193,88 +152,19 @@ import CocoaLumberjackSwift
         alert.addAction(action)
         self.present(alert, animated: true, completion: .none)
     }
-
-    // MARK: - ZMClientRegistrationObserver
-
-    func finishedFetching(_ userClients: [UserClient]!) {
-        self.showLoadingView = false
-        
-        self.clients = userClients
-    }
-    
-    func failedToFetchClientsWithError(_ error: Error!) {
-        self.showLoadingView = false
-        
-        DDLogError("Clients request failed: \(error)")
-        
-        self.displayError(NSLocalizedString("error.user.unkown_error", comment: ""))
-    }
-    
-    func finishedDeleting(_ remainingClients: [UserClient]!) {
-        self.showLoadingView = false
-        self.clients = remainingClients
-        Analytics.shared()?.tagDeleteDevice()
-    }
-    
-    func failedToDeleteClientsWithError(_ error: Error!) {
-        self.showLoadingView = false
-        self.credentials = .none
-        
-        self.displayError(NSLocalizedString("self.settings.account_details.remove_device.password.error", comment: ""))
-    }
     
     // MARK: - UITableViewDataSource & UITableViewDelegate
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        if let _ = self.selfClient , self.sortedClients.count > 0 {
-            return 2
-        }
-        else {
-            return 1
-        }
+        return 1
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch self.convertSection(section) {
-        case 0:
-            if let _ = self.selfClient {
-                return 1
-            }
-            else {
-                return 0
-            }
-        case 1:
-            return self.sortedClients.count
-        default:
-            return 0
-        }
+        return self.items.count
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch self.convertSection(section) {
-            case 0:
-                if let _ = self.selfClient {
-                    return NSLocalizedString("registration.devices.current_list_header", comment:"")
-                }
-                else {
-                    return nil
-                }
-            case 1:
-                return NSLocalizedString("registration.devices.active_list_header", comment:"")
-            default:
-                return nil
-        }
-    }
-    
-    func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        switch self.convertSection(section) {
-            case 0:
-                return nil
-            case 1:
-                return NSLocalizedString("registration.devices.active_list_subtitle", comment:"")
-            default:
-                return nil
-        }
+        return "To Do Items"
     }
     
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
@@ -290,92 +180,25 @@ import CocoaLumberjackSwift
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if let cell = tableView.dequeueReusableCell(withIdentifier: ClientTableViewCell.zm_reuseIdentifier, for: indexPath) as? ClientTableViewCell {
-            cell.selectionStyle = .none
-            cell.accessoryType = self.detailedView ? .disclosureIndicator : .none
-            cell.showVerified = self.detailedView
-            
-            switch self.convertSection((indexPath as NSIndexPath).section) {
-            case 0:
-                cell.userClient = self.selfClient
-                cell.wr_editable = false
-                cell.showVerified = false
-            case 1:
-                cell.userClient = self.sortedClients[indexPath.row]
-                cell.wr_editable = true
-            default:
-                cell.userClient = nil
-            }
-            
-            return cell
-        }
-        else {
-            return UITableViewCell()
-        }
+        let item = self.items[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier:"MessageReminderCell", for: indexPath) as! MessageReminderCell
+        cell.titleLabel?.text = item.text ?? "Reply to:"
+        cell.messageLabel?.text = item.message?.textMessageData?.messageText ?? ""
+        return cell
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        switch self.convertSection((indexPath as NSIndexPath).section) {
-        case 1:
-            
-            let userClient = self.sortedClients[indexPath.row]
-            
-            if let credentials = self.credentials {
-                self.deleteUserClient(userClient, credentials: credentials)
-            }
-            else {
-                let passwordRequest = RequestPasswordViewController.requestPasswordController() { (result: Either<String, NSError>) -> () in
-                    switch result {
-                    case .left(let passwordString):
-                        let newCredentials = ZMEmailCredentials(email: ZMUser.selfUser().emailAddress, password: passwordString)
-                        self.credentials = newCredentials
-                        self.deleteUserClient(userClient, credentials: newCredentials)
-                    case .right(let error):
-                        DDLogError("Error: \(error)")
-                    }
-                }
-                self.present(passwordRequest, animated: true, completion: .none)
-            }
-        default: break
-        }
-        
+        // delete
     }
     
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
-        switch self.convertSection((indexPath as NSIndexPath).section) {
-        case 0:
-            return .none
-        case 1:
-            return .delete
-        default:
-            return .none
-        }
-        
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.separatorInset = UIEdgeInsets.zero
-        cell.layoutMargins = UIEdgeInsets.zero
-        cell.preservesSuperviewLayoutMargins = false
+        return .delete
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !self.detailedView {
             return
         }
-        switch self.convertSection((indexPath as NSIndexPath).section) {
-        case 0:
-            if let selfClient = self.selfClient {
-                self.openDetailsOfClient(selfClient)
-            }
-            break;
-        case 1:
-            self.openDetailsOfClient(self.sortedClients[indexPath.row])
-            break;
-        default:
-            break;
-        }
-
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -383,11 +206,3 @@ import CocoaLumberjackSwift
     }
 }
 
-fileprivate extension UserClient {
-
-    var isTemporary: Bool {
-        guard let type = type else { return false }
-        return type == "temporary"
-    }
-
-}

@@ -907,6 +907,7 @@
 		F93D58451D7DA865003AE972 /* ZMConversation+Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93D58441D7DA865003AE972 /* ZMConversation+Analytics.swift */; };
 		F93D58471D7DA876003AE972 /* ZMMessage+Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93D58461D7DA876003AE972 /* ZMMessage+Analytics.swift */; };
 		F95E08B41D0EAFE80098A9EE /* TTTAttributedLabel+Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = F95E08B31D0EAFE80098A9EE /* TTTAttributedLabel+Links.swift */; };
+		F9E5769A1E69B2F90065EFE4 /* MessageReminderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = F9E576991E69B2F90065EFE4 /* MessageReminderCell.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2388,6 +2389,7 @@
 		F93D58441D7DA865003AE972 /* ZMConversation+Analytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ZMConversation+Analytics.swift"; sourceTree = "<group>"; };
 		F93D58461D7DA876003AE972 /* ZMMessage+Analytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ZMMessage+Analytics.swift"; sourceTree = "<group>"; };
 		F95E08B31D0EAFE80098A9EE /* TTTAttributedLabel+Links.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TTTAttributedLabel+Links.swift"; sourceTree = "<group>"; };
+		F9E576991E69B2F90065EFE4 /* MessageReminderCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MessageReminderCell.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4719,6 +4721,7 @@
 			isa = PBXGroup;
 			children = (
 				B416C0321E698AEF004FF538 /* MessageReminderViewController.swift */,
+				F9E576991E69B2F90065EFE4 /* MessageReminderCell.xib */,
 			);
 			path = MessageReminders;
 			sourceTree = "<group>";
@@ -5221,6 +5224,7 @@
 				877316081B970A82007BA779 /* ipad.plist in Resources */,
 				BF732A781D9C14C7003077DB /* emoji_people.plist in Resources */,
 				1ED28CD71A94E26D00B96189 /* group-icon.png in Resources */,
+				F9E5769A1E69B2F90065EFE4 /* MessageReminderCell.xib in Resources */,
 				1658D2031D3E742A00249609 /* new_message_apns.caf in Resources */,
 				877316061B970A82007BA779 /* framework.plist in Resources */,
 				87A4DA9D1D34FEF400105D44 /* audio-notifications in Resources */,

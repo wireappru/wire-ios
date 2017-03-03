@@ -298,7 +298,7 @@ import Foundation
             identifier: type(of: self).settingsDevicesCellIdentifier,
             presentationAction: { () -> (UIViewController?) in
 //                Analytics.shared()?.tagSelfDeviceList()
-                return MessageReminderViewController(clientsList: .none, credentials: .none, detailedView: true)
+                return MessageReminderViewController(detailedView: true)
         }, icon: .checkmark)
     }
     
