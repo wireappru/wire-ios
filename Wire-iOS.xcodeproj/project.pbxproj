@@ -721,6 +721,8 @@
 		AF917BAD1C6E9B2F00491EA9 /* AppControllerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AF917BAC1C6E9B2F00491EA9 /* AppControllerTests.m */; };
 		AFD4E72A1E449925002A4732 /* Analytics+StorableTrackingEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFD4E7291E449925002A4732 /* Analytics+StorableTrackingEvent.swift */; };
 		B416C0331E698AEF004FF538 /* MessageReminderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B416C0321E698AEF004FF538 /* MessageReminderViewController.swift */; };
+		B416C0351E69BF06004FF538 /* MessageReminderDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B416C0341E69BF06004FF538 /* MessageReminderDetailsViewController.swift */; };
+		B416C0371E69C2DC004FF538 /* MessageReminderDetailsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B416C0361E69C2DC004FF538 /* MessageReminderDetailsView.xib */; };
 		BA79B0A51B6284D900F23AFB /* SoundEventRulesWatchDog.m in Sources */ = {isa = PBXBuildFile; fileRef = BA79B0A41B6284D900F23AFB /* SoundEventRulesWatchDog.m */; };
 		BA79B0A91B62851F00F23AFB /* SoundEventRulesWatchDogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BA79B0A81B62851F00F23AFB /* SoundEventRulesWatchDogTests.m */; };
 		BA8DC27C1B5FF5CF00103262 /* SketchColorPickerController.m in Sources */ = {isa = PBXBuildFile; fileRef = BA8DC27B1B5FF5CF00103262 /* SketchColorPickerController.m */; };
@@ -2094,6 +2096,8 @@
 		B40CD09A1DB796860008DA45 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = fr; path = fr.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		B40CD09B1DB796860008DA45 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B416C0321E698AEF004FF538 /* MessageReminderViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageReminderViewController.swift; sourceTree = "<group>"; };
+		B416C0341E69BF06004FF538 /* MessageReminderDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageReminderDetailsViewController.swift; sourceTree = "<group>"; };
+		B416C0361E69C2DC004FF538 /* MessageReminderDetailsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MessageReminderDetailsView.xib; sourceTree = "<group>"; };
 		B419513D1DAD1182002FC027 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B419513E1DAD1182002FC027 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ja; path = ja.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		B419513F1DAD1182002FC027 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -4721,7 +4725,9 @@
 			isa = PBXGroup;
 			children = (
 				B416C0321E698AEF004FF538 /* MessageReminderViewController.swift */,
+				B416C0341E69BF06004FF538 /* MessageReminderDetailsViewController.swift */,
 				F9E576991E69B2F90065EFE4 /* MessageReminderCell.xib */,
+				B416C0361E69C2DC004FF538 /* MessageReminderDetailsView.xib */,
 			);
 			path = MessageReminders;
 			sourceTree = "<group>";
@@ -5252,6 +5258,7 @@
 				BF0BDF721DA7A9D8003C61DE /* RedactedScript-Regular.ttf in Resources */,
 				DB3E943A1B96EDBD00990482 /* LaunchScreen.xib in Resources */,
 				8FC853BF199245770008B66B /* Images.xcassets in Resources */,
+				B416C0371E69C2DC004FF538 /* MessageReminderDetailsView.xib in Resources */,
 				1EF42D411B1889B300A3145D /* stylesheet.cas in Resources */,
 				8773160A1B970A82007BA779 /* iphone6.plist in Resources */,
 				1658D2051D3E742A00249609 /* ping_from_them.caf in Resources */,
@@ -5663,6 +5670,7 @@
 				871BC0051D34F56300DF0793 /* AnalyticsTracker.m in Sources */,
 				87DCF4F31D34EA4500BB420F /* StartUIQuickActionsBar.m in Sources */,
 				8F8914181A9F287E0056AB0C /* PingAnimationLayer.m in Sources */,
+				B416C0351E69BF06004FF538 /* MessageReminderDetailsViewController.swift in Sources */,
 				BFA25DC71D9A8C7B0086DEBD /* ConversationInputBarViewController+Emoji.swift in Sources */,
 				87AC77DB1DE48C01009F6D56 /* Copyable.swift in Sources */,
 				87371C1A1B7355C400807499 /* ConversationListViewController+StartUI.m in Sources */,
