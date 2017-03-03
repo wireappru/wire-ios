@@ -97,7 +97,9 @@ extension PollCell {
             $0.markForVote(selected: false)
         }
         button.markForVote(selected: true)
-        pollData.castVote(index: index)
+        ZMUserSession.shared()?.performChanges {
+            pollData.castVote(index: index)
+        }
     }
 }
 
