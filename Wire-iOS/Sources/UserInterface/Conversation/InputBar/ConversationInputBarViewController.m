@@ -740,14 +740,6 @@
 
 - (void)pollButtonPressed:(IconButton *)sender
 {
-    LocationSelectionViewController *locationSelectionViewController = [[LocationSelectionViewController alloc] initForPopoverPresentation:IS_IPAD];
-    locationSelectionViewController.modalPresentationStyle = UIModalPresentationPopover;
-    UIPopoverPresentationController* popoverPresentationController = locationSelectionViewController.popoverPresentationController;
-    popoverPresentationController.sourceView = sender.superview;
-    popoverPresentationController.sourceRect = sender.frame;
-    locationSelectionViewController.title = self.conversation.displayName;
-    locationSelectionViewController.delegate = self;
-    [self.parentViewController presentViewController:locationSelectionViewController animated:YES completion:nil];
     [[ZMUserSession sharedSession] performChanges:^{
         [self.conversation appendPollWithOptions:@[@"Cake", @"Cookie", @"Ice cream", @"Brownie"]];
     }];
