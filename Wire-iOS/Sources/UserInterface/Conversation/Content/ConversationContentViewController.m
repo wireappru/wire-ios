@@ -455,6 +455,12 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
                 [[UIPasteboard generalPasteboard] setMediaAsset:[[UIImage alloc] initWithData:imageData]];
             }
                 break;
+            case MessageActionRemindMe:
+            {
+                // TODO Analytics
+                [ToDoItem addToDoFor:cell.message atDate:nil withDescription:nil inUserSession:[ZMUserSession sharedSession]];
+            }
+                break;
         }
     };
 

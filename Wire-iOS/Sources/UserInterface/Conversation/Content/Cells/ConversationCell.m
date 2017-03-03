@@ -613,6 +613,13 @@ const NSTimeInterval ConversationCellSelectionAnimationDuration = 0.33;
     }
 }
 
+- (void)remind:(id)sender
+{
+    if ([self.delegate respondsToSelector:@selector(conversationCell:didSelectAction:)]) {
+        [self.delegate conversationCell:self didSelectAction:MessageActionRemindMe];
+    }
+}
+
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated
 {
     [super setSelected:selected animated:animated];

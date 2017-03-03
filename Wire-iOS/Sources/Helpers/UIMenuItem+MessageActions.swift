@@ -50,4 +50,8 @@ public extension UIMenuItem {
         return UIMenuItem(title: "content.message.open".localized, action: selector)
     }
 
+    @objc(remindOfItemWithAction:)
+    class func remind(with selector: Selector) -> UIMenuItem {
+        return UIMenuItem(title: "content.message.remind".localized, action: selector)
+    }
 }

@@ -321,6 +321,9 @@
     else if (action == @selector(forward:)) {
         return YES;
     }
+    else if (action == @selector(remind:)) {
+        return YES;
+    }
     
     return [super canPerformAction:action withSender:sender];
 }
@@ -391,6 +394,9 @@
 
     UIMenuItem *forwardItem = [UIMenuItem forwardItemWithAction:@selector(forward:)];
     [additionalItems addObject:forwardItem];
+    
+    UIMenuItem *remindItem = [UIMenuItem remindOfItemWithAction:@selector(remind:)];
+    [additionalItems addObject:remindItem];
     
     properties.additionalItems = additionalItems;
     

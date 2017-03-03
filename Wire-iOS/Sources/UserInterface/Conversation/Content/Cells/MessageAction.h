@@ -32,7 +32,8 @@ typedef NS_ENUM(NSUInteger, MessageAction) {
     MessageActionSketchText,
     MessageActionLike,
     MessageActionForward,
-    MessageActionShowInConversation
+    MessageActionShowInConversation,
+    MessageActionRemindMe
 };
 
 @protocol MessageActionResponder <NSObject>

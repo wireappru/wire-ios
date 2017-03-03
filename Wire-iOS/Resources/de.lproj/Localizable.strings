@@ -260,6 +260,7 @@
 "content.message.go_to_conversation" = "Öffnen";
 "content.message.forward.to" = "Suche…";
 "content.message.open" = "Öffnen";
+"content.message.remind" = "Erinnere Mich";
 
 "content.reactions_list.likers" = "Gefällt";
 

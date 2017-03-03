@@ -263,6 +263,7 @@
 "content.message.go_to_conversation" = "Reveal";
 "content.message.forward.to" = "Search…";
 "content.message.open" = "Open";
+"content.message.remind" = "Remind Me";
 
 "content.reactions_list.likers" = "Liked by";
 
