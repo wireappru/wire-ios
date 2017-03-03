@@ -1692,3 +1692,10 @@ SearchResultCountBadge {
     
     backgroundColor: $color-graphite-light;
 }
+
+PollCreationViewController {
+    view: @{
+        backgroundColor: $color-background;
+    }
+}
+

@@ -14,11 +14,10 @@ import Cartography
 import MapKit
 import CoreLocation
 
+//@available(iOS 9.0, *)
 @objc final public class PollCreationViewController: UIViewController {
     
-    public let addOptionButton = IconButton()
-    public let acceptOptionButton = IconButton()
-    public let optionsStackView = StackView()
+    private var stackView: UIView!
     
     public init(forPopoverPresentation popover: Bool) {
         super.init(nibName: nil, bundle: nil)
@@ -30,51 +29,92 @@ import CoreLocation
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        configureViews()
-        createConstraints()
+        if #available(iOS 9.0, *) {
+            configureViews()
+        }
     }
     
+    @available(iOS 9.0, *)
     fileprivate func configureViews() {
-        //addChildViewController()
-//        sendViewController.didMove(toParentViewController: self)
-//        [mapView, sendViewController.view, toolBar, locationButton].forEach(view.addSubview)
-//        locationButton.addTarget(self, action: #selector(locationButtonTapped), for: .touchUpInside)
-//        locationButton.setIcon(.location, with: .tiny, for: UIControlState())
-//        locationButton.cas_styleClass = "back-button"
-//        mapView.isRotateEnabled = false
-//        mapView.isPitchEnabled = false
-//        toolBar.title = title
-//        pointAnnotation.coordinate = mapView.centerCoordinate
-//        annotationView = MKPinAnnotationView(annotation: pointAnnotation, reuseIdentifier: String(describing: type(of: self)))
-//        mapView.addSubview(annotationView)
+        let container = UIView()
+        let stack = UIStackView()
+        stack.axis = .vertical
+        self.view.addSubview(container)
+        
+        constrain(self.view, container) {
+            view, container in
+            container.edges == inset(view.edges, 24, 0)
+        }
+        container.addSubview(stack)
+        
+        let toolbar = UIView()
+        container.addSubview(toolbar)
+        
+        let question = UITextField()
+        question.placeholder = "What's the question?"
+        container.addSubview(question)
+        
+        constrain(container, stack, toolbar, question) {
+            container, stack, toolbar, question in
+            toolbar.leading == container.leading
+            toolbar.trailing == container.trailing
+            toolbar.top == container.top + 20.0
+            toolbar.height == 40.0
+            
+            question.leading == container.leading
+            question.trailing == container.trailing
+            question.top == toolbar.bottom + 10.0
+            
+            stack.leading == container.leading
+            stack.trailing == container.trailing
+            stack.top == question.bottom + 10.0
+        }
+        
+        let dismissButton = IconButton()
+        dismissButton.setIcon(.cancel, with: .tiny, for: .normal)
+        dismissButton.setIconColor(.lightGray, for: .normal)
+        dismissButton.addTarget(self, action: #selector(self.dismissButtonTapped(_:)), for: .touchUpInside)
+        toolbar.addSubview(dismissButton)
+        
+        let sendButton = IconButton()
+        sendButton.setIcon(.send, with: .medium, for: .normal)
+        toolbar.addSubview(sendButton)
+        
+        constrain(toolbar, dismissButton, sendButton) {
+            toolbar, dismiss, send in
+            
+            send.top == toolbar.top
+            send.trailing == toolbar.trailing
+            send.bottom == toolbar.bottom
+            dismiss.width == 40.0
+            
+            dismiss.top == toolbar.top
+            dismiss.leading == toolbar.leading
+            dismiss.bottom == toolbar.bottom
+            dismiss.width == 40.0
+        }
+        
+        // last entry in stack is the "add more" button
+        let addButton = IconButton()
+        addButton.setIcon(.plusCircled, with: .tiny, for: .normal)
+        
+        self.stackView = stack
+        
+        addOptionButtonTapped(self)
+        addOptionButtonTapped(self)
     }
     
-    fileprivate func createConstraints() {
-//        constrain(view, mapView, sendViewController.view, annotationView, toolBar) { view, mapView, sendController, pin, toolBar in
-//            mapView.edges == view.edges
-//            sendController.leading == view.leading
-//            sendController.trailing == view.trailing
-//            sendController.bottom == view.bottom
-//            sendController.height == 56
-//            toolBar.leading == view.leading
-//            toolBar.top == view.top
-//            toolBar.trailing == view.trailing
-//            pin.centerX == mapView.centerX + 8.5
-//            pin.bottom == mapView.centerY + 5
-//            pin.height == 39
-//            pin.width == 32
-//        }
-//        
-//        constrain(view, sendViewController.view, locationButton) { view, sendController, button in
-//            button.leading == view.leading + 16
-//            button.bottom == sendController.top - 16
-//            button.width == 28
-//            button.height == 28
-//        }
+    func dismissButtonTapped(_ sender: Any) {
+        dismiss(animated: true, completion: nil)
     }
     
-    @objc fileprivate func addOptionButtonTapped(_ sender: IconButton) {
-        // TODO MARCO
+    func addOptionButtonTapped(_ sender: Any) {
+        if #available(iOS 9.0, *) {
+            guard let stack = self.stackView as? UIStackView else { return }
+            let text = UITextField()
+            text.placeholder = "Option \(stack.arrangedSubviews.count)"
+            
+        }
     }
     
     public override var supportedInterfaceOrientations : UIInterfaceOrientationMask {

@@ -63,10 +63,11 @@ extension PollCell {
         
         let selectButton = IconButton()
         selectButton.setIconColor(.lightGray, for: .normal)
-        selectButton.setIcon(.checkmark, with: .tiny, for: .selected)
-        selectButton.setIcon(.asterisk, with: .tiny, for: .normal)
+        selectButton.setIcon(.checkmarkCircled, with: .tiny, for: .selected)
+        selectButton.setIconColor(.green, for: .selected)
+        selectButton.setIcon(.checkmark, with: .small, for: .normal)
+        selectButton.setIconColor(.lightGray, for: .normal)
         selectButton.addTarget(self, action: #selector(self.didVoteForOption(_:)), for: .touchUpInside)
-        selectButton.markForVote(selected: false)
         self.buttons.append(selectButton)
         optionCell.addSubview(selectButton)
         
@@ -94,22 +95,9 @@ extension PollCell {
         guard let index = self.buttons.index(of: button) else { return }
         guard let pollData = self.message.pollMessageData else { return }
         self.buttons.forEach {
-            $0.markForVote(selected: false)
+            $0.isSelected = false
         }
-        button.markForVote(selected: true)
+        button.isSelected = true
         pollData.castVote(index: index)
-    }
-}
-
-extension IconButton {
-    
-    fileprivate func markForVote(selected: Bool) {
-        if selected {
-            self.isSelected = true
-            self.setIconColor(.green, for: .normal)
-        } else {
-            self.isSelected = false
-            self.setIconColor(.lightGray, for: .normal)
-        }
     }
 }

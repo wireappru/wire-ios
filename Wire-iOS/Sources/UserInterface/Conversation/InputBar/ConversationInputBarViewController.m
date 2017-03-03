@@ -740,9 +740,16 @@
 
 - (void)pollButtonPressed:(IconButton *)sender
 {
-    [[ZMUserSession sharedSession] performChanges:^{
-        [self.conversation appendPollWithOptions:@[@"Cake", @"Cookie", @"Ice cream", @"Brownie"]];
-    }];
+    PollCreationViewController *pollController = [[PollCreationViewController alloc] initForPopoverPresentation:IS_IPAD];
+    pollController.modalPresentationStyle = UIModalPresentationPopover;
+    UIPopoverPresentationController* popoverPresentationController = pollController.popoverPresentationController;
+    popoverPresentationController.sourceView = sender.superview;
+    popoverPresentationController.sourceRect = sender.frame;
+    pollController.title = self.conversation.displayName;
+    [self.parentViewController presentViewController:pollController animated:YES completion:nil];
+//    [[ZMUserSession sharedSession] performChanges:^{
+//        [self.conversation appendPollWithOptions:@[@"Cake", @"Cookie", @"Ice cream", @"Brownie"]];
+//    }];
 }
 
 #pragma mark - Animations
