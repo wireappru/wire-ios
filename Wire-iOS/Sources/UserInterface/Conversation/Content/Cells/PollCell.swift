@@ -54,6 +54,7 @@ extension PollCell {
         allViews.forEach {
             self.optionsStackView.removeArrangedSubview($0)
         }
+        self.buttons = []
     }
     
     /// Creates the view for an option and add it
@@ -62,8 +63,13 @@ extension PollCell {
         
         let selectButton = IconButton()
         selectButton.setIconColor(.lightGray, for: .normal)
-        selectButton.setIcon(.checkmark, with: .tiny, for: .normal)
+        selectButton.setIcon(.checkmark, with: .tiny, for: .selected)
+        selectButton.setIcon(.asterisk, with: .tiny, for: .normal)
+        selectButton.addTarget(self, action: #selector(self.didVoteForOption(_:)), for: .touchUpInside)
+        selectButton.markForVote(selected: false)
+        self.buttons.append(selectButton)
         optionCell.addSubview(selectButton)
+        
         let label = UILabel()
         label.numberOfLines = 0
         label.text = option
@@ -77,10 +83,33 @@ extension PollCell {
             button.bottom == cell.bottom
             label.top == cell.top
             label.bottom == cell.bottom
-            button.width == 60.0
-            label.height == 40.0
+            button.width == 40.0
+            label.height == 35.0
         }
-        
         self.optionsStackView.addArrangedSubview(optionCell)
+    }
+    
+    func didVoteForOption(_ sender: Any) {
+        guard let button = sender as? IconButton else { return }
+        guard let index = self.buttons.index(of: button) else { return }
+        guard let pollData = self.message.pollMessageData else { return }
+        self.buttons.forEach {
+            $0.markForVote(selected: false)
+        }
+        button.markForVote(selected: true)
+        pollData.castVote(index: index)
+    }
+}
+
+extension IconButton {
+    
+    fileprivate func markForVote(selected: Bool) {
+        if selected {
+            self.isSelected = true
+            self.setIconColor(.green, for: .normal)
+        } else {
+            self.isSelected = false
+            self.setIconColor(.lightGray, for: .normal)
+        }
     }
 }
