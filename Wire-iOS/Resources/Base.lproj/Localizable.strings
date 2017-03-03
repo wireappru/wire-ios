@@ -611,6 +611,10 @@
 "self.settings.advanced.version_technical_details.title" = "Version Technical Details";
 
 // Technical Report
+"self.settings.message_reminders.title" = "Message reminders";
+"self.settings.message_reminders_section.title" = "Message reminders";
+
+// Technical Report
 "self.settings.technical_report_section.title" = "Technical Report";
 "self.settings.technical_report.send_report" = "Send report to Wire";
 "self.settings.technical_report.mail.recipient" = "callingsupport@wire.com";

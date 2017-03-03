@@ -21,6 +21,7 @@ import Foundation
 
 @objc class SettingsCellDescriptorFactory: NSObject {
     static let settingsDevicesCellIdentifier: String = "devices"
+    static let settingsMessageremindersCellIdentifier: String = "reminders"
     let settingsPropertyFactory: SettingsPropertyFactory
     
     class DismissStepDelegate: NSObject, FormStepDelegate {
@@ -36,7 +37,7 @@ import Foundation
     }
     
     func rootSettingsGroup() -> SettingsControllerGeneratorType & SettingsInternalGroupCellDescriptorType {
-        var topLevelElements = [self.accountGroup(), self.devicesGroup(), self.optionsGroup(), self.advancedGroup(), self.helpSection(), self.aboutSection()]
+        var topLevelElements = [self.accountGroup(), self.devicesGroup(), self.optionsGroup(), self.advancedGroup(), self.helpSection(), self.aboutSection(), self.messageremindersSection()]
         
         if DeveloperMenuState.developerMenuEnabled() {
             topLevelElements = topLevelElements + [self.developerGroup()]
@@ -288,6 +289,19 @@ import Foundation
             icon: .wireLogo
         )
     }
+
+    func messageremindersSection() -> SettingsCellDescriptorType {
+        return SettingsExternalScreenCellDescriptor(
+            title: "self.settings.message_reminders.title".localized,
+            isDestructive: false,
+            presentationStyle: PresentationStyle.navigation,
+            identifier: type(of: self).settingsDevicesCellIdentifier,
+            presentationAction: { () -> (UIViewController?) in
+//                Analytics.shared()?.tagSelfDeviceList()
+                return MessageReminderViewController(clientsList: .none, credentials: .none, detailedView: true)
+        }, icon: .checkmark)
+    }
+    
     
     // MARK: Subgroups
     
