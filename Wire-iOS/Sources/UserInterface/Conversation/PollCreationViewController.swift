@@ -126,8 +126,17 @@ import CoreLocation
     }
 
     public func sendButtonTapped(_ viewController: PollCreationViewController) {
-        ZMUserSession.shared()?.performChanges {
-            self.conversation.appendPoll(question: "What was the question?", options: ["Cat", "Dog", "Bird"])
+        if #available(iOS 9.0, *) {
+            guard let stack = self.stackView as? UIStackView else { return }
+            let choices = stack.arrangedSubviews.flatMap { view -> String? in
+                guard let textView = view as? UITextField else { return nil }
+                guard let text = textView.text, !text.isEmpty else { return nil }
+                return text
+            }
+            guard !choices.isEmpty else { return }
+            ZMUserSession.shared()?.performChanges {
+                _ = self.conversation.appendPoll(question: "What was the question?", options: choices)
+            }
         }
         dismiss(animated: true, completion: nil)
     }

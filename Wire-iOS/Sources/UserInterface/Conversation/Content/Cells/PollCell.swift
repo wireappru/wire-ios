@@ -19,9 +19,9 @@ import Cartography
     fileprivate var buttons: [IconButton] = []
     
     override func configure(for message: ZMConversationMessage!, layoutProperties: ConversationCellLayoutProperties!) {
+        self.resetAll()
         super.configure(for: message, layoutProperties: layoutProperties)
         self.setupStackView()
-        self.removeAllOptions()
         guard let poll = message.pollMessageData else { return }
         poll.entries.forEach {
             self.add(option: $0)
@@ -49,12 +49,18 @@ extension PollCell {
     }
     
     /// Remove all preview views from the stack
-    fileprivate func removeAllOptions() {
-        let allViews = self.optionsStackView.arrangedSubviews
+    fileprivate func resetAll() {
+        guard let stack = self.optionsStackView else { return }
+        let allViews = stack.arrangedSubviews
         allViews.forEach {
-            self.optionsStackView.removeArrangedSubview($0)
+            stack.removeArrangedSubview($0)
         }
         self.buttons = []
+        let views = self.messageContentView.subviews
+        views.forEach {
+            $0.removeFromSuperview()
+        }
+        self.optionsStackView = nil
     }
     
     /// Creates the view for an option and add it
