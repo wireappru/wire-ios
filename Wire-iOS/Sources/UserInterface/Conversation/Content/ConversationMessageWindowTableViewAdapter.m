@@ -52,6 +52,7 @@ static NSString *const ConversationParticipantsCellId       = @"conversationPart
 static NSString *const ConversationLocationMessageCellId    = @"conversationLocationMessageCellId";
 static NSString *const ConversationMessageDeletedCellId     = @"conversationMessageDeletedCellId";
 static NSString *const ConversationUnknownMessageCellId     = @"conversationUnknownMessageCellId";
+static NSString *const ConversationPollCellId               = @"conversationPollCellId";
 
 
 @interface ConversationMessageWindowTableViewAdapter () <ZMConversationMessageWindowObserver>
@@ -232,6 +233,9 @@ static NSString *const ConversationUnknownMessageCellId     = @"conversationUnkn
     else if ([Message isLocationMessage:message]) {
         cellIdentifier = ConversationLocationMessageCellId;
     }
+    else if ([message pollMessageData] != nil) {
+        cellIdentifier = ConversationPollCellId;
+    }
     else if ([Message isFileTransferMessage:message]) {
         cellIdentifier = ConversationFileTransferCellId;
     }
@@ -345,6 +349,7 @@ static NSString *const ConversationUnknownMessageCellId     = @"conversationUnkn
     [self.tableView registerClass:[LocationMessageCell class] forCellReuseIdentifier:ConversationLocationMessageCellId];
     [self.tableView registerClass:[MessageDeletedCell class] forCellReuseIdentifier:ConversationMessageDeletedCellId];
     [self.tableView registerClass:[UnknownMessageCell class] forCellReuseIdentifier:ConversationUnknownMessageCellId];
+    [self.tableView registerClass:[PollCell class] forCellReuseIdentifier:ConversationPollCellId];
 }
 
 - (void)expandMessageWindow

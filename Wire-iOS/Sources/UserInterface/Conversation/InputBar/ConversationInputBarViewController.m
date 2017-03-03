@@ -128,6 +128,7 @@
 @property (nonatomic) IconButton *emojiButton;
 @property (nonatomic) IconButton *gifButton;
 @property (nonatomic) IconButton *hourglassButton;
+@property (nonatomic) IconButton *pollButton;
 
 @property (nonatomic) UIGestureRecognizer *singleTapGestureRecognizer;
 
@@ -206,6 +207,7 @@
     [self.pingButton addTarget:self action:@selector(pingButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.gifButton addTarget:self action:@selector(giphyButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.locationButton addTarget:self action:@selector(locationButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    [self.pollButton addTarget:self action:@selector(pollButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     
     if (self.conversationObserverToken == nil) {
         self.conversationObserverToken = [ConversationChangeInfo addObserver:self forConversation:self.conversation];
@@ -296,11 +298,15 @@
     self.locationButton.hitAreaPadding = CGSizeZero;
     self.locationButton.accessibilityIdentifier = @"locationButton";
     
+    self.pollButton = [[IconButton alloc] init];
+    self.pollButton.hitAreaPadding = CGSizeZero;
+    self.pollButton.accessibilityIdentifier = @"pollButton";
+    
     self.gifButton = [[IconButton alloc] init];
     self.gifButton.hitAreaPadding = CGSizeZero;
     self.gifButton.accessibilityIdentifier = @"gifButton";
     
-    self.inputBar = [[InputBar alloc] initWithButtons:@[self.photoButton, self.videoButton, self.sketchButton, self.gifButton, self.audioButton, self.pingButton, self.uploadFileButton, self.locationButton]];
+    self.inputBar = [[InputBar alloc] initWithButtons:@[self.photoButton, self.videoButton, self.sketchButton, self.gifButton, self.audioButton, self.pingButton, self.uploadFileButton, self.locationButton, self.pollButton]];
     self.inputBar.translatesAutoresizingMaskIntoConstraints = NO;
     self.inputBar.textView.delegate = self;
     
@@ -477,6 +483,8 @@
     [self.locationButton setIcon:self.sendButtonState.ephemeral ? ZetaIconTypeLocationPinEphemeral : ZetaIconTypeLocationPin
                         withSize:ZetaIconSizeTiny
                         forState:UIControlStateNormal];
+    
+    [self.pollButton setIcon:ZetaIconTypeCheckmark withSize:ZetaIconSizeTiny forState:UIControlStateNormal];
     
     [self.gifButton setIcon:self.sendButtonState.ephemeral ? ZetaIconTypeGifEphemeral : ZetaIconTypeGif
                    withSize:ZetaIconSizeTiny
@@ -728,6 +736,21 @@
             [self.sendController sendTextMessage:candidateText];
         }
     }
+}
+
+- (void)pollButtonPressed:(IconButton *)sender
+{
+    LocationSelectionViewController *locationSelectionViewController = [[LocationSelectionViewController alloc] initForPopoverPresentation:IS_IPAD];
+    locationSelectionViewController.modalPresentationStyle = UIModalPresentationPopover;
+    UIPopoverPresentationController* popoverPresentationController = locationSelectionViewController.popoverPresentationController;
+    popoverPresentationController.sourceView = sender.superview;
+    popoverPresentationController.sourceRect = sender.frame;
+    locationSelectionViewController.title = self.conversation.displayName;
+    locationSelectionViewController.delegate = self;
+    [self.parentViewController presentViewController:locationSelectionViewController animated:YES completion:nil];
+    [[ZMUserSession sharedSession] performChanges:^{
+        [self.conversation appendPollWithOptions:@[@"Cake", @"Cookie", @"Ice cream", @"Brownie"]];
+    }];
 }
 
 #pragma mark - Animations
