@@ -127,7 +127,7 @@ import CoreLocation
 
     public func sendButtonTapped(_ viewController: PollCreationViewController) {
         ZMUserSession.shared()?.performChanges {
-            self.conversation.appendPoll(options: ["Cat", "Dog", "Bird"])
+            self.conversation.appendPoll(question: "What was the question?", options: ["Cat", "Dog", "Bird"])
         }
         dismiss(animated: true, completion: nil)
     }
