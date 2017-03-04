@@ -10,7 +10,7 @@ import Foundation
 import Cartography
 
 @available(iOS 9.0, *)
-@objc class PollCell: ConversationCell {
+@objc public final class PollCell: ConversationCell {
     
     /// Stack view that will contain the individual options
     fileprivate var optionsStackView: UIStackView!
@@ -20,7 +20,7 @@ import Cartography
     // All icon buttons
     fileprivate var buttons: [PollCellOptionView] = []
     
-    override func configure(for message: ZMConversationMessage!, layoutProperties: ConversationCellLayoutProperties!) {
+    public override func configure(for message: ZMConversationMessage!, layoutProperties: ConversationCellLayoutProperties!) {
         self.resetAll()
         super.configure(for: message, layoutProperties: layoutProperties)
         self.setupStackView()
@@ -29,6 +29,12 @@ import Cartography
             self.add(option: $0.1, index: $0.0, votes: poll.votes[$0.1] ?? [])
         }
         self.questionTextLabel.text = poll.question
+    }
+    
+    
+    public override func update(forMessage changeInfo: MessageChangeInfo!) -> Bool {
+        self.configure(for: changeInfo.message, layoutProperties: nil)
+        return true
     }
 }
 
@@ -86,16 +92,17 @@ extension PollCell {
     }
     
     func didVote(for index: Int) {
-        let button = self.buttons[index]
         guard let pollData = self.message.pollMessageData else { return }
-        self.buttons.forEach {
-            $0.setSelected(false)
-        }
-        button.setSelected(true)
+//        let button = self.buttons[index]
+//        self.buttons.forEach {
+//            $0.setSelected(false)
+//        }
+//        button.setSelected(true)
         ZMUserSession.shared()?.performChanges {
             pollData.castVote(index: index)
         }
     }
+
 }
 
 fileprivate class PollCellOptionView: UIView {
@@ -133,7 +140,7 @@ fileprivate class PollCellOptionView: UIView {
         
         constrain(self, self.label, self.selectButton, self.voters) {
             cell, label, button, voters in
-            button.leading == cell.leading + 20.0
+            button.leading == cell.leading
             button.trailing == label.leading
             label.trailing == cell.trailing
             button.top == cell.top
