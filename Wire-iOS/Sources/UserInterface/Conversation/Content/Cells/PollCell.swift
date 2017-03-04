@@ -15,17 +15,20 @@ import Cartography
     /// Stack view that will contain the individual options
     fileprivate var optionsStackView: UIStackView!
     
+    fileprivate var questionTextLabel: UILabel!
+    
     // All icon buttons
-    fileprivate var buttons: [IconButton] = []
+    fileprivate var buttons: [PollCellOptionView] = []
     
     override func configure(for message: ZMConversationMessage!, layoutProperties: ConversationCellLayoutProperties!) {
         self.resetAll()
         super.configure(for: message, layoutProperties: layoutProperties)
         self.setupStackView()
         guard let poll = message.pollMessageData else { return }
-        poll.entries.forEach {
-            self.add(option: $0)
+        poll.entries.enumerated().forEach {
+            self.add(option: $0.1, index: $0.0, votes: poll.votes[$0.1] ?? [])
         }
+        self.questionTextLabel.text = poll.question
     }
 }
 
@@ -38,12 +41,20 @@ extension PollCell {
             self.optionsStackView = UIStackView()
             self.optionsStackView.axis = .vertical
             self.messageContentView.addSubview(self.optionsStackView)
-            constrain(self.messageContentView, self.optionsStackView ) {
-                content, stack in
-                stack.bottom == content.bottom
-                stack.leading == content.leading
-                stack.trailing == content.trailing
-                stack.top == content.top
+            
+            self.questionTextLabel = UILabel()
+            self.questionTextLabel.numberOfLines = 0
+            self.messageContentView.addSubview(self.questionTextLabel)
+            
+            constrain(self.messageContentView, self.optionsStackView, self.questionTextLabel ) {
+                content, stack, question in
+                question.top == content.topMargin
+                question.leading == content.leadingMargin
+                question.trailing == content.trailingMargin
+                question.bottom == stack.top - 0.5
+                stack.bottom == content.bottomMargin
+                stack.leading == content.leadingMargin
+                stack.trailing == content.trailingMargin
             }
         }
     }
@@ -64,48 +75,88 @@ extension PollCell {
     }
     
     /// Creates the view for an option and add it
-    fileprivate func add(option: String) {
-        let optionCell = UIView()
+    fileprivate func add(option: String, index: Int, votes: Set<ZMUser>) {
+        let noSelfVotes = votes.subtracting(Set([ZMUser.selfUser()]))
+        let optionView = PollCellOptionView(option: option, votes: noSelfVotes) {
+            self.didVote(for: index)
+        }
+        optionView.setSelected(votes.contains(ZMUser.selfUser()))
+        self.buttons.append(optionView)
+        self.optionsStackView.addArrangedSubview(optionView)
+    }
+    
+    func didVote(for index: Int) {
+        let button = self.buttons[index]
+        guard let pollData = self.message.pollMessageData else { return }
+        self.buttons.forEach {
+            $0.setSelected(false)
+        }
+        button.setSelected(true)
+        ZMUserSession.shared()?.performChanges {
+            pollData.castVote(index: index)
+        }
+    }
+}
+
+fileprivate class PollCellOptionView: UIView {
+    
+    let selectButton: IconButton
+    let label: UILabel
+    let onVote: ()->()
+    let option: String
+    let voters: ReactionsView
+    
+    init(option: String, votes: Set<ZMUser>, onVote: @escaping ()->()) {
+        self.selectButton = IconButton()
+        self.selectButton.setIconColor(.lightGray, for: .normal)
+        self.selectButton.setIcon(.checkmarkCircled, with: .tiny, for: .selected)
+        self.selectButton.setIconColor(.green, for: .selected)
+        self.selectButton.setIcon(.checkmark, with: .small, for: .normal)
+        self.selectButton.setIconColor(.lightGray, for: .normal)
         
-        let selectButton = IconButton()
-        selectButton.setIconColor(.lightGray, for: .normal)
-        selectButton.setIcon(.checkmarkCircled, with: .tiny, for: .selected)
-        selectButton.setIconColor(.green, for: .selected)
-        selectButton.setIcon(.checkmark, with: .small, for: .normal)
-        selectButton.setIconColor(.lightGray, for: .normal)
-        selectButton.addTarget(self, action: #selector(self.didVoteForOption(_:)), for: .touchUpInside)
-        self.buttons.append(selectButton)
-        optionCell.addSubview(selectButton)
+        self.label = UILabel()
+        self.label.numberOfLines = 0
+        self.label.text = option
         
-        let label = UILabel()
-        label.numberOfLines = 0
-        label.text = option
-        optionCell.addSubview(label)
-        constrain(optionCell, label, selectButton) {
-            cell, label, button in
+        self.onVote = onVote
+        self.option = option
+        
+        self.voters = ReactionsView()
+        self.voters.likers = Array(votes)
+        
+        super.init(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
+
+        self.selectButton.addTarget(self, action: #selector(self.didVoteForOption(_:)), for: .touchUpInside)
+        self.addSubview(self.selectButton)
+        self.addSubview(self.label)
+        self.addSubview(self.voters)
+        
+        constrain(self, self.label, self.selectButton, self.voters) {
+            cell, label, button, voters in
             button.leading == cell.leading + 20.0
             button.trailing == label.leading
             label.trailing == cell.trailing
             button.top == cell.top
             button.bottom == cell.bottom
             label.top == cell.top
-            label.bottom == cell.bottom
             button.width == 40.0
             label.height == 35.0
+            voters.top == label.bottom
+            voters.bottom == cell.bottom
+            voters.trailing == cell.trailing
+            voters.leading == cell.leading
         }
-        self.optionsStackView.addArrangedSubview(optionCell)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        return nil
     }
     
     func didVoteForOption(_ sender: Any) {
-        guard let button = sender as? IconButton else { return }
-        guard let index = self.buttons.index(of: button) else { return }
-        guard let pollData = self.message.pollMessageData else { return }
-        self.buttons.forEach {
-            $0.isSelected = false
-        }
-        button.isSelected = true
-        ZMUserSession.shared()?.performChanges {
-            pollData.castVote(index: index)
-        }
+        self.onVote()
+    }
+    
+    func setSelected(_ selected: Bool) {
+        self.selectButton.isSelected = selected
     }
 }

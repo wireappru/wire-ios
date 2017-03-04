@@ -14,10 +14,11 @@ import Cartography
 import MapKit
 import CoreLocation
 
-//@available(iOS 9.0, *)
+@available(iOS 9.0, *)
 @objc final public class PollCreationViewController: UIViewController {
     
     private var stackView: UIView!
+    private var questionText: UITextField!
     var conversation: ZMConversation!
     
     public init(forPopoverPresentation popover: Bool) {
@@ -30,12 +31,9 @@ import CoreLocation
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        if #available(iOS 9.0, *) {
-            configureViews()
-        }
+        configureViews()
     }
     
-    @available(iOS 9.0, *)
     fileprivate func configureViews() {
         let container = UIView()
         let stack = UIStackView()
@@ -102,6 +100,7 @@ import CoreLocation
         addButton.setIcon(.plusCircled, with: .tiny, for: .normal)
         
         self.stackView = stack
+        self.questionText = question
         
         addOptionButtonTapped(self)
         addOptionButtonTapped(self)
@@ -113,12 +112,9 @@ import CoreLocation
     }
     
     func addOptionButtonTapped(_ sender: Any) {
-        if #available(iOS 9.0, *) {
-            guard let stack = self.stackView as? UIStackView else { return }
-            let text = UITextField()
-            text.placeholder = "Option \(stack.arrangedSubviews.count+1)"
-            stack.addArrangedSubview(text)
-        }
+        guard let stack = self.stackView as? UIStackView else { return }
+        let option = PollCreationOptionView()
+        stack.addArrangedSubview(option)
     }
     
     public override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
@@ -126,18 +122,55 @@ import CoreLocation
     }
 
     public func sendButtonTapped(_ viewController: PollCreationViewController) {
-        if #available(iOS 9.0, *) {
-            guard let stack = self.stackView as? UIStackView else { return }
-            let choices = stack.arrangedSubviews.flatMap { view -> String? in
-                guard let textView = view as? UITextField else { return nil }
-                guard let text = textView.text, !text.isEmpty else { return nil }
-                return text
-            }
-            guard !choices.isEmpty else { return }
-            ZMUserSession.shared()?.performChanges {
-                _ = self.conversation.appendPoll(question: "What was the question?", options: choices)
-            }
+        guard let stack = self.stackView as? UIStackView else { return }
+        let choices = stack.arrangedSubviews.flatMap { view -> String? in
+            guard let textView = view as? PollCreationOptionView else { return nil }
+            guard let text = textView.text, !text.isEmpty else { return nil }
+            return text
+        }
+        guard !choices.isEmpty else { return }
+        ZMUserSession.shared()?.performChanges {
+            _ = self.conversation.appendPoll(question: self.questionText.text ?? "", options: choices)
         }
         dismiss(animated: true, completion: nil)
+    }
+}
+
+private class PollCreationOptionView: UIView {
+    
+    private let textView: UITextField
+    var text: String? {
+        return textView.text
+    }
+    
+    init() {
+        let icon = IconButton()
+        icon.setIcon(.checkmark, with: .tiny, for: .normal)
+        icon.setIconColor(.lightGray, for: .normal)
+        
+        let text = UITextField()
+        text.placeholder = "Option"
+        self.textView = text
+        
+        super.init(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
+        
+        self.addSubview(text)
+        self.addSubview(icon)
+        
+        constrain(self, icon, text) {
+            view, icon, text in
+            icon.top == view.top
+            icon.bottom == view.bottom
+            icon.leading == view.leading
+            icon.trailing == text.leading
+            text.top == view.top
+            text.bottom == view.bottom
+            text.trailing == view.trailing
+            icon.width == 40.0
+        }
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        return nil
     }
 }
