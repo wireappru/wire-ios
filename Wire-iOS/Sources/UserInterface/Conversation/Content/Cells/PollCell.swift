@@ -34,7 +34,7 @@ import Cartography
     
     public override func update(forMessage changeInfo: MessageChangeInfo!) -> Bool {
         self.configure(for: changeInfo.message, layoutProperties: nil)
-        return true
+        return false
     }
 }
 
@@ -93,11 +93,6 @@ extension PollCell {
     
     func didVote(for index: Int) {
         guard let pollData = self.message.pollMessageData else { return }
-//        let button = self.buttons[index]
-//        self.buttons.forEach {
-//            $0.setSelected(false)
-//        }
-//        button.setSelected(true)
         ZMUserSession.shared()?.performChanges {
             pollData.castVote(index: index)
         }
@@ -105,13 +100,13 @@ extension PollCell {
 
 }
 
-fileprivate class PollCellOptionView: UIView {
+public class PollCellOptionView: UIView {
     
     let selectButton: IconButton
     let label: UILabel
     let onVote: ()->()
     let option: String
-    let voters: ReactionsView
+    public let voters: UILabel
     
     init(option: String, votes: Set<ZMUser>, onVote: @escaping ()->()) {
         self.selectButton = IconButton()
@@ -128,8 +123,8 @@ fileprivate class PollCellOptionView: UIView {
         self.onVote = onVote
         self.option = option
         
-        self.voters = ReactionsView()
-        self.voters.likers = Array(votes)
+        self.voters = UILabel()
+        self.voters.text = Array(votes).map { $0.displayName }.joined(separator: ", ")
         
         super.init(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
 
@@ -148,14 +143,15 @@ fileprivate class PollCellOptionView: UIView {
             label.top == cell.top
             button.width == 40.0
             label.height == 35.0
-            voters.top == label.bottom
+            voters.top == label.bottom + 10.0
             voters.bottom == cell.bottom
             voters.trailing == cell.trailing
-            voters.leading == cell.leading
+            voters.leading == cell.leading + 10.0
+            voters.height >= 15.0
         }
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         return nil
     }
     

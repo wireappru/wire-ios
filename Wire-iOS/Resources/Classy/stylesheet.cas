@@ -1693,9 +1693,17 @@ SearchResultCountBadge {
     backgroundColor: $color-graphite-light;
 }
 
+
+
 PollCreationViewController {
     view: @{
         backgroundColor: $color-background;
     }
 }
 
+PollCellOptionView {
+    voters: @{
+        font: $font-small-medium;
+        textColor: $color-text-dimmed;
+    }
+}

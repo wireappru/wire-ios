@@ -23,6 +23,7 @@ import Cartography
 @objc open class ReactionsView: UIView {
     let avatarStack = StackView()
     static let maxAvatarsDisplayed = 2
+    var maxAvatarsDisplayed: Int = ReactionsView.maxAvatarsDisplayed
     
     var likers: [ZMUser] = [] {
         didSet {
@@ -31,8 +32,8 @@ import Cartography
             let likersToDisplay: [ZMUser]
             let shouldDisplayEllipsis: Bool
             
-            if likers.count > type(of: self).maxAvatarsDisplayed + 1 {
-                likersToDisplay = Array<ZMUser>(likers.prefix(type(of: self).maxAvatarsDisplayed))
+            if likers.count > self.maxAvatarsDisplayed + 1 {
+                likersToDisplay = Array<ZMUser>(likers.prefix(self.maxAvatarsDisplayed))
                 shouldDisplayEllipsis = true
             }
             else {
