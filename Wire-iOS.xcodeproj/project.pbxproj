@@ -910,6 +910,8 @@
 		F93D58471D7DA876003AE972 /* ZMMessage+Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93D58461D7DA876003AE972 /* ZMMessage+Analytics.swift */; };
 		F95E08B41D0EAFE80098A9EE /* TTTAttributedLabel+Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = F95E08B31D0EAFE80098A9EE /* TTTAttributedLabel+Links.swift */; };
 		F9E5769A1E69B2F90065EFE4 /* MessageReminderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = F9E576991E69B2F90065EFE4 /* MessageReminderCell.xib */; };
+		F9E5769C1E69BDA10065EFE4 /* ReminderOptionsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = F9E5769B1E69BDA10065EFE4 /* ReminderOptionsView.xib */; };
+		F9E5769E1E69C2180065EFE4 /* ReminderOptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9E5769D1E69C2180065EFE4 /* ReminderOptionsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2394,6 +2396,8 @@
 		F93D58461D7DA876003AE972 /* ZMMessage+Analytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ZMMessage+Analytics.swift"; sourceTree = "<group>"; };
 		F95E08B31D0EAFE80098A9EE /* TTTAttributedLabel+Links.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TTTAttributedLabel+Links.swift"; sourceTree = "<group>"; };
 		F9E576991E69B2F90065EFE4 /* MessageReminderCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MessageReminderCell.xib; sourceTree = "<group>"; };
+		F9E5769B1E69BDA10065EFE4 /* ReminderOptionsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ReminderOptionsView.xib; sourceTree = "<group>"; };
+		F9E5769D1E69C2180065EFE4 /* ReminderOptionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReminderOptionsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4728,6 +4732,8 @@
 				B416C0341E69BF06004FF538 /* MessageReminderDetailsViewController.swift */,
 				F9E576991E69B2F90065EFE4 /* MessageReminderCell.xib */,
 				B416C0361E69C2DC004FF538 /* MessageReminderDetailsView.xib */,
+				F9E5769B1E69BDA10065EFE4 /* ReminderOptionsView.xib */,
+				F9E5769D1E69C2180065EFE4 /* ReminderOptionsView.swift */,
 			);
 			path = MessageReminders;
 			sourceTree = "<group>";
@@ -5232,6 +5238,7 @@
 				1ED28CD71A94E26D00B96189 /* group-icon.png in Resources */,
 				F9E5769A1E69B2F90065EFE4 /* MessageReminderCell.xib in Resources */,
 				1658D2031D3E742A00249609 /* new_message_apns.caf in Resources */,
+				F9E5769C1E69BDA10065EFE4 /* ReminderOptionsView.xib in Resources */,
 				877316061B970A82007BA779 /* framework.plist in Resources */,
 				87A4DA9D1D34FEF400105D44 /* audio-notifications in Resources */,
 				8773160E1B970A82007BA779 /* people_picker.plist in Resources */,
@@ -5489,7 +5496,7 @@
 				"$(SRCROOT)/Carthage/Build/iOS/TTTAttributedLabel.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/libPhoneNumberiOS.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/PINCache.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/ZMCDataModel.framework",
+				"$(BUILT_PRODUCTS_DIR)/ZMCDataModel.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/ZipArchive.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/ZMCLinkPreview.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/Ono.framework",
@@ -5683,6 +5690,7 @@
 				8FC8549C199245770008B66B /* NetworkStatusViewController.m in Sources */,
 				BF5090581DE3469700A5FEE0 /* UIView+LayoutMargins.swift in Sources */,
 				87F18BBE1E015BBB00C69D9B /* TransferView.swift in Sources */,
+				F9E5769E1E69C2180065EFE4 /* ReminderOptionsView.swift in Sources */,
 				8736F1841E4B67F0001CBA62 /* AppLockView.swift in Sources */,
 				8F8914131A9F287E0056AB0C /* ConversationListItemView.m in Sources */,
 				16063CEB1BCFCEB70097F62C /* InviteBannerViewController.m in Sources */,
@@ -6654,9 +6662,9 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				GCC_PREFIX_HEADER = "Wire-iOS/Wire-iOS-Prefix.pch";
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				INFOPLIST_FILE = "$(SRCROOT)/Wire-iOS/Wire-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "$(inherited)";
@@ -6686,9 +6694,9 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				GCC_PREFIX_HEADER = "Wire-iOS/Wire-iOS-Prefix.pch";
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				INFOPLIST_FILE = "$(SRCROOT)/Wire-iOS/Wire-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "$(inherited)";

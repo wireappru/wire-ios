@@ -202,6 +202,34 @@ extension ConversationContentViewController: UIAdaptivePresentationControllerDel
         
         return displayInPopover ? .popover : .overFullScreen
     }
+    
+    func showReminderOptions(for message: ZMConversationMessage, fromCell: ConversationCell?){
+        if let window = self.view.window {
+            window.endEditing(true)
+        }
+        
+        let reminderViewController = ReminderOptionsViewController()
+        reminderViewController.message = message
+        
+        reminderViewController.preferredContentSize = CGSize(width: 320, height: 568)
+        reminderViewController.modalPresentationStyle = .popover
+        
+        if let popoverPresentationController = reminderViewController.popoverPresentationController {
+            if let cell = fromCell {
+                popoverPresentationController.sourceRect = cell.selectionRect
+                popoverPresentationController.sourceView = cell.selectionView
+            }
+            popoverPresentationController.backgroundColor = UIColor(white: 0, alpha: 0.5)
+            popoverPresentationController.permittedArrowDirections = [.up, .down]
+        }
+        
+        reminderViewController.presentationController?.delegate = self
+        
+        UIApplication.shared.keyWindow?.rootViewController?.present(reminderViewController, animated: true) {
+            UIApplication.shared.wr_updateStatusBarForCurrentControllerAnimated(true)
+        }
+    }
+    
 }
 
 extension ConversationContentViewController {

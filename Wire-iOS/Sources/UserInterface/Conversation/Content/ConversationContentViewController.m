@@ -458,7 +458,7 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
             case MessageActionRemindMe:
             {
                 // TODO Analytics
-                [ToDoItem addToDoFor:cell.message atDate:nil withDescription:nil inUserSession:[ZMUserSession sharedSession]];
+                [self showReminderOptionsFor:cell.message fromCell:cell];
             }
                 break;
         }

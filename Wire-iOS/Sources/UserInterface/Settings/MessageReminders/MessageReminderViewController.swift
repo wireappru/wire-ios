@@ -27,6 +27,17 @@ class MessageReminderCell : UITableViewCell {
 
     @IBOutlet var titleLabel : UILabel?
     @IBOutlet var messageLabel : UILabel?
+    @IBOutlet var extendendMessageLabel : UILabel?
+    @IBOutlet var stackView : UIStackView?
+    @IBOutlet var doneLabel : UILabel?
+    
+    func toggleMessageText(){
+        messageLabel?.numberOfLines = (messageLabel?.numberOfLines == 0) ? 1 : 0
+//        guard let stackView = stackView else { return }
+//        let isExpanded = stackView.arrangedSubviews[1].isHidden
+//        stackView.arrangedSubviews[1].isHidden = !isExpanded
+//        stackView.arrangedSubviews[2].isHidden = isExpanded
+    }
 
 }
 
@@ -58,7 +69,7 @@ class MessageReminderCell : UITableViewCell {
         self.detailedView = detailedView
         
         super.init(nibName: nil, bundle: nil)
-        self.title = NSLocalizedString("registration.devices.title", comment:"")
+        self.title = NSLocalizedString("self.settings.message_reminders.title", comment:"")
         self.edgesForExtendedLayout = []
         
         if let session =  ZMUserSession.shared() {
@@ -184,6 +195,9 @@ class MessageReminderCell : UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier:"MessageReminderCell", for: indexPath) as! MessageReminderCell
         cell.titleLabel?.text = item.text ?? "Reply to:"
         cell.messageLabel?.text = item.message?.textMessageData?.messageText ?? ""
+        cell.extendendMessageLabel?.text = item.message?.textMessageData?.messageText ?? ""
+
+        cell.doneLabel?.text = item.isDone ? "🔵" : "⚪️"
         return cell
     }
     
@@ -191,14 +205,39 @@ class MessageReminderCell : UITableViewCell {
         // delete
     }
     
-    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
-        return .delete
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let markAsDone = UITableViewRowAction(style: .normal, title: "Done") { (action, indexPath) in
+            let item = self.items[indexPath.row]
+            ZMUserSession.shared()?.performChanges {
+                item.markAsDone()
+            }
+            tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
+        markAsDone.backgroundColor = UIColor.green
+        
+        let delete = UITableViewRowAction(style: .destructive, title: "Delete") { (action, indexPath) in
+            let item = self.items[indexPath.row]
+            ZMUserSession.shared()?.performChanges{
+                item.delete(inUserSession: ZMUserSession.shared()!)
+            }
+            self.items.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+        }
+        delete.backgroundColor = UIColor.red
+        
+        return [markAsDone, delete]
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let controller = MessageReminderDetailsViewController()
-        controller.item = self.items[indexPath.row]
-        navigationController?.present(controller, animated: true, completion: nil)
+        guard let cell = tableView.cellForRow(at: indexPath) as? MessageReminderCell else {return}
+        tableView.beginUpdates()
+        cell.toggleMessageText()
+        tableView.endUpdates()
+        tableView.deselectRow(at: indexPath, animated: false)
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {

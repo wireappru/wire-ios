@@ -18,6 +18,7 @@
 
 protocol ReminderDetailDelegate : AnyObject {
     func didTapMarkAsDone(_ reminderDetailView : MessageReminderDetailsView)
+    func didTapRevealButton(_ reminderDetailView : MessageReminderDetailsView)
 }
 
 class MessageReminderDetailsView : UIView {
@@ -28,6 +29,10 @@ class MessageReminderDetailsView : UIView {
     @IBOutlet var messageLabel : UILabel?
     @IBAction func didTapMarkAsDone(sender: UIButton) {
         self.delegate?.didTapMarkAsDone(self)
+    }
+    
+    @IBAction func didTapRevealButton(sender:UIButton) {
+        self.delegate?.didTapRevealButton(self)
     }
 }
 
@@ -41,6 +46,11 @@ class MessageReminderDetailsViewController : UIViewController, ReminderDetailDel
         }
     }
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.view.backgroundColor = UIColor.clear
+    }
+    
     override func loadView() {
         let myView = Bundle.main.loadNibNamed("MessageReminderDetailsView", owner: self, options: nil)!.first as! MessageReminderDetailsView
         myView.delegate = self
@@ -52,7 +62,11 @@ class MessageReminderDetailsViewController : UIViewController, ReminderDetailDel
         ZMUserSession.shared()?.enqueueChanges{
             tempItem?.markAsDone()
         }
-        presentingViewController?.dismiss(animated: true, completion: nil)
+        _ = navigationController?.popViewController(animated: true)
     }
     
+    func didTapRevealButton(_ reminderDetailView: MessageReminderDetailsView) {
+        // TODO Reveal message in conversation
+        
+    }
 }
