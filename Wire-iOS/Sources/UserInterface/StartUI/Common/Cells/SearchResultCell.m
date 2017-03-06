@@ -390,7 +390,7 @@
 
 - (void)updateSubtitleForCommonConnections:(NSUInteger)connections
 {
-    NSAttributedString *subtitle = [self attributedSubtitleWithConnectionCount:connections];
+    NSAttributedString *subtitle = [self attributedSubtitleWithConnectionCount:connections user:self.user];
 
     if (nil == subtitle) {
         self.subtitleLabel.text = @"";
@@ -403,30 +403,30 @@
     }
 }
 
-- (NSAttributedString *)attributedSubtitleWithConnectionCount:(NSUInteger)connections
+- (NSAttributedString *)attributedSubtitleWithConnectionCount:(NSUInteger)connections user:(id <ZMBareUser, ZMSearchableUser>)user
 {
     NSMutableAttributedString *subtitle = [[NSMutableAttributedString alloc] init];
-    [subtitle beginEditing];
 
-    NSAttributedString *handle;
-    if (nil != self.user.handle && self.user.handle.length > 0) {
+    NSAttributedString *attributedHandle;
+    NSString *handle = user.handle ?: BareUserToUser(user).handle;
+
+    if (nil != handle && handle.length > 0) {
         NSDictionary *attributes = @{ NSFontAttributeName: self.class.boldFont, NSForegroundColorAttributeName: self.class.subtitleColor };
-        NSString *displayHandle = [NSString stringWithFormat:@"@%@", self.user.handle];
-        handle = [[NSAttributedString alloc] initWithString:displayHandle attributes:attributes];
-        [subtitle appendAttributedString:handle];
+        NSString *displayHandle = [NSString stringWithFormat:@"@%@", handle];
+        attributedHandle = [[NSAttributedString alloc] initWithString:displayHandle attributes:attributes];
+        [subtitle appendAttributedString:attributedHandle];
     }
 
-    NSString *addresBookName = BareUserToUser(self.user).addressBookEntry.cachedName;
+    NSString *addresBookName = BareUserToUser(user).addressBookEntry.cachedName;
     NSAttributedString *correlation = [self.class.correlationFormatter correlationTextFor:self.user with:connections addressBookName:addresBookName];
     if (nil != correlation) {
-        if (nil != handle) {
+        if (nil != attributedHandle) {
             NSDictionary *delimiterAttributes = @{ NSFontAttributeName: self.class.lightFont, NSForegroundColorAttributeName: self.class.subtitleColor };
             [subtitle appendAttributedString:[[NSAttributedString alloc] initWithString:@" · " attributes:delimiterAttributes]];
         }
         [subtitle appendAttributedString:correlation];
     }
 
-    [subtitle endEditing];
     return subtitle.length != 0 ? [[NSAttributedString alloc] initWithAttributedString:subtitle] : nil;
 }
 

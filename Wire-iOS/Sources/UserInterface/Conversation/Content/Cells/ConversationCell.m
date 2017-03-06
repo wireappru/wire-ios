@@ -23,7 +23,7 @@
 
 #import "WAZUIMagicIOS.h"
 #import "UIColor+WAZExtensions.h"
-#import "Message.h"
+#import "Message+UI.h"
 #import "UIColor+WR_ColorScheme.h"
 #import "UIView+Borders.h"
 #import "Wire-Swift.h"
@@ -551,14 +551,17 @@ const NSTimeInterval ConversationCellSelectionAnimationDuration = 0.33;
     [items addObjectsFromArray:menuConfigurationProperties.additionalItems];
 
     if ([Message messageCanBeLiked:self.message]) {
-        NSString *likeTitleKey = [Message isLikedMessage:self.message] ? @"content.message.unlike" : @"content.message.like";
-        UIMenuItem *likeItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(likeTitleKey, @"") action:@selector(likeMessage:)];
-        [items insertObject:likeItem atIndex:0];
+        UIMenuItem *likeItem = [UIMenuItem likeItemForMessage:self.message action:@selector(likeMessage:)];
+        
+        if (items.count > 0) {
+            [items insertObject:likeItem atIndex:menuConfigurationProperties.likeItemIndex];
+        } else {
+            [items addObject:likeItem];
+        }
     }
 
     if (self.message.canBeDeleted) {
-        NSString *deleteTitle = NSLocalizedString(@"content.message.delete", @"");
-        UIMenuItem *deleteItem = [[UIMenuItem alloc] initWithTitle:deleteTitle action:@selector(deleteMessage:)];
+        UIMenuItem *deleteItem = [UIMenuItem deleteItemWithAction:@selector(deleteMessage:)];
         [items addObject:deleteItem];
     }
 

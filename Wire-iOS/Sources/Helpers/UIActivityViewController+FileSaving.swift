@@ -1,6 +1,6 @@
 //
 // Wire
-// Copyright (C) 2016 Wire Swiss GmbH
+// Copyright (C) 2017 Wire Swiss GmbH
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,16 +17,18 @@
 //
 
 
-import Foundation
+public extension UIActivityViewController {
 
+    public convenience init?(message: ZMConversationMessage, from view: UIView) {
+        guard let fileMessageData = message.fileMessageData, message.isFileDownloaded() == true else { return nil }
+        self.init(
+            activityItems: [fileMessageData.fileURL],
+            applicationActivities: nil
+        )
 
-private let sendButtonEvent = "settings.changed_send_button_option"
-
-
-extension Analytics {
-
-    @objc public func tagSendButtonDisabled(_ disabled: Bool) {
-        tagEvent(sendButtonEvent, attributes: ["outcome": disabled ? "off" : "on"])
+        if let popoverPresentationController = popoverPresentationController {
+            popoverPresentationController.sourceView = view
+        }
     }
-
+    
 }

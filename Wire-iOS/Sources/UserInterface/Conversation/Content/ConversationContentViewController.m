@@ -34,7 +34,6 @@
 // model
 #import "zmessaging+iOS.h"
 #import "VoiceChannelV2+Additions.h"
-#import "Message.h"
 #import "ConversationMessageWindowTableViewAdapter.h"
 
 // ui
@@ -104,6 +103,7 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
 @property (nonatomic) id messageWindowObserverToken;
 @property (nonatomic) BOOL onScreen;
 @property (nonatomic) UserConnectionViewController *connectionViewController;
+@property (nonatomic) DeletionDialogPresenter *deletionDialogPresenter;
 @end
 
 
@@ -338,7 +338,11 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
                 
             case MessageActionDelete:
             {
-                [self presentDeletionAlertControllerForMessage:cell.message completion:^{
+                self.deletionDialogPresenter = [[DeletionDialogPresenter alloc] initWithSourceViewController:self.presentedViewController ?: self];
+                [self.deletionDialogPresenter presentDeletionAlertControllerForMessage:cell.message source:cell completion:^(BOOL deleted) {
+                    if (self.presentedViewController && deleted) {
+                        [self.presentedViewController dismissViewControllerAnimated:YES completion:nil];
+                    }
                     cell.beingEdited = NO;
                 }];
             }
@@ -369,8 +373,9 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
                     else {
                         targetView = cell;
                     }
-                    
-                    [self.messagePresenter openDocumentControllerForMessage:cell.message targetView:targetView withPreview:NO];
+
+                    UIActivityViewController *saveController = [[UIActivityViewController alloc] initWithMessage:message from:targetView];
+                    [self presentViewController:saveController animated:YES completion:nil];
                 }
             }
                 break;
@@ -440,8 +445,10 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
                 break;
         }
     };
-    
-    if (self.messagePresenter.modalTargetController.presentedViewController != nil) {
+
+    BOOL shouldDismissModal = actionId != MessageActionDelete;
+
+    if (self.messagePresenter.modalTargetController.presentedViewController != nil && shouldDismissModal) {
         [self.messagePresenter.modalTargetController dismissViewControllerAnimated:YES completion:^{
             action();
         }];
@@ -718,7 +725,19 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{    
+{
+    id<ZMConversationMessage>message = [self.messageWindow.messages objectAtIndex:indexPath.row];
+    BOOL isFile = [Message isFileTransferMessage:message] &&
+                 ![Message isVideoMessage:message] &&
+                 ![Message isAudioMessage:message];
+    
+    BOOL isImage = [Message isImageMessage:message];
+    
+    if (isFile || isImage) {
+        [self wantsToPerformAction:MessageActionPresent
+                        forMessage:message
+                              cell:[tableView cellForRowAtIndexPath:indexPath]];
+    }
     // Make table view to update cells with animation
     [tableView beginUpdates];
     [tableView endUpdates];
@@ -924,7 +943,6 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
 - (void)wantsToPerformAction:(MessageAction)action forMessage:(id<ZMConversationMessage>)message
 {
     ConversationCell *cell = [self cellForMessage:message];
-    
     [self wantsToPerformAction:action forMessage:message cell:cell];
 }
 
