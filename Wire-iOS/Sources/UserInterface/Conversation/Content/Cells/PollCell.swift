@@ -46,6 +46,7 @@ extension PollCell {
         if self.optionsStackView == nil {
             self.optionsStackView = UIStackView()
             self.optionsStackView.axis = .vertical
+            self.optionsStackView.spacing = 5.0
             self.messageContentView.addSubview(self.optionsStackView)
             
             self.questionTextLabel = UILabel()
@@ -83,10 +84,9 @@ extension PollCell {
     /// Creates the view for an option and add it
     fileprivate func add(option: String, index: Int, votes: Set<ZMUser>) {
         let noSelfVotes = votes.subtracting(Set([ZMUser.selfUser()]))
-        let optionView = PollCellOptionView(option: option, votes: noSelfVotes) {
+        let optionView = PollCellOptionView(option: option, votes: noSelfVotes, selfVote: votes.contains(ZMUser.selfUser())) {
             self.didVote(for: index)
         }
-        optionView.setSelected(votes.contains(ZMUser.selfUser()))
         self.buttons.append(optionView)
         self.optionsStackView.addArrangedSubview(optionView)
     }
@@ -108,13 +108,12 @@ public class PollCellOptionView: UIView {
     let option: String
     public let voters: UILabel
     
-    init(option: String, votes: Set<ZMUser>, onVote: @escaping ()->()) {
+    init(option: String, votes: Set<ZMUser>, selfVote: Bool, onVote: @escaping ()->()) {
         self.selectButton = IconButton()
         self.selectButton.setIconColor(.lightGray, for: .normal)
-        self.selectButton.setIcon(.checkmarkCircled, with: .tiny, for: .selected)
-        self.selectButton.setIconColor(.green, for: .selected)
-        self.selectButton.setIcon(.checkmark, with: .small, for: .normal)
-        self.selectButton.setIconColor(.lightGray, for: .normal)
+        self.selectButton.setIcon(.liked, with: .tiny, for: .selected)
+        self.selectButton.setIconColor(.red, for: .selected)
+        self.selectButton.setIcon(.like, with: .tiny, for: .normal)
         
         self.label = UILabel()
         self.label.numberOfLines = 0
@@ -124,7 +123,15 @@ public class PollCellOptionView: UIView {
         self.option = option
         
         self.voters = UILabel()
-        self.voters.text = Array(votes).map { $0.displayName }.joined(separator: ", ")
+        let totalVoters = votes.count + (selfVote ? 1 : 0)
+        if totalVoters > 0 {
+            var otherVoters = Array(votes).flatMap { $0.displayName }
+            if selfVote {
+                otherVoters = ["You"] + otherVoters
+            }
+            self.voters.text = "+\(totalVoters): " + otherVoters.joined(separator: ", ")
+        }
+        
         
         super.init(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
 
@@ -133,21 +140,21 @@ public class PollCellOptionView: UIView {
         self.addSubview(self.label)
         self.addSubview(self.voters)
         
+        self.selectButton.isSelected = selfVote
+
         constrain(self, self.label, self.selectButton, self.voters) {
             cell, label, button, voters in
             button.leading == cell.leading
             button.trailing == label.leading
+            button.top == label.top
+            button.bottom == label.bottom
             label.trailing == cell.trailing
-            button.top == cell.top
-            button.bottom == cell.bottom
             label.top == cell.top
             button.width == 40.0
-            label.height == 35.0
-            voters.top == label.bottom + 10.0
+            voters.top == label.bottom
             voters.bottom == cell.bottom
             voters.trailing == cell.trailing
-            voters.leading == cell.leading + 10.0
-            voters.height >= 15.0
+            voters.leading == cell.leading
         }
     }
     
@@ -157,9 +164,5 @@ public class PollCellOptionView: UIView {
     
     func didVoteForOption(_ sender: Any) {
         self.onVote()
-    }
-    
-    func setSelected(_ selected: Bool) {
-        self.selectButton.isSelected = selected
     }
 }

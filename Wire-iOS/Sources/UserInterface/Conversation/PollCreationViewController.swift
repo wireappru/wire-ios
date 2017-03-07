@@ -18,8 +18,10 @@ import CoreLocation
 @objc final public class PollCreationViewController: UIViewController {
     
     private var stackView: UIView!
-    private var questionText: UITextField!
+    public var questionText: UITextField!
+    public var toolbarText: UILabel!
     var conversation: ZMConversation!
+    private var maxOptionSoFar = 0
     
     public init(forPopoverPresentation popover: Bool) {
         super.init(nibName: nil, bundle: nil)
@@ -38,7 +40,7 @@ import CoreLocation
         let container = UIView()
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 5.0
+        stack.spacing = 10.0
         self.view.addSubview(container)
         
         constrain(self.view, container) {
@@ -51,7 +53,9 @@ import CoreLocation
         container.addSubview(toolbar)
         
         let question = UITextField()
-        question.placeholder = "What's the question?"
+        question.placeholder = "Question"
+        question.text = "What do you think?"
+        question.textAlignment = .center
         container.addSubview(question)
         
         constrain(container, stack, toolbar, question) {
@@ -63,11 +67,11 @@ import CoreLocation
             
             question.leading == container.leading
             question.trailing == container.trailing
-            question.top == toolbar.bottom + 10.0
+            question.bottom == stack.top - 20.0
             
             stack.leading == container.leading
             stack.trailing == container.trailing
-            stack.top == question.bottom + 10.0
+            stack.bottom == container.bottom - 100.0
         }
         
         let dismissButton = IconButton()
@@ -79,11 +83,20 @@ import CoreLocation
         let sendButton = IconButton()
         sendButton.setIcon(.send, with: .medium, for: .normal)
         sendButton.addTarget(self, action: #selector(self.sendButtonTapped(_:)), for: .touchUpInside)
-
         toolbar.addSubview(sendButton)
         
-        constrain(toolbar, dismissButton, sendButton) {
-            toolbar, dismiss, send in
+        let toolbarText = UILabel()
+        toolbarText.text = "Create poll"
+        toolbarText.textAlignment = .center
+        toolbar.addSubview(toolbarText)
+        
+        constrain(toolbar, dismissButton, sendButton, toolbarText) {
+            toolbar, dismiss, send, text in
+            
+            text.top == toolbar.top
+            text.bottom == toolbar.bottom
+            text.trailing == send.leading
+            text.leading == dismiss.trailing
             
             send.top == toolbar.top
             send.trailing == toolbar.trailing
@@ -97,14 +110,19 @@ import CoreLocation
         }
         
         let addButton = IconButton()
-        addButton.setIcon(.plusCircled, with: .tiny, for: .normal)
+        addButton.setIcon(.plusCircled, with: .medium, for: .normal)
+        addButton.addTarget(self, action: #selector(self.addOptionButtonTapped(_:)), for: .touchUpInside)
+        stack.addArrangedSubview(addButton)
         
         self.stackView = stack
         self.questionText = question
+        self.toolbarText = toolbarText
         
         addOptionButtonTapped(self)
         addOptionButtonTapped(self)
         addOptionButtonTapped(self)
+        
+        
     }
     
     func dismissButtonTapped(_ sender: Any) {
@@ -113,8 +131,12 @@ import CoreLocation
     
     func addOptionButtonTapped(_ sender: Any) {
         guard let stack = self.stackView as? UIStackView else { return }
-        let option = PollCreationOptionView()
+        self.maxOptionSoFar += 1
+        let option = PollCreationOptionView(stack: stack, label: "Option \(self.maxOptionSoFar)")
+        guard let plusButton = stack.arrangedSubviews.last else { return }
+        stack.removeArrangedSubview(plusButton)
         stack.addArrangedSubview(option)
+        stack.addArrangedSubview(plusButton)
     }
     
     public override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
@@ -136,24 +158,29 @@ import CoreLocation
     }
 }
 
-private class PollCreationOptionView: UIView {
+@available(iOS 9.0, *)
+public class PollCreationOptionView: UIView {
     
-    private let textView: UITextField
+    public let textView: UITextField
     var text: String? {
         return textView.text
     }
     
-    init() {
+    private weak var stack: UIStackView?
+    
+    init(stack: UIStackView, label: String) {
         let icon = IconButton()
-        icon.setIcon(.checkmark, with: .tiny, for: .normal)
+        icon.setIcon(.cancel, with: .tiny, for: .normal)
         icon.setIconColor(.lightGray, for: .normal)
         
         let text = UITextField()
         text.placeholder = "Option"
+        text.text = label
         self.textView = text
         
         super.init(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
         
+        self.stack = stack
         self.addSubview(text)
         self.addSubview(icon)
         
@@ -161,16 +188,22 @@ private class PollCreationOptionView: UIView {
             view, icon, text in
             icon.top == view.top
             icon.bottom == view.bottom
-            icon.leading == view.leading
-            icon.trailing == text.leading
+            icon.trailing == view.trailing
+            icon.leading == text.trailing
             text.top == view.top
             text.bottom == view.bottom
-            text.trailing == view.trailing
+            text.leading == view.leading
             icon.width == 40.0
         }
+        
+        icon.addTarget(self, action: #selector(didRemove(_:)), for: .touchUpInside)
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    public func didRemove(_ sender: Any?) {
+        self.stack?.removeArrangedSubview(self)
+    }
+    
+    required public init?(coder aDecoder: NSCoder) {
         return nil
     }
 }

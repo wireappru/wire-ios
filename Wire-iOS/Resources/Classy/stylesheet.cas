@@ -1699,11 +1699,24 @@ PollCreationViewController {
     view: @{
         backgroundColor: $color-background;
     }
+    toolbarText: @{
+        textColor: $color-text-dimmed;
+        font: $font-normal-light;
+    }
+}
+
+PollCreationOptionView {
+    textView: @{
+        font: $font-normal-light;
+    }
 }
 
 PollCellOptionView {
     voters: @{
         font: $font-small-medium;
         textColor: $color-text-dimmed;
+    }
+    label: @{
+        font: $font-normal-light
     }
 }
