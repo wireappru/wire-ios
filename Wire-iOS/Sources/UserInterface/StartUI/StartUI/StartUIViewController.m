@@ -70,6 +70,7 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
 @property (nonatomic) SearchTokenStore *searchTokenStore;
 @property (nonatomic) AnalyticsTracker *analyticsTracker;
 @property (nonatomic) ZMSearchRequest *initialSearchRequest;
+@property (nonatomic) NearbyPeopleSection *nearbyPeopleSection;
 
 @property (nonatomic) UIPopoverController *presentedPopover;
 @property (nonatomic) BOOL addressBookUploadLogicHandled;
@@ -107,6 +108,9 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
         
         self.groupConversationsSection = [GroupConversationsSection new];
         self.groupConversationsSection.delegate = self;
+        
+        self.nearbyPeopleSection = [[NearbyPeopleSection alloc] initWithNearbyUsersDirectory:[ZMUserSession sharedSession].nearbyUsersDirectory];
+        self.nearbyPeopleSection.delegate = self;
 
     }
     return self;
@@ -187,6 +191,14 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
 {
     [super viewWillAppear:animated];
     [[Analytics shared] tagScreen:@"PEOPLE_PICKER"];
+    [[[ZMUserSession sharedSession] nearbyUsersDirectory] startLookingForNearbyUsers];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+    [[[ZMUserSession sharedSession] nearbyUsersDirectory] stopLookingForNearbyUsers];
 }
 
 - (void)handleUploadAddressBookLogicIfNeeded
@@ -271,7 +283,7 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
     switch (mode) {
         case StartUIModeInitial:
         case StartUIModeUsersSelected:
-                self.sectionAggregator.sectionControllers = @[self.topPeopleLineSection, self.usersInContactsSection];
+                self.sectionAggregator.sectionControllers = @[self.topPeopleLineSection,  self.nearbyPeopleSection, self.usersInContactsSection];
             break;
             
         case StartUIModeSearch:

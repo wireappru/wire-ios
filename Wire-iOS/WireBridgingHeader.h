@@ -95,6 +95,8 @@
 #import "PhoneNumberViewController.h"
 #import "CountryCodeTableViewController.h"
 #import "UIViewController+WR_Invite.h"
+#import "CollectionViewSectionController.h"
+#import "SearchSectionHeaderView.h"
 
 // Helper objects
 #import "PushTransition.h"

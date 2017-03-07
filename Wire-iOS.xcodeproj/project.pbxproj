@@ -18,6 +18,8 @@
 		160A9CAA1C3D62EF00B644AA /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1621AFDA1C0DEE1500FAE41A /* TabBarController.swift */; };
 		160C311F1E4C78480012E4BC /* UnknownMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 160C311E1E4C78480012E4BC /* UnknownMessageCell.swift */; };
 		160C31211E4C7E770012E4BC /* UnknownMessageCellTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 160C31201E4C7E770012E4BC /* UnknownMessageCellTests.swift */; };
+		160C31311E697A770012E4BC /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 160C31301E697A770012E4BC /* MultipeerConnectivity.framework */; };
+		160C313C1E69D5CA0012E4BC /* NearbyPeopleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 160C313B1E69D5CA0012E4BC /* NearbyPeopleSection.swift */; };
 		160DECD71AB329CC000FB575 /* CameraAccessDeniedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 160DECD61AB329CC000FB575 /* CameraAccessDeniedView.m */; };
 		160DECDA1AB32F7D000FB575 /* CameraConfirmationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 160DECD91AB32F7D000FB575 /* CameraConfirmationView.m */; };
 		160DECDD1AB333A3000FB575 /* CameraFocusRing.m in Sources */ = {isa = PBXBuildFile; fileRef = 160DECDC1AB333A3000FB575 /* CameraFocusRing.m */; };
@@ -986,6 +988,8 @@
 		16063D0A1BE0D5CE0097F62C /* ProfileNavigationControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProfileNavigationControllerDelegate.m; sourceTree = "<group>"; };
 		160C311E1E4C78480012E4BC /* UnknownMessageCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnknownMessageCell.swift; sourceTree = "<group>"; };
 		160C31201E4C7E770012E4BC /* UnknownMessageCellTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnknownMessageCellTests.swift; sourceTree = "<group>"; };
+		160C31301E697A770012E4BC /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
+		160C313B1E69D5CA0012E4BC /* NearbyPeopleSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NearbyPeopleSection.swift; sourceTree = "<group>"; };
 		160DECD51AB329CC000FB575 /* CameraAccessDeniedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraAccessDeniedView.h; sourceTree = "<group>"; };
 		160DECD61AB329CC000FB575 /* CameraAccessDeniedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraAccessDeniedView.m; sourceTree = "<group>"; };
 		160DECD81AB32F7D000FB575 /* CameraConfirmationView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraConfirmationView.h; sourceTree = "<group>"; };
@@ -2417,6 +2421,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				160C31311E697A770012E4BC /* MultipeerConnectivity.framework in Frameworks */,
 				87AAE4291E43682E00E1D13A /* LocalAuthentication.framework in Frameworks */,
 				87D7AF671DF5A158001A1CD7 /* Contacts.framework in Frameworks */,
 				872C99121DB0EA54006A3BDE /* Intents.framework in Frameworks */,
@@ -2511,6 +2516,14 @@
 				16063D011BDA6BF50097F62C /* GroupConversationHeader.m */,
 			);
 			path = Headers;
+			sourceTree = "<group>";
+		};
+		160C313A1E69D5B20012E4BC /* NearbyPeople */ = {
+			isa = PBXGroup;
+			children = (
+				160C313B1E69D5CA0012E4BC /* NearbyPeopleSection.swift */,
+			);
+			path = NearbyPeople;
 			sourceTree = "<group>";
 		};
 		160DECD41AB200FA000FB575 /* Camera */ = {
@@ -2885,6 +2898,7 @@
 		8286E48D7CC440448CBD8F48 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				160C31301E697A770012E4BC /* MultipeerConnectivity.framework */,
 				871608411E4DF7A900461934 /* HockeySDK.framework */,
 				87AAE4281E43682E00E1D13A /* LocalAuthentication.framework */,
 				CEE02EAB1DDDD15200BA2BE2 /* avs.framework */,
@@ -3921,6 +3935,7 @@
 		87DCF4BD1D34EA4500BB420F /* SectionControllers */ = {
 			isa = PBXGroup;
 			children = (
+				160C313A1E69D5B20012E4BC /* NearbyPeople */,
 				87DCF4BE1D34EA4500BB420F /* CollectionViewSectionAggregator.h */,
 				87DCF4BF1D34EA4500BB420F /* CollectionViewSectionAggregator.m */,
 				87DCF4C01D34EA4500BB420F /* CollectionViewSectionController.h */,
@@ -5468,7 +5483,7 @@
 				"$(SRCROOT)/Carthage/Build/iOS/ZMProtos.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/ProtocolBuffers.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/Cartography.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/zmessaging.framework",
+				"$(BUILT_PRODUCTS_DIR)/zmessaging.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/CocoaLumberjackSwift.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/TTTAttributedLabel.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/libPhoneNumberiOS.framework",
@@ -6096,6 +6111,7 @@
 				87DCF4F21D34EA4500BB420F /* SearchTokenStore.m in Sources */,
 				87CA886E1DDF0075004101B6 /* UserConnectionViewController.swift in Sources */,
 				87D21AD71D8A98620075AB7A /* AccentColorPickerController.swift in Sources */,
+				160C313C1E69D5CA0012E4BC /* NearbyPeopleSection.swift in Sources */,
 				875D48D11A6D087F00BB17B5 /* ConversationListViewController.m in Sources */,
 				87D38F9C1E5D9EE0004C5730 /* Analytics+Settings.swift in Sources */,
 				871BC0221D34F56300DF0793 /* AnalyticsTracker+Registration.m in Sources */,
