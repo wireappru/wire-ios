@@ -35,6 +35,22 @@ let GroupCallAvatarLabelHeight: CGFloat = 30.0;
     var shieldOverlay: DegradationOverlayView!
     var degradationTopConstraint: NSLayoutConstraint!
     var degradationBottomConstraint: NSLayoutConstraint!
+    var videoView: AVSVideoView?
+    var videoPreview: AVSVideoPreview?
+    
+    var videoViewFullscreen: Bool = true {
+        didSet {
+            createVideoPreviewIfNeeded()
+            guard let videoPreview = videoPreview, let videoView = videoView else { return }
+            if videoViewFullscreen {
+                videoPreview.frame = bounds
+                insertSubview(videoPreview, aboveSubview: videoView)
+            } else {
+                videoPreview.frame = cameraPreviewView.videoFeedContainer.bounds
+                cameraPreviewView.videoFeedContainer.addSubview(videoPreview)
+            }
+        }
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -95,6 +111,21 @@ extension VoiceChannelOverlay {
 }
 
 extension VoiceChannelOverlay {
+    
+    func createVideoPreviewIfNeeded() {
+        if !Settings.shared().disableAVS && videoPreview == nil {
+            // Preview view is moving from one subview to another. We cannot use constraints because renderer break if the view
+            // is removed from hierarchy and immediately being added to the new superview (we need that to reapply constraints)
+            // therefore we use @c autoresizingMask here
+            guard let videoView = videoView else { return }
+            let preview = AVSVideoPreview(frame: bounds)
+            preview.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            preview.isUserInteractionEnabled = false
+            preview.backgroundColor = .clear
+            insertSubview(preview, aboveSubview: videoView)
+            videoPreview = preview
+        }
+    }
 
     public func hideControls() {
         controlsHidden = true
@@ -142,14 +173,13 @@ extension VoiceChannelOverlay {
         callDurationFormatter.zeroFormattingBehavior = DateComponentsFormatter.ZeroFormattingBehavior(rawValue: 0)
         
         if !Settings.shared().disableAVS {
-            videoView = AVSVideoView()
-            videoView.shouldFill = true
-            videoView.isUserInteractionEnabled = false
-            videoView.backgroundColor = UIColor(patternImage: .dot(9))
-            addSubview(videoView)
+            let video = AVSVideoView()
+            video.shouldFill = true
+            video.isUserInteractionEnabled = false
+            video.backgroundColor = UIColor(patternImage: .dot(9))
+            addSubview(video)
+            self.videoView = video
         }
-
-        videoViewFullscreen = true
         
         shadow = UIView()
         shadow.isUserInteractionEnabled = false
@@ -264,8 +294,9 @@ extension VoiceChannelOverlay {
     }
     
     public func createConstraints(){
+        let videoViews: [UIView?] = [videoView, shadow, videoNotAvailableBackground]
         
-        constrain([videoView, shadow, videoNotAvailableBackground]) { views in
+        constrain(videoViews.flatMap{ $0 }) { views in
             let superview = (views.first?.superview)!
             views.forEach { $0.edges == superview.edges }
         }
@@ -286,21 +317,21 @@ extension VoiceChannelOverlay {
             callingTopUserImage.width == 56
         }
         
-        constrain(contentContainer, callingUserImage, degradationTopLabel, degradationBottomLabel, callButton) { contentContainer, callingUserImage, degradationTopLabel, degradationBottomLabel, callButton in
+        constrain(self, callingUserImage, degradationTopLabel, degradationBottomLabel, callButton) { view, callingUserImage, degradationTopLabel, degradationBottomLabel, callButton in
             
-            degradationTopLabel.leading >= contentContainer.leadingMargin
-            degradationTopLabel.trailing <= contentContainer.trailingMargin
+            degradationTopLabel.leading >= view.leadingMargin
+            degradationTopLabel.trailing <= view.trailingMargin
             
             self.degradationTopConstraint = (degradationTopLabel.bottom == callingUserImage.top - 16)
             self.degradationTopConstraint.isActive = false
-            degradationTopLabel.centerX == contentContainer.centerX
+            degradationTopLabel.centerX == view.centerX
 
-            degradationBottomLabel.leading >= contentContainer.leadingMargin
-            degradationBottomLabel.trailing <= contentContainer.trailingMargin
-            degradationBottomLabel.centerX == contentContainer.centerX
+            degradationBottomLabel.leading >= view.leadingMargin
+            degradationBottomLabel.trailing <= view.trailingMargin
+            degradationBottomLabel.centerX == view.centerX
             self.degradationBottomConstraint = (degradationBottomLabel.top == callingUserImage.bottom + 16)
             self.degradationBottomConstraint.isActive = false
-            degradationBottomLabel.bottom == callButton.top - 8
+            degradationBottomLabel.bottom <= callButton.top - 16
         }
         
         constrain(contentContainer, callingTopUserImage, topStatusLabel, centerStatusLabel) { contentContainer, callingTopUserImage, topStatusLabel, centerStatusLabel in
@@ -472,7 +503,7 @@ extension VoiceChannelOverlay {
         if isVideoCall {
             videoViewFullscreen = !connected
         } else {
-            videoView.isHidden = true
+            videoView?.isHidden = true
             videoPreview?.isHidden = true
         }
         
@@ -513,7 +544,7 @@ extension VoiceChannelOverlay {
         case .incomingCall:
             visibleViews = [self.callingUserImage, self.topStatusLabel, self.acceptButton, self.ignoreButton]
         case .incomingCallDegraded:
-            visibleViews = [self.callingUserImage, self.topStatusLabel, self.acceptDegradedButton, self.ignoreButton, degradationTopLabel, degradationBottomLabel, shieldOverlay]
+            visibleViews = [self.callingUserImage, self.topStatusLabel, self.acceptDegradedButton, cancelButton, degradationTopLabel, degradationBottomLabel, shieldOverlay]
         case .joiningCall:
             visibleViews = [self.callingUserImage, self.topStatusLabel, self.speakerButton, self.muteButton, self.leaveButton]
         case .connected:
@@ -544,7 +575,7 @@ extension VoiceChannelOverlay {
         case .incomingCall:
             visibleViews = [self.shadow, self.callingTopUserImage, self.topStatusLabel, self.acceptVideoButton, self.ignoreButton]
         case .incomingCallDegraded:
-            visibleViews = [self.shadow, self.callingUserImage, self.topStatusLabel, self.acceptDegradedButton, self.ignoreButton, degradationTopLabel, degradationBottomLabel, shieldOverlay]
+            visibleViews = [self.shadow, self.callingUserImage, self.topStatusLabel, self.acceptDegradedButton, cancelButton, degradationTopLabel, degradationBottomLabel, shieldOverlay]
         case .joiningCall:
             visibleViews = [self.callingTopUserImage, self.topStatusLabel, self.muteButton, self.leaveButton, self.videoButton]
         case .connected:
