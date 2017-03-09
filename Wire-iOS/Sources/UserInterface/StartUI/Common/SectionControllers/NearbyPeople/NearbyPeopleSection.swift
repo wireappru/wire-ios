@@ -22,8 +22,13 @@ import Foundation
 class NearbyPeopleSection : NSObject, CollectionViewSectionController {
     
     weak var delegate: CollectionViewSectionDelegate?
-    var collectionView: UICollectionView!
     var nearbyUsersDirectory : NearbyUsersDirectory
+    var collectionView: UICollectionView! {
+        didSet {
+            collectionView.register(SearchResultCell.self, forCellWithReuseIdentifier: "NearbyPeopleCellIdentifier")
+            collectionView.register(SearchSectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "PeoplePickerHeaderReuseIdentifier")
+        }
+    }
     
     init(nearbyUsersDirectory: NearbyUsersDirectory) {
         self.nearbyUsersDirectory = nearbyUsersDirectory
@@ -38,7 +43,7 @@ class NearbyPeopleSection : NSObject, CollectionViewSectionController {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PeoplePickerUsersInDirectoryCellReuseIdentifier", for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NearbyPeopleCellIdentifier", for: indexPath)
         
         if let searchResultCell = cell as? SearchResultCell {
             let searchUser = nearbyUsersDirectory.nearbyUsers[indexPath.row]
@@ -65,7 +70,7 @@ class NearbyPeopleSection : NSObject, CollectionViewSectionController {
         return supplementaryView
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: self.collectionView.bounds.size.width, height: CGFloat(WAZUIMagic.float(forIdentifier: "people_picker.section_header.height")))
     }
     
