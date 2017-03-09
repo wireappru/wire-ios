@@ -48,6 +48,14 @@ class NearbyPeopleSection : NSObject, CollectionViewSectionController {
         if let searchResultCell = cell as? SearchResultCell {
             let searchUser = nearbyUsersDirectory.nearbyUsers[indexPath.row]
             searchResultCell.user = searchUser
+            
+            searchResultCell.instantConnectAction = { searchResultCell in
+                ZMUserSession.shared()?.performChanges {
+                    searchUser.connect(withMessageText: "Connect with me", completionHandler: {
+                        searchResultCell?.user = searchUser // trigger update
+                    })
+                }
+            }
         }
         
         return cell
@@ -81,6 +89,11 @@ class NearbyPeopleSection : NSObject, CollectionViewSectionController {
         let rightInset = CGFloat(WAZUIMagic.float(forIdentifier: "people_picker.search_results_mode.right_padding"))
         
         return UIEdgeInsets(top: topInset, left: leftInset, bottom: 0, right: rightInset)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let searchUser = nearbyUsersDirectory.nearbyUsers[indexPath.row]
+        delegate?.collectionViewSectionController(self, didSelectItem: searchUser, at: indexPath)
     }
     
     dynamic var isHidden: Bool = true
