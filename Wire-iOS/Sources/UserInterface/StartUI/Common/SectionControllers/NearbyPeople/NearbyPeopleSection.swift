@@ -83,9 +83,7 @@ class NearbyPeopleSection : NSObject, CollectionViewSectionController {
         return UIEdgeInsets(top: topInset, left: leftInset, bottom: 0, right: rightInset)
     }
     
-    var isHidden: Bool {
-        return nearbyUsersDirectory.nearbyUsers.count == 0
-    }
+    dynamic var isHidden: Bool = true
     
     func hasSearchResults() -> Bool {
         return nearbyUsersDirectory.nearbyUsers.count > 0
@@ -96,6 +94,6 @@ class NearbyPeopleSection : NSObject, CollectionViewSectionController {
 extension NearbyPeopleSection : NearbyUsersDirectoryDelegate {
     
     func nearbyUsersDirectoryDidUpdate() {
-        collectionView.reloadData()
+        isHidden = nearbyUsersDirectory.nearbyUsers.count == 0
     }
 }
