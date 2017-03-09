@@ -123,7 +123,8 @@ import ZMCLinkPreview
     var systemMessageData: ZMSystemMessageData? = .none
     var knockMessageData: ZMKnockMessageData? = .none
     var causedSecurityLevelDegradation: Bool = false
-
+    var pollMessageData: ZMPollMessageData? = nil
+    
     var fileMessageData: ZMFileMessageData? {
         return backingFileMessageData
     }
