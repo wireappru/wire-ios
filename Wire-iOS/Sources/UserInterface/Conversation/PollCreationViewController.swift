@@ -54,7 +54,7 @@ import CoreLocation
         
         let question = UITextField()
         question.placeholder = "Question"
-        question.text = "What do you think?"
+        question.text = "When polls are coming to other platforms?"
         question.textAlignment = .center
         container.addSubview(question)
         
@@ -71,7 +71,7 @@ import CoreLocation
             
             stack.leading == container.leading
             stack.trailing == container.trailing
-            stack.bottom == container.bottom - 100.0
+            stack.top == container.top + 150.0
         }
         
         let dismissButton = IconButton()
@@ -122,17 +122,19 @@ import CoreLocation
         addOptionButtonTapped(self)
         addOptionButtonTapped(self)
         
-        
     }
     
     func dismissButtonTapped(_ sender: Any) {
         dismiss(animated: true, completion: nil)
     }
     
+    var defaultOptions = ["Umm we need to think about it", "Never", "Soon"]
+    
     func addOptionButtonTapped(_ sender: Any) {
         guard let stack = self.stackView as? UIStackView else { return }
         self.maxOptionSoFar += 1
-        let option = PollCreationOptionView(stack: stack, label: "Option \(self.maxOptionSoFar)")
+        let optionLabel = defaultOptions.popLast()
+        let option = PollCreationOptionView(stack: stack, label: optionLabel)
         guard let plusButton = stack.arrangedSubviews.last else { return }
         stack.removeArrangedSubview(plusButton)
         stack.addArrangedSubview(option)
@@ -168,13 +170,13 @@ public class PollCreationOptionView: UIView {
     
     private weak var stack: UIStackView?
     
-    init(stack: UIStackView, label: String) {
+    init(stack: UIStackView, label: String?) {
         let icon = IconButton()
         icon.setIcon(.cancel, with: .tiny, for: .normal)
         icon.setIconColor(.lightGray, for: .normal)
         
         let text = UITextField()
-        text.placeholder = "Option"
+        text.placeholder = "Enter option"
         text.text = label
         self.textView = text
         
