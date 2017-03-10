@@ -19,6 +19,9 @@
 protocol ReminderDetailDelegate : AnyObject {
     func didTapMarkAsDone(_ reminderDetailView : MessageReminderDetailsView)
     func didTapRevealButton(_ reminderDetailView : MessageReminderDetailsView)
+    func didTapDeleteButton(_ reminderDetailView : MessageReminderDetailsView)
+    func didSelectNewDate(_ reminderDetailView : MessageReminderDetailsView, date: Date)
+
 }
 
 class MessageReminderDetailsView : UIView {
@@ -27,12 +30,30 @@ class MessageReminderDetailsView : UIView {
     
     @IBOutlet var titleLabel : UILabel?
     @IBOutlet var messageLabel : UILabel?
+    @IBOutlet var dateLabel : UILabel?
+    @IBOutlet var datePicker : UIDatePicker!
+    @IBOutlet var datePickerContainer : UIView!
+    @IBOutlet var doneButton : UIButton!
+    
     @IBAction func didTapMarkAsDone(sender: UIButton) {
         self.delegate?.didTapMarkAsDone(self)
     }
     
     @IBAction func didTapRevealButton(sender:UIButton) {
         self.delegate?.didTapRevealButton(self)
+    }
+    
+    @IBAction func didTapDeleteButton(sender:UIButton) {
+        self.delegate?.didTapDeleteButton(self)
+    }
+    
+    @IBAction func didTapRescheduleButton(sender:UIButton) {
+        if !self.datePickerContainer.isHidden {
+            delegate?.didSelectNewDate(self, date: self.datePicker.date)
+        }
+        UIView.animate(withDuration: 0.2) { 
+            self.datePickerContainer.isHidden = !self.datePickerContainer.isHidden
+        }
     }
 }
 
@@ -43,6 +64,15 @@ class MessageReminderDetailsViewController : UIViewController, ReminderDetailDel
             guard let reminderView = self.view as? MessageReminderDetailsView else { return }
             reminderView.titleLabel?.text = item.text ?? "Reply to"
             reminderView.messageLabel?.text = item.message?.textMessageData?.messageText ?? ""
+            if let date = item.dueDate {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateStyle = .short
+                dateFormatter.timeStyle = .short
+                let dateString = dateFormatter.string(from: date)
+                reminderView.dateLabel?.text = "Due at \(dateString)"
+            } else {
+                reminderView.dateLabel?.isHidden = true
+            }
         }
     }
     
@@ -66,7 +96,22 @@ class MessageReminderDetailsViewController : UIViewController, ReminderDetailDel
     }
     
     func didTapRevealButton(_ reminderDetailView: MessageReminderDetailsView) {
-        // TODO Reveal message in conversation
-        
+        guard let message = item.message else { return }
+        ZClientViewController.shared().select(message.conversation!, focusOnView: true, animated: true)
+    }
+    
+    func didTapDeleteButton(_ reminderDetailView: MessageReminderDetailsView) {
+        let tempItem = self.item
+        ZMUserSession.shared()?.enqueueChanges{
+            tempItem?.delete(inUserSession: ZMUserSession.shared()!)
+        }
+        _ = navigationController?.popViewController(animated: true)
+    }
+    
+    func didSelectNewDate(_ reminderDetailView: MessageReminderDetailsView, date: Date) {
+        let tempItem = self.item
+        ZMUserSession.shared()?.enqueueChanges{
+            tempItem?.reschedule(newDate: date)
+        }
     }
 }

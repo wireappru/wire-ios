@@ -27,7 +27,6 @@ class MessageReminderCell : UITableViewCell {
 
     @IBOutlet var titleLabel : UILabel?
     @IBOutlet var messageLabel : UILabel?
-    @IBOutlet var extendendMessageLabel : UILabel?
     @IBOutlet var stackView : UIStackView?
     @IBOutlet var doneLabel : UILabel?
     
@@ -110,6 +109,9 @@ class MessageReminderCell : UITableViewCell {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        if let session =  ZMUserSession.shared() {
+            self.items = ToDoItem.allItems(inUserSession: session)
+        }
         self.clientsTableView?.reloadData()
     }
 
@@ -195,7 +197,6 @@ class MessageReminderCell : UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier:"MessageReminderCell", for: indexPath) as! MessageReminderCell
         cell.titleLabel?.text = item.text ?? "Reply to:"
         cell.messageLabel?.text = item.message?.textMessageData?.messageText ?? ""
-        cell.extendendMessageLabel?.text = item.message?.textMessageData?.messageText ?? ""
 
         cell.doneLabel?.text = item.isDone ? "🔵" : "⚪️"
         return cell
@@ -233,11 +234,9 @@ class MessageReminderCell : UITableViewCell {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let cell = tableView.cellForRow(at: indexPath) as? MessageReminderCell else {return}
-        tableView.beginUpdates()
-        cell.toggleMessageText()
-        tableView.endUpdates()
-        tableView.deselectRow(at: indexPath, animated: false)
+        let controller = MessageReminderDetailsViewController()
+        controller.item = self.items[indexPath.row]
+        navigationController?.pushViewController(controller, animated: true)
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {

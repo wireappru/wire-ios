@@ -6,7 +6,7 @@
 //  Copyright © 2017 Zeta Project Germany GmbH. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 
 protocol  ReminderDelegate : AnyObject {
@@ -34,6 +34,10 @@ class ReminderOptionsView :  UIView {
     @IBAction func didSaveReminder(sender: UIButton) {
         let time : Date? = dateSwitch.isOn ? datePicker.date : nil
         delegate?.didSaveReminder(self, time: time, title: titleField.text ?? "Reply to:")
+        let note = UILocalNotification()
+        note.alertBody = "You wanted to reply to a message"
+        note.fireDate = Date().addingTimeInterval(5)
+        UIApplication.shared.scheduleLocalNotification(note)
     }
     
     @IBAction func didPressCloseButton(sender: UIButton) {

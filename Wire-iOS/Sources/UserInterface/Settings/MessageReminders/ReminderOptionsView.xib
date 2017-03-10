@@ -171,6 +171,7 @@
             </constraints>
             <connections>
                 <outlet property="blurView" destination="FGo-BP-h6o" id="zOa-uN-Ufe"/>
+                <outlet property="datePicker" destination="2f5-KO-cCg" id="i4Q-RS-UXS"/>
                 <outlet property="dateSwitch" destination="d8E-7E-pGJ" id="UTj-WK-inz"/>
                 <outlet property="stackView" destination="AXp-Lv-b86" id="Z0H-91-rao"/>
                 <outlet property="titleField" destination="C1E-hJ-LjZ" id="Gup-4T-RYl"/>
