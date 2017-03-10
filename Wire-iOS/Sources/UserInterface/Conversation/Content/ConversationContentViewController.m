@@ -19,6 +19,7 @@
 
 #import "ConversationContentViewController+Private.h"
 #import "ConversationContentViewController+Scrolling.h"
+#import "ConversationContentViewController+PinchZoom.h"
 
 #import "ConversationViewController.h"
 #import "ConversationViewController+Private.h"
@@ -37,7 +38,6 @@
 #import "ConversationMessageWindowTableViewAdapter.h"
 
 // ui
-#import "FullscreenImageViewController.h"
 #import "ZClientViewController.h"
 #import "UIView+MTAnimation.h"
 #import "GroupConversationHeader.h"
@@ -132,12 +132,19 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
         self.tableView.delegate = nil;
         self.tableView.dataSource = nil;
     }
+    
+    [self.pinchImageView removeFromSuperview];
+    [self.dimView removeFromSuperview];
 }
 
 - (void)loadView
 {
+    [super loadView];
+    
     self.tableView = [[UpsideDownTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
-    self.view = self.tableView;
+    [self.view addSubview:self.tableView];
+    
+    [self.tableView autoPinEdgesToSuperviewEdges];
 }
 
 - (void)viewDidLoad
@@ -169,6 +176,10 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
     [UIView performWithoutAnimation:^{
         self.tableView.backgroundColor = self.view.backgroundColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorTextBackground];
     }];
+    
+    UIPinchGestureRecognizer *pinchImageGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(onPinchZoom:)];
+    pinchImageGestureRecognizer.delegate = self;
+    [self.view addGestureRecognizer:pinchImageGestureRecognizer];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -446,7 +457,7 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
         }
     };
 
-    BOOL shouldDismissModal = actionId != MessageActionDelete;
+    BOOL shouldDismissModal = actionId != MessageActionDelete && actionId != MessageActionCopy;
 
     if (self.messagePresenter.modalTargetController.presentedViewController != nil && shouldDismissModal) {
         [self.messagePresenter.modalTargetController dismissViewControllerAnimated:YES completion:^{
@@ -730,10 +741,8 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
     BOOL isFile = [Message isFileTransferMessage:message] &&
                  ![Message isVideoMessage:message] &&
                  ![Message isAudioMessage:message];
-    
-    BOOL isImage = [Message isImageMessage:message];
-    
-    if (isFile || isImage) {
+
+    if (isFile) {
         [self wantsToPerformAction:MessageActionPresent
                         forMessage:message
                               cell:[tableView cellForRowAtIndexPath:indexPath]];

@@ -87,15 +87,19 @@
 - (void)loadView
 {
     VoiceChannelOverlay *overlayView = [[VoiceChannelOverlay alloc] initForAutoLayout];
+    [overlayView setCallButtonTarget:self           action:@selector(makeDegradedCallClicked:)];
+    [overlayView setAcceptDegradedButtonTarget:self action:@selector(acceptDegradedCallClicked:)];
     [overlayView setAcceptButtonTarget:self         action:@selector(acceptButtonClicked:)];
     [overlayView setAcceptVideoButtonTarget:self    action:@selector(acceptVideoButtonClicked:)];
     [overlayView setIgnoreButtonTarget:self         action:@selector(ignoreButtonClicked:)];
     [overlayView setLeaveButtonTarget:self          action:@selector(leaveButtonClicked:)];
+    [overlayView setCancelButtonTarget:self         action:@selector(cancelButtonClicked:)];
     [overlayView setMuteButtonTarget:self           action:@selector(muteButtonClicked:)];
     [overlayView setSpeakerButtonTarget:self        action:@selector(speakerButtonClicked:)];
     [overlayView setVideoButtonTarget:self          action:@selector(videoButtonClicked:)];
     [overlayView setSwitchCameraButtonTarget:self   action:@selector(switchCameraButtonClicked:)];
     [overlayView setCallingConversation:self.conversation];
+    overlayView.selfUser = [ZMUser selfUser];
     overlayView.hidesSpeakerButton = IS_IPAD;
     self.overlayView = overlayView;
     
@@ -167,6 +171,30 @@
                                                                                     collectionView:self.overlayView.participantsCollectionView];
 }
 
+- (void)makeDegradedCallClicked:(id)sender
+{
+    DDLogVoice(@"UI: Make degraded call button tap");
+    VoiceChannelRouter *voiceChannel = self.conversation.voiceChannel;
+    [[ZMUserSession sharedSession] enqueueChanges:^{
+        [voiceChannel continueByDecreasingConversationSecurityWithUserSession:[ZMUserSession sharedSession]];
+    }];
+}
+
+- (void)acceptDegradedCallClicked:(id)sender
+{
+    DDLogVoice(@"UI: Accept degraded call button tap");
+    
+    BOOL hasAlreadyAcceptedCall = self.conversation.voiceChannel.state == VoiceChannelV2StateSelfIsJoiningActiveChannelDegraded;
+    VoiceChannelRouter *voiceChannel = self.conversation.voiceChannel;
+    [[ZMUserSession sharedSession] enqueueChanges:^{
+        [voiceChannel continueByDecreasingConversationSecurityWithUserSession:[ZMUserSession sharedSession]];
+    } completionHandler:^{
+        if (!hasAlreadyAcceptedCall) {
+            [self joinCurrentVoiceChannel];
+        }
+    }];
+}
+
 - (void)acceptButtonClicked:(id)sender
 {
     DDLogVoice(@"UI: Accept button tap");
@@ -187,6 +215,15 @@
     VoiceChannelRouter *voiceChannel = self.conversation.voiceChannel;
     [[ZMUserSession sharedSession] enqueueChanges:^{
         [voiceChannel ignoreWithUserSession:[ZMUserSession sharedSession]];
+    }];
+}
+
+- (void)cancelButtonClicked:(id)sender
+{
+    DDLogVoice(@"UI: Cancel button tap");
+    VoiceChannelRouter *voiceChannel = self.conversation.voiceChannel;
+    [[ZMUserSession sharedSession] enqueueChanges:^{
+        [voiceChannel leaveAndKeepDegradedConversationSecurityWithUserSession:[ZMUserSession sharedSession]];
     }];
 }
 
@@ -286,14 +323,14 @@
 
 - (VoiceChannelOverlayState)viewStateForVoiceChannelState:(VoiceChannelV2State)voiceChannelState previousVoiceChannelState:(VoiceChannelV2State)previousVoiceChannelState
 {
-    if (voiceChannelState == VoiceChannelV2StateIncomingCall) {
-        return VoiceChannelOverlayStateIncomingCall;
-    }
-    
-    VoiceChannelOverlayState overlayState;
+    VoiceChannelOverlayState overlayState = VoiceChannelOverlayStateInvalid;
     switch (voiceChannelState) {
         case VoiceChannelV2StateIncomingCall:
             overlayState = VoiceChannelOverlayStateIncomingCall;
+            break;
+        case VoiceChannelV2StateIncomingCallDegraded:
+        case VoiceChannelV2StateSelfIsJoiningActiveChannelDegraded:
+            overlayState = VoiceChannelOverlayStateIncomingCallDegraded;
             break;
             
         case VoiceChannelV2StateIncomingCallInactive:
@@ -304,7 +341,9 @@
         case VoiceChannelV2StateOutgoingCallInactive:
             overlayState = VoiceChannelOverlayStateOutgoingCall;
             break;
-            
+        case VoiceChannelV2StateOutgoingCallDegraded:
+            overlayState = VoiceChannelOverlayStateOutgoingCallDegraded;
+            break;
         case VoiceChannelV2StateSelfIsJoiningActiveChannel:
             if (previousVoiceChannelState == VoiceChannelV2StateOutgoingCall || previousVoiceChannelState == VoiceChannelV2StateOutgoingCallInactive) {
                 // Hide the media establishment phase for outgoing calls
@@ -319,7 +358,7 @@
             break;
             
         default:
-            overlayState = VoiceChannelOverlayStateInvalid;
+            break;
     }
     
     DDLogVoice(@"UI: VoiceChannelState %d (%@) transitioned to overlay state %ld (%@)", voiceChannelState, StringFromVoiceChannelV2State(voiceChannelState), (long)overlayState, StringFromVoiceChannelOverlayState(overlayState));

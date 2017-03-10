@@ -117,6 +117,9 @@
 @interface ConversationViewController (VerticalTransitionDataSource) <VerticalTransitionDataSource>
 @end
 
+@interface ConversationViewController (ConversationListObserver) <ZMConversationListObserver>
+@end
+
 @interface ConversationViewController ()
 
 @property (nonatomic) ConversationDetailsTransitioningDelegate *conversationDetailsTransitioningDelegate;
@@ -143,7 +146,7 @@
 @property (nonatomic) BOOL isAppearing;
 @property (nonatomic) ConversationTitleView *titleView;
 @property (nonatomic) CollectionsViewController *collectionController;
-
+@property (nonatomic) id conversationListObserverToken;
 @end
 
 
@@ -164,6 +167,8 @@
 {
     [super viewDidLoad];
     
+    self.conversationListObserverToken = [ConversationListChangeInfo addObserver:self forList:[SessionObjectCache sharedCache].conversationList];
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardFrameWillChange:)
                                                  name:UIKeyboardWillChangeFrameNotification
@@ -185,18 +190,21 @@
 
     [self addChildViewController:self.contentViewController];
     [self.view addSubview:self.contentViewController.view];
+    [self.contentViewController didMoveToParentViewController:self];
 
     [self addChildViewController:self.inputBarController];
     [self.view addSubview:self.inputBarController.view];
+    [self.inputBarController didMoveToParentViewController:self];
 
     [self addChildViewController:self.conversationBarController];
     [self.view addSubview:self.conversationBarController.view];
+    [self.conversationBarController didMoveToParentViewController:self];
 
     [self addChildViewController:self.chatHeadsViewController];
     [self.view addSubview:self.chatHeadsViewController.view];
+    [self.chatHeadsViewController didMoveToParentViewController:self];
 
     [self updateOutgoingConnectionVisibility];
-
     self.isAppearing = NO;
 
     [self createConstraints];
@@ -505,7 +513,7 @@
 
     @weakify(self);
     [[ZMUserSession sharedSession] enqueueChanges:^{
-        newConversation = [self.conversation addParticipants:participants];
+        newConversation = [self.conversation addParticipantsOrCreateConversation:participants];
     } completionHandler:^{
         @strongify(self);
         [self.zClientViewController selectConversation:newConversation focusOnView:YES animated:YES];
@@ -1016,6 +1024,20 @@
     [viewsToHide addObject:self.inputBarController.view];
     
     return viewsToHide;
+}
+
+@end
+
+@implementation ConversationViewController (ConversationListObserver)
+
+- (void)conversationListDidChange:(ConversationListChangeInfo *)changeInfo
+{
+    [self updateLeftNavigationBarItems];
+}
+
+- (void)conversationInsideList:(ZMConversationList * _Nonnull)list didChange:(ConversationChangeInfo * _Nonnull)changeInfo
+{
+    [self updateLeftNavigationBarItems];
 }
 
 @end

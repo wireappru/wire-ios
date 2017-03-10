@@ -65,7 +65,7 @@ const NSTimeInterval ConversationCellSelectionAnimationDuration = 0.33;
 
 @property (nonatomic) AccentColorChangeHandler *accentColorChangeHandler;
 
-@property (nonatomic) UITapGestureRecognizer *doubleTapGestureRecognizer;
+@property (nonatomic, readwrite) UITapGestureRecognizer *doubleTapGestureRecognizer;
 
 @property (nonatomic, readwrite) ConversationCellLayoutProperties *layoutProperties;
 
@@ -123,7 +123,7 @@ const NSTimeInterval ConversationCellSelectionAnimationDuration = 0.33;
             cell.unreadDotView.backgroundColor = newColor;
         }];
         
-        self.contentLayoutMargins = self.layoutDirectionAwareLayoutMargins;
+        self.contentLayoutMargins = self.class.layoutDirectionAwareLayoutMargins;
     }
     
     return self;
@@ -417,7 +417,9 @@ const NSTimeInterval ConversationCellSelectionAnimationDuration = 0.33;
 
 - (void)updateSenderAndSenderImage:(id<ZMConversationMessage>)message
 {
-    self.authorLabel.text = [message.sender displayNameInConversation:message.conversation].uppercaseString;
+    self.authorLabel.text = [message.sender displayNameInConversation:message.conversation];
+    self.authorLabel.textColor = [[ColorScheme defaultColorScheme] nameAccentForColor:message.sender.accentColorValue
+                                                                              variant:[ColorScheme defaultColorScheme].variant];
     self.authorImageView.user = message.sender;
 }
 

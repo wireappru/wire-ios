@@ -71,6 +71,16 @@ VoiceChannelOverlay {
         imageEdgeInsets: 0 0 0 8;
     }
     
+    degradationTopLabel: @{
+        textColor: $color-text-foreground-dark;
+        font: $font-normal-light;
+    }
+    
+    degradationBottomLabel: @{
+        textColor: $color-text-foreground-dark;
+        font: $font-normal-light;
+    }
+
     topStatusLabel: @{
         textColor: $color-text-foreground-dark;
     }
@@ -88,6 +98,22 @@ VoiceChannelOverlay {
         }
     }
     
+    acceptDegradedButton: @{
+        iconButton: @{
+            backgroundImageColor[state:normal]: $color-accent-green;
+            iconColor[state:normal]: white;
+            borderWidth: 0;
+        }
+    }
+    
+    callButton: @{
+        iconButton: @{
+            backgroundImageColor[state:normal]: $color-accent-green;
+            iconColor[state:normal]: white;
+            borderWidth: 0;
+        }
+    }
+
     acceptVideoButton: @{
         iconButton: @{
             backgroundImageColor[state:normal]: $color-accent-green;
@@ -602,6 +628,18 @@ ToolTipViewController {
     }
 }
 
+/* MediaPreviewViewController */
+
+MediaPreviewViewController {
+    @device ipad {
+        viewHeight: 240
+    }
+
+    @device iphone {
+        viewHeight: 160
+    }
+}
+
 /* Conversation detail / participants */
 
 ParticipantsHeaderView.editing {
@@ -703,6 +741,16 @@ SearchView {
     }
 }
 
+VideoMessageCell {
+    @device ipad {
+        videoViewHeight: 240
+    }
+
+    @device iphone {
+        videoViewHeight: 160
+    }
+}
+
 /* Conversation */
 
 GroupConversationHeader {
@@ -758,8 +806,7 @@ MessageToolboxView {
     }
 
     authorLabel: @{
-        font: $font-small-medium;
-        textColor: $color-text-foreground;
+        font: $font-medium-medium;
     }
     burstTimestampLabel: @{
         font: $font-small-light;

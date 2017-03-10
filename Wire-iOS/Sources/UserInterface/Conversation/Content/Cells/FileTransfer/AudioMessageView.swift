@@ -307,18 +307,18 @@ final class AudioMessageView: UIView, TransferView {
         let audioTrackPlayingSame = audioTrackPlayer.sourceMessage != nil && audioTrackPlayer.sourceMessage.isEqual(self.fileMessage)
         
         if let track = fileMessage.audioTrack(), !audioTrackPlayingSame {
-            audioTrackPlayer.load(track, sourceMessage: fileMessage, completionHandler: { success, error in
+            audioTrackPlayer.load(track, sourceMessage: fileMessage) { [weak self] success, error in
                 if success {
-                    let duration = TimeInterval(Float(fileMessageData.durationMilliseconds) / 1000.0)
-                    
-                    Analytics.shared()?.tagPlayedAudioMessage(duration, extensionString: (fileMessageData.filename as NSString).pathExtension)
-                    
+                    self?.setAudioOutput(earpiece: false)
                     audioTrackPlayer.play()
+
+                    let duration = TimeInterval(Float(fileMessageData.durationMilliseconds) / 1000.0)
+                    Analytics.shared()?.tagPlayedAudioMessage(duration, extensionString: (fileMessageData.filename as NSString).pathExtension)
                 }
                 else {
                     DDLogWarn("Cannot load track \(track): \(error)")
                 }
-            })
+            }
         } else {
             if audioTrackPlayer.isPlaying {
                 audioTrackPlayer.pause()
@@ -328,7 +328,7 @@ final class AudioMessageView: UIView, TransferView {
         }
     }
     
-    func isOwnTrackPlayingInAudioPlayer() -> Bool {
+    private func isOwnTrackPlayingInAudioPlayer() -> Bool {
         let audioTrackPlayer = self.audioTrackPlayer()
         guard let message = self.fileMessage,
             let audioTrack = message.audioTrack() else {
@@ -369,7 +369,6 @@ final class AudioMessageView: UIView, TransferView {
     }
     
     // MARK: - Audio state observer
-
     dynamic private func audioProgressChanged(_ change: NSDictionary) {
         if self.isOwnTrackPlayingInAudioPlayer() {
             self.updateActivePlayerProgressAnimated(false)
@@ -393,17 +392,17 @@ final class AudioMessageView: UIView, TransferView {
     
     // MARK: - Proximity Listener
     
-    func updateProximityObserverState() {
+    private func updateProximityObserverState() {
         if audioTrackPlayer().isPlaying && isOwnTrackPlayingInAudioPlayer() {
             proximityListener.startListening()
         } else {
             proximityListener.stopListening()
         }
     }
-    
-    func proximityStateDidChange(_ raisedToEar: Bool) {
+
+    private func setAudioOutput(earpiece: Bool) {
         do {
-            if raisedToEar {
+            if earpiece {
                 try AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayAndRecord)
                 AVSMediaManager.sharedInstance().playbackRoute = .builtIn
             } else {
@@ -413,5 +412,9 @@ final class AudioMessageView: UIView, TransferView {
         } catch {
             DDLogError("Cannot set AVAudioSession category: \(error)")
         }
+    }
+    
+    func proximityStateDidChange(_ raisedToEar: Bool) {
+        setAudioOutput(earpiece: raisedToEar)
     }
 }
