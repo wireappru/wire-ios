@@ -58,9 +58,34 @@ class MessageReminderCell : UITableViewCell {
             self.clientsTableView?.setEditing(self.editingList, animated: true)
         }
     }
-    var items: [ToDoItem] = []
-
-    var sortedClients: [UserClient] = []
+    var items: [ToDoItem] = [] {
+        didSet{
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .medium
+            sortedItems = [:]
+            sectionTitles = []
+            self.items.forEach{
+                guard let date = $0.dueDate else {
+                    if let oldItems = self.sortedItems["Some Day"] {
+                        self.sortedItems["Some Day"] = oldItems + [$0]
+                    } else {
+                        sectionTitles.append("Some Day")
+                        self.sortedItems["Some Day"] = [$0]
+                    }
+                    return
+                }
+                let formattedDate = dateFormatter.string(from: date)
+                if let oldItems = self.sortedItems[formattedDate] {
+                    self.sortedItems[formattedDate] = oldItems + [$0]
+                } else {
+                    sectionTitles.append(formattedDate)
+                    self.sortedItems[formattedDate] = [$0]
+                }
+            }
+        }
+    }
+    var sortedItems: [String : [ToDoItem]] = [:]
+    var sectionTitles : [String] = []
     
     let detailedView: Bool
     
@@ -70,10 +95,16 @@ class MessageReminderCell : UITableViewCell {
         super.init(nibName: nil, bundle: nil)
         self.title = NSLocalizedString("self.settings.message_reminders.title", comment:"")
         self.edgesForExtendedLayout = []
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addReminder(sender:)))
         
         if let session =  ZMUserSession.shared() {
             self.items = ToDoItem.allItems(inUserSession: session)
         }
+    }
+    
+    func addReminder(sender: UIBarButtonItem){
+        let vc = ReminderOptionsViewController()
+        navigationController?.present(vc, animated: true, completion: nil)
     }
     
     required override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
@@ -169,15 +200,17 @@ class MessageReminderCell : UITableViewCell {
     // MARK: - UITableViewDataSource & UITableViewDelegate
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return sortedItems.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.items.count
+        let sectionTitle = sectionTitles[section]
+        guard let itemsInSection = sortedItems[sectionTitle] else { return 0 }
+        return itemsInSection.count
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "To Do Items"
+        return sectionTitles[section]
     }
     
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
@@ -193,7 +226,9 @@ class MessageReminderCell : UITableViewCell {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let item = self.items[indexPath.row]
+        guard let item = itemAtIndexPath(indexPath: indexPath) else {
+            return UITableViewCell()
+        }
         let cell = tableView.dequeueReusableCell(withIdentifier:"MessageReminderCell", for: indexPath) as! MessageReminderCell
         cell.titleLabel?.text = item.text ?? "Reply to:"
         cell.messageLabel?.text = item.message?.textMessageData?.messageText ?? ""
@@ -202,13 +237,22 @@ class MessageReminderCell : UITableViewCell {
         return cell
     }
     
+    func itemAtIndexPath(indexPath: IndexPath) -> ToDoItem? {
+        let sectionTitle = sectionTitles[indexPath.section]
+        guard let itemsInSection = sortedItems[sectionTitle] else { return nil }
+        return itemsInSection[indexPath.row]
+    }
+    
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         // delete
     }
     
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        guard let item = itemAtIndexPath(indexPath: indexPath) else {
+            return nil
+        }
+        
         let markAsDone = UITableViewRowAction(style: .normal, title: "Done") { (action, indexPath) in
-            let item = self.items[indexPath.row]
             ZMUserSession.shared()?.performChanges {
                 item.markAsDone()
             }
@@ -217,7 +261,6 @@ class MessageReminderCell : UITableViewCell {
         markAsDone.backgroundColor = UIColor.green
         
         let delete = UITableViewRowAction(style: .destructive, title: "Delete") { (action, indexPath) in
-            let item = self.items[indexPath.row]
             ZMUserSession.shared()?.performChanges{
                 item.delete(inUserSession: ZMUserSession.shared()!)
             }
@@ -234,8 +277,11 @@ class MessageReminderCell : UITableViewCell {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let item = itemAtIndexPath(indexPath: indexPath) else {
+            return
+        }
         let controller = MessageReminderDetailsViewController()
-        controller.item = self.items[indexPath.row]
+        controller.item = item
         navigationController?.pushViewController(controller, animated: true)
     }
     

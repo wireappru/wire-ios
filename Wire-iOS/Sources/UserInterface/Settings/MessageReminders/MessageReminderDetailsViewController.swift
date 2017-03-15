@@ -66,7 +66,7 @@ class MessageReminderDetailsViewController : UIViewController, ReminderDetailDel
             reminderView.messageLabel?.text = item.message?.textMessageData?.messageText ?? ""
             if let date = item.dueDate {
                 let dateFormatter = DateFormatter()
-                dateFormatter.dateStyle = .short
+                dateFormatter.dateStyle = .medium
                 dateFormatter.timeStyle = .short
                 let dateString = dateFormatter.string(from: date)
                 reminderView.dateLabel?.text = "Due at \(dateString)"

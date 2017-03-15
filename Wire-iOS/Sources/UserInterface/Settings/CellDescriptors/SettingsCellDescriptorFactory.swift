@@ -297,7 +297,6 @@ import Foundation
             presentationStyle: PresentationStyle.navigation,
             identifier: type(of: self).settingsDevicesCellIdentifier,
             presentationAction: { () -> (UIViewController?) in
-//                Analytics.shared()?.tagSelfDeviceList()
                 return MessageReminderViewController(detailedView: true)
         }, icon: .checkmark)
     }

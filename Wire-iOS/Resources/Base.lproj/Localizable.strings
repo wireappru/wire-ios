@@ -612,8 +612,8 @@
 "self.settings.advanced.version_technical_details.title" = "Version Technical Details";
 
 // Technical Report
-"self.settings.message_reminders.title" = "Message reminders";
-"self.settings.message_reminders_section.title" = "Message reminders";
+"self.settings.message_reminders.title" = "Reminders";
+"self.settings.message_reminders_section.title" = "Reminders";
 
 // Technical Report
 "self.settings.technical_report_section.title" = "Technical Report";
