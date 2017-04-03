@@ -27,7 +27,7 @@ NSString * const SettingsColorSchemeChangedNotification = @"SettingsColorSchemeC
 
 // NB!!! After adding the key here please make sure to add it to @m +allDefaultsKeys as well
 NSString * const UserDefaultExtras = @"ZDevOptionExtras";
-NSString * const UserDefaultMarkdown = @"UserDefaultMarkdown";
+NSString * const UserDefaultDisableMarkdown = @"UserDefaultDisableMarkdown";
 NSString * const UserDefaultChatHeadsDisabled = @"ZDevOptionChatHeadsDisabled";
 NSString * const UserDefaultLikeTutorialCompleted = @"LikeTutorialCompleted";
 NSString * const UserDefaultLastPushAlertDate = @"LastPushAlertDate";
@@ -59,7 +59,6 @@ NSString * const UserDefaultDisableCallKit = @"UserDefaultDisableCallKit";
 NSString * const UserDefaultEnableBatchCollections = @"UserDefaultEnableBatchCollections";
 
 
-NSString * const UserDefaultSendV3Assets = @"SendV3Assets";
 NSString * const UserDefaultCallingProtocolStrategy = @"CallingProtocolStrategy";
 
 NSString * const UserDefaultTwitterOpeningRawValue = @"TwitterOpeningRawValue";
@@ -67,6 +66,7 @@ NSString * const UserDefaultMapsOpeningRawValue = @"MapsOpeningRawValue";
 NSString * const UserDefaultBrowserOpeningRawValue = @"BrowserOpeningRawValue";
 NSString * const UserDefaultDidMigrateHockeySettingInitially = @"DidMigrateHockeySettingInitially";
 
+NSString * const UserDefaultCallingConstantBitRate = @"CallingConstantBitRate";
 
 @interface Settings ()
 
@@ -82,7 +82,7 @@ NSString * const UserDefaultDidMigrateHockeySettingInitially = @"DidMigrateHocke
 
 @interface Settings (MediaManager)
 
-- (void)restoreLastUsedIntensityLevel;
+- (void)restoreLastUsedAVSSettings;
 - (void)storeCurrentIntensityLevelAsLastUsed;
 
 @end
@@ -93,7 +93,7 @@ NSString * const UserDefaultDidMigrateHockeySettingInitially = @"DidMigrateHocke
 
 + (NSArray *)allDefaultsKeys
 {
-    return @[UserDefaultMarkdown,
+    return @[UserDefaultDisableMarkdown,
              UserDefaultChatHeadsDisabled,
              UserDefaultLikeTutorialCompleted,
              UserDefaultLastViewedConversation,
@@ -118,10 +118,10 @@ NSString * const UserDefaultDidMigrateHockeySettingInitially = @"DidMigrateHocke
              UserDefaultTwitterOpeningRawValue,
              UserDefaultMapsOpeningRawValue,
              UserDefaultBrowserOpeningRawValue,
-             UserDefaultSendV3Assets,
              UserDefaultCallingProtocolStrategy,
              UserDefaultEnableBatchCollections,
-             UserDefaultDidMigrateHockeySettingInitially
+             UserDefaultDidMigrateHockeySettingInitially,
+             UserDefaultCallingConstantBitRate,
              ];
 }
 
@@ -141,7 +141,7 @@ NSString * const UserDefaultDidMigrateHockeySettingInitially = @"DidMigrateHocke
     self = [super init];
     if (self) {
         [self migrateHockeyAndOptOutSettingsToSharedDefaults];
-        [self restoreLastUsedIntensityLevel];
+        [self restoreLastUsedAVSSettings];
         [self loadEnabledLogs];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
     }
@@ -189,14 +189,14 @@ NSString * const UserDefaultDidMigrateHockeySettingInitially = @"DidMigrateHocke
     [self.defaults synchronize];
 }
 
-- (BOOL)enableMarkdown
+- (BOOL)disableMarkdown
 {
-    return [self.defaults boolForKey:UserDefaultMarkdown];
+    return [self.defaults boolForKey:UserDefaultDisableMarkdown];
 }
 
-- (void)setEnableMarkdown:(BOOL)enableMarkdown
+- (void)setDisableMarkdown:(BOOL)disableMarkdown
 {
-    [self.defaults setBool:enableMarkdown forKey:UserDefaultMarkdown];
+    [self.defaults setBool:disableMarkdown forKey:UserDefaultDisableMarkdown];
     [self.defaults synchronize];
 }
 
@@ -463,16 +463,6 @@ NSString * const UserDefaultDidMigrateHockeySettingInitially = @"DidMigrateHocke
     [self.defaults synchronize];
 }
 
-- (BOOL)sendV3Assets
-{
-    return [self.defaults boolForKey:UserDefaultSendV3Assets];
-}
-
-- (void)setSendV3Assets:(BOOL)sendV3Assets
-{
-    [self.defaults setBool:sendV3Assets forKey:UserDefaultSendV3Assets];
-}
-
 - (void)setCallingProtocolStrategy:(CallingProtocolStrategy)callingProtocolStrategy
 {
     [self.defaults setInteger:callingProtocolStrategy forKey:UserDefaultCallingProtocolStrategy];
@@ -525,11 +515,30 @@ NSString * const UserDefaultDidMigrateHockeySettingInitially = @"DidMigrateHocke
     [self.defaults setInteger:browserLinkOpeningOptionRawValue forKey:UserDefaultBrowserOpeningRawValue];
 }
 
+- (BOOL)callingConstantBitRate
+{
+    return [self.defaults boolForKey:UserDefaultCallingConstantBitRate];
+}
+
+- (void)setCallingConstantBitRate:(BOOL)callingConstantBitRate
+{
+    [self.defaults setBool:callingConstantBitRate forKey:UserDefaultCallingConstantBitRate];
+    [self updateAVSCallingConstantBitRateValue];
+}
+
+- (void)updateAVSCallingConstantBitRateValue
+{
+    WireCallCenterV3 *callCenter = [WireCallCenterV3 activeInstance];
+    if (nil != callCenter) {
+        callCenter.useAudioConstantBitRate = self.callingConstantBitRate;
+    }
+}
+
 @end
 
 @implementation Settings (MediaManager)
 
-- (void)restoreLastUsedIntensityLevel
+- (void)restoreLastUsedAVSSettings
 {
     NSNumber *savedIntensity = [self.defaults objectForKey:AVSMediaManagerPersistentIntensity];
     AVSIntensityLevel level = (AVSIntensityLevel)[savedIntensity integerValue];
@@ -538,6 +547,8 @@ NSString * const UserDefaultDidMigrateHockeySettingInitially = @"DidMigrateHocke
     }
     
     [[AVSProvider shared] mediaManager].intensityLevel = level;
+    
+    [self updateAVSCallingConstantBitRateValue];
 }
 
 - (void)storeCurrentIntensityLevelAsLastUsed

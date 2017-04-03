@@ -41,7 +41,7 @@ typedef NS_ENUM (NSUInteger, SettingsLastScreen) {
 extern NSString * const SettingsColorSchemeChangedNotification;
 
 extern NSString * const UserDefaultExtras;
-extern NSString * const UserDefaultMarkdown;
+extern NSString * const UserDefaultDisableMarkdown;
 extern NSString * const UserDefaultChatHeadsDisabled;
 extern NSString * const UserDefaultLikeTutorialCompleted;
 extern NSString * const UserDefaultLastPushAlertDate;
@@ -72,12 +72,13 @@ extern NSString * const UserDefaultEnableBatchCollections;
 
 extern NSString * const UserDefaultSendButtonDisabled;
 
-extern NSString * const UserDefaultSendV3Assets;
 extern NSString * const UserDefaultCallingProtocolStrategy;
 
 extern NSString * const UserDefaultTwitterOpeningRawValue;
 extern NSString * const UserDefaultMapsOpeningRawValue;
 extern NSString * const UserDefaultBrowserOpeningRawValue;
+
+extern NSString * const UserDefaultCallingConstantBitRate;
 
 /// Model object for locally stored (not in SE or AVS) user app settings
 @interface Settings : NSObject
@@ -86,12 +87,12 @@ extern NSString * const UserDefaultBrowserOpeningRawValue;
 @property (nonatomic) BOOL chatHeadsDisabled;
 @property (nonatomic) BOOL contactTipWasDisplayed;
 @property (nonatomic) BOOL likeTutorialCompleted;
-@property (nonatomic) BOOL enableMarkdown;
+@property (nonatomic) BOOL disableMarkdown;
 @property (nonatomic) BOOL shouldRegisterForVoIPNotificationsOnly;
 @property (nonatomic) BOOL disableSendButton;
 
 @property (nonatomic) BOOL disableCallKit;
-@property (nonatomic) BOOL sendV3Assets; // develop option
+@property (nonatomic) BOOL callingConstantBitRate;
 @property (nonatomic) CallingProtocolStrategy callingProtocolStrategy;
 
 @property (nonatomic) BOOL enableBatchCollections; // develop option
@@ -121,6 +122,8 @@ extern NSString * const UserDefaultBrowserOpeningRawValue;
 - (void)synchronize;
 
 - (void)reset;
+
+- (void)updateAVSCallingConstantBitRateValue;
 
 @end
 

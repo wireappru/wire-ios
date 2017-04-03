@@ -61,7 +61,7 @@
 #import "ActionSheetController.h"
 #import "ActionSheetController+Conversation.h"
 #import "Country.h"
-#import "VoiceChannelOverlay.h"
+#import "UserImageView+Magic.h"
 #import "CameraPreviewView.h"
 #import "VoiceChannelCollectionViewLayout.h"
 
@@ -76,7 +76,6 @@
 #import "ConversationInputBarViewController+Private.h"
 #import "ConversationListContentController.h"
 #import "ConversationListViewModel.h"
-#import "ParticipantsChangedView.h"
 #import "NotificationWindowRootViewController.h"
 #import "VoiceChannelController.h"
 #import "SplitViewController.h"

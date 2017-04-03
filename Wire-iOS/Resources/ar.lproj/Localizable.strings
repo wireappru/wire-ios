@@ -75,6 +75,9 @@
 "contacts_ui.no_contact.title" = "لا توجد محادثات نشطة\n";
 "contacts_ui.no_contact.message" = "اضغط على جهات الاتصال لبدء محادثة جديدة";
 
+// Conversation List Indicator
+"conversation_list.right_accessory.join_button.title" = "انضم إلى";
+
 // Conversation List Bottom Bar
 "bottom_bar.contacts_button.title" = "أشخاص";
 
@@ -192,8 +195,15 @@
 "content.system.other_removed_other" = "قام %@ بإزالة %@";
 "content.system.other_removed_you" = "قام %@ بإزالتك";
 "content.system.you_removed_other" = "قمت بإزالة %@";
-"content.system.other_renamed_conv" = "قام %@ بإعادة تسمية المُحادثة";
-"content.system.you_renamed_conv" = "قمت بإعادة تسمية المحادثة";
+
+// New conversation participants added / removed / started system message
+
+"content.system.conversation.started" = "%@ بدأ مُحادثة مع %@";
+"content.system.conversation.added" = "%@ أضاف %@";
+"content.system.conversation.removed" = "قام %@ بإزالة %@";
+"content.system.conversation.left" = "غادر %@";
+"content.system.conversation.you" = "أنت";
+
 "content.system.other_renamed_conv_to_nothing" = "حذف %@ اسم المُحادثة";
 "content.system.you_renamed_conv_to_nothing" = "قمت بحذف اسم المُحادثة";
 "content.system.pending_message_timestamp" = "جاري الإرسال...";
@@ -211,6 +221,12 @@
 
 "content.system.you_started" = "أنت";
 "content.system.this_device" = "هذا الجهاز";
+
+"content.system.call.you" = "أنت";
+"content.system.call.called" = "اتصل %@";
+
+"content.system.renamed_conv.title" = "قام %@ بإعادة تسمية المُحادثة";
+"content.system.renamed_conv.title.you" = "أنت";
 
 "content.system.reactivated_device" = "بدأت استخدام %@ مرة أخرى. الرسائل المُرسلة في ذاك الحين لن تُعرض هنا.";
 
@@ -268,10 +284,10 @@
 
 "content.file.too_big" = "يمكنك إرسال ملفات حتى %@";
 // Someone pinged
-"content.ping.text" = "%1$@ pinged";
+"content.ping.text" = "%1$@ pings";
 
 // Current user pinged
-"content.ping.you.text" = "You pinged";
+"content.ping.text.you" = "أنت";
 
 // Inline Player
 "content.player.unable_to_play" = "غير قادر على تشغيل المقطع";
@@ -292,11 +308,12 @@
 "voice.status.video_not_available" = "تم إيقاف الفيديو";
 "voice.status.low_connection" = "حالة الإتصال سيئة";
 "voice.network_error.title" = "لا يوجد اتصال بالإنترنت";
+"voice.status.cbr" = "Constant Bit Rate";
 "voice.network_error.body" = "يجب أن تكون متصلا بالإنترنت لتتمكن من إجراء مكالمة. تحقق من الاتصال بالإنترنت وحاول مرة أخرى.";
-"voice.degradation.new_self_device" = "You started using a new device.";
+"voice.degradation.new_self_device" = "بدأت باستخدام جهاز جديد.";
 "voice.degradation.new_user_device" = "%@ بدأ باستخدام جهاز جديد.";
-"voice.degradation_outgoing.prompt" = "Do you still want to place the call?";
-"voice.degradation_incoming.prompt" = "Do you still want to accept the call?";
+"voice.degradation_outgoing.prompt" = "هل ما زلت تريد إجراء المكالمة؟";
+"voice.degradation_incoming.prompt" = "هل ما زلت تريد استقبال المكالمة؟";
 "voice.accept_button.title" = "قبول";
 "voice.decline_button.title" = "رفض";
 "voice.hang_up_button.title" = "إنهاء الاتصال";
@@ -305,6 +322,10 @@
 "voice.speaker_button.title" = "مكبّر الصوت";
 "voice.cancel_button.title" = "إلغاء";
 "voice.call_button.title" = "اتصال";
+
+"voice.alert.call_in_progress.title" = "يتم إجراء المكالمة";
+"voice.alert.call_in_progress.message" = "تستطيع إجراء مكالمة واحدة فقط في نفس الوقت";
+"voice.alert.call_in_progress.confirm" = "موافق";
 
 "voice.alert.microphone_warning.title" = "Wire يحتاج للوصول للميكرفون.";
 "voice.alert.microphone_warning.explanation" = "تَفعيلها من إعدادات Wire.";
@@ -546,6 +567,9 @@
 "self.settings.callkit.title" = "المكالمات";
 "self.settings.callkit.caption" = "مشاركة بواسطة iOS";
 "self.settings.callkit.description" = "إظهار مكالمات Wire على شاشة القفل وفي سجّل مكالمات الهاتف. في حال تفعيل iCloud، سيتم مشاركة سجّل المكالمات مع Apple. أعد تشغيل Wire لتطبيق هذا الإعداد.";
+
+"self.settings.vbr.title" = "Variable Bit Rate Encoding";
+"self.settings.vbr.description" = "This makes audio calls use less data and work better on slower networks. Turn off to use Constant Bitrate Encoding.";
 
 "self.settings.sound_menu.sounds.wire_call" = "مُكالمة Wire";
 "self.settings.sound_menu.sounds.wire_message" = "رسالة Wire";

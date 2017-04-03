@@ -75,6 +75,9 @@
 "contacts_ui.no_contact.title" = "Aucune conversation active\n";
 "contacts_ui.no_contact.message" = "Appuyer sur contacts pour démarrer une nouvelle conversation";
 
+// Conversation List Indicator
+"conversation_list.right_accessory.join_button.title" = "Rejoindre";
+
 // Conversation List Bottom Bar
 "bottom_bar.contacts_button.title" = "personnes";
 
@@ -192,8 +195,15 @@
 "content.system.other_removed_other" = "%@ a retiré %@";
 "content.system.other_removed_you" = "%@ vous a enlevé";
 "content.system.you_removed_other" = "Vous avez retiré %@";
-"content.system.other_renamed_conv" = "%@ a renommé la conversation";
-"content.system.you_renamed_conv" = "Vous avez renommé la conversation";
+
+// New conversation participants added / removed / started system message
+
+"content.system.conversation.started" = "%@ a commencé une conversation avec %@";
+"content.system.conversation.added" = "%@ a ajouté %@";
+"content.system.conversation.removed" = "%@ a retiré %@";
+"content.system.conversation.left" = "%@ est parti";
+"content.system.conversation.you" = "Vous";
+
 "content.system.other_renamed_conv_to_nothing" = "%@ a supprimé le nom de la conversation";
 "content.system.you_renamed_conv_to_nothing" = "Vous avez supprimé le nom de la conversation";
 "content.system.pending_message_timestamp" = "Envoi…";
@@ -211,6 +221,12 @@
 
 "content.system.you_started" = "Vous";
 "content.system.this_device" = "cet appareil";
+
+"content.system.call.you" = "Vous";
+"content.system.call.called" = "%@ a appelé";
+
+"content.system.renamed_conv.title" = "%@ a renommé la conversation";
+"content.system.renamed_conv.title.you" = "Vous";
 
 "content.system.reactivated_device" = "Vous avez recommencé à utiliser %@. Les messages envoyés auparavant n’apparaîtront pas ici.";
 
@@ -271,7 +287,7 @@
 "content.ping.text" = "%1$@ a fait un signe";
 
 // Current user pinged
-"content.ping.you.text" = "Vous avez fait un signe";
+"content.ping.text.you" = "Vous";
 
 // Inline Player
 "content.player.unable_to_play" = "IMPOSSIBLE DE JOUER LE MORCEAU";
@@ -292,8 +308,9 @@
 "voice.status.video_not_available" = "Vidéo désactivée";
 "voice.status.low_connection" = "Mauvaise connexion";
 "voice.network_error.title" = "Pas de connexion Internet";
+"voice.status.cbr" = "Constant Bit Rate";
 "voice.network_error.body" = "Vous devez être connecté pour pouvoir appeler. Vérifiez votre connexion et réessayez.";
-"voice.degradation.new_self_device" = "You started using a new device.";
+"voice.degradation.new_self_device" = "Vous avez commencé à utiliser un nouvel appareil.";
 "voice.degradation.new_user_device" = "%@ a commencé à utiliser un nouvel appareil.";
 "voice.degradation_outgoing.prompt" = "Voulez-vous toujours appeler ?";
 "voice.degradation_incoming.prompt" = "Voulez-vous toujours prendre l'appel ?";
@@ -305,6 +322,10 @@
 "voice.speaker_button.title" = "Haut-parleur";
 "voice.cancel_button.title" = "Annuler";
 "voice.call_button.title" = "Appel";
+
+"voice.alert.call_in_progress.title" = "Appel en cours";
+"voice.alert.call_in_progress.message" = "Vous ne pouvez avoir qu’un seul appel actif à la fois";
+"voice.alert.call_in_progress.confirm" = "OK";
 
 "voice.alert.microphone_warning.title" = "Wire a besoin d’accéder au Micro.";
 "voice.alert.microphone_warning.explanation" = "Activez-le dans les paramètres de Wire.";
@@ -546,6 +567,9 @@
 "self.settings.callkit.title" = "Appels";
 "self.settings.callkit.caption" = "Partager avec iOS";
 "self.settings.callkit.description" = "Afficher les appels Wire sur l'écran de vérouillage et dans l'historique des appels sur iOS. Si iCloud est activé, l'historique des appels est partagé avec Apple. Redémarrez Wire pour que ce paramètre soit appliqué.";
+
+"self.settings.vbr.title" = "Variable Bit Rate Encoding";
+"self.settings.vbr.description" = "Cela fait que les appels audio utilisent moins de données et fonctionnent mieux sur des réseaux plus lents. Désactiver pour utiliser le Constant Bitrate Encoding.";
 
 "self.settings.sound_menu.sounds.wire_call" = "Appel Wire";
 "self.settings.sound_menu.sounds.wire_message" = "Message Wire";

@@ -75,6 +75,9 @@
 "contacts_ui.no_contact.title" = "No active conversations\n";
 "contacts_ui.no_contact.message" = "Tap contacts to start a conversation";
 
+// Conversation List Indicator
+"conversation_list.right_accessory.join_button.title" = "Join";
+
 // Conversation List Bottom Bar
 "bottom_bar.contacts_button.title" = "people";
 
@@ -192,8 +195,15 @@
 "content.system.other_removed_other" = "%@ removed %@";
 "content.system.other_removed_you" = "%@ removed you";
 "content.system.you_removed_other" = "You removed %@";
-"content.system.other_renamed_conv" = "%@ renamed the conversation";
-"content.system.you_renamed_conv" = "You renamed the conversation";
+
+// New conversation participants added / removed / started system message
+
+"content.system.conversation.started" = "%@ started a conversation with %@";
+"content.system.conversation.added" = "%@ added %@";
+"content.system.conversation.removed" = "%@ removed %@";
+"content.system.conversation.left" = "%@ left";
+"content.system.conversation.you" = "You";
+
 "content.system.other_renamed_conv_to_nothing" = "%@ removed the conversation name";
 "content.system.you_renamed_conv_to_nothing" = "You removed the conversation name";
 "content.system.pending_message_timestamp" = "Sending…";
@@ -211,6 +221,12 @@
 
 "content.system.you_started" = "You";
 "content.system.this_device" = "this device";
+
+"content.system.call.you" = "You";
+"content.system.call.called" = "%@ called";
+
+"content.system.renamed_conv.title" = "%@ renamed the conversation";
+"content.system.renamed_conv.title.you" = "You";
 
 "content.system.reactivated_device" = "You started using %@ again. Messages sent in the meantime will not appear here.";
 
@@ -271,7 +287,7 @@
 "content.ping.text" = "%1$@ pinged";
 
 // Current user pinged
-"content.ping.you.text" = "You pinged";
+"content.ping.text.you" = "You";
 
 // Inline Player
 "content.player.unable_to_play" = "UNABLE TO PLAY TRACK";
@@ -292,6 +308,7 @@
 "voice.status.video_not_available" = "Video turned off";
 "voice.status.low_connection" = "Bad connection";
 "voice.network_error.title" = "No Internet Connection";
+"voice.status.cbr" = "Constant Bit Rate";
 "voice.network_error.body" = "You must be online to call. Check your connection and try again.";
 "voice.degradation.new_self_device" = "You started using a new device.";
 "voice.degradation.new_user_device" = "%@ started using a new device.";
@@ -550,6 +567,9 @@
 "self.settings.callkit.title" = "Calls";
 "self.settings.callkit.caption" = "Share with iOS";
 "self.settings.callkit.description" = "Show Wire calls on the lock screen and in iOS call history. If iCloud is enabled, call history is shared with Apple. Restart Wire to apply this setting.";
+
+"self.settings.vbr.title" = "Variable Bit Rate Encoding";
+"self.settings.vbr.description" = "This makes audio calls use less data and work better on slower networks. Turn off to use Constant Bitrate Encoding.";
 
 "self.settings.sound_menu.sounds.wire_call" = "Wire Call";
 "self.settings.sound_menu.sounds.wire_message" = "Wire Message";

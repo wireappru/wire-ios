@@ -75,6 +75,9 @@
 "contacts_ui.no_contact.title" = "Ingen aktive samtaler\n";
 "contacts_ui.no_contact.message" = "Tryk på kontakter for at starte en samtale";
 
+// Conversation List Indicator
+"conversation_list.right_accessory.join_button.title" = "Deltag";
+
 // Conversation List Bottom Bar
 "bottom_bar.contacts_button.title" = "personer";
 
@@ -192,8 +195,15 @@
 "content.system.other_removed_other" = "%@ har fjernet %@";
 "content.system.other_removed_you" = "%@ har fjernet dig";
 "content.system.you_removed_other" = "Du har fjernet %@";
-"content.system.other_renamed_conv" = "%@ omdøbte samtalen";
-"content.system.you_renamed_conv" = "Du omdøbte samtalen";
+
+// New conversation participants added / removed / started system message
+
+"content.system.conversation.started" = "%@ startede en samtale med %@";
+"content.system.conversation.added" = "%@ har tilføjet %@";
+"content.system.conversation.removed" = "%@ har fjernet %@";
+"content.system.conversation.left" = "%@ har forladt";
+"content.system.conversation.you" = "Dig";
+
 "content.system.other_renamed_conv_to_nothing" = "%@ fjernede samtalens navn";
 "content.system.you_renamed_conv_to_nothing" = "Du fjernede samtalens navn";
 "content.system.pending_message_timestamp" = "Sender…";
@@ -211,6 +221,12 @@
 
 "content.system.you_started" = "Dig";
 "content.system.this_device" = "denne enhed";
+
+"content.system.call.you" = "Dig";
+"content.system.call.called" = "%@ har ringet";
+
+"content.system.renamed_conv.title" = "%@ omdøbte samtalen";
+"content.system.renamed_conv.title.you" = "Dig";
 
 "content.system.reactivated_device" = "Du begyndte at bruge %@ igen. Beskeder der sendes, vises i mellemtiden ikke her.";
 
@@ -271,7 +287,7 @@
 "content.ping.text" = "%1$@ pinged";
 
 // Current user pinged
-"content.ping.you.text" = "Du pinged";
+"content.ping.text.you" = "Dig";
 
 // Inline Player
 "content.player.unable_to_play" = "KAN IKKE AFSPILLE NUMMER";
@@ -292,8 +308,9 @@
 "voice.status.video_not_available" = "Video slået fra";
 "voice.status.low_connection" = "Dårlig forbindelse";
 "voice.network_error.title" = "Ingen internetforbindelse";
+"voice.status.cbr" = "Constant Bit Rate";
 "voice.network_error.body" = "Du skal være online for at foretage opkald. Tjek din forbindelse og prøv igen.";
-"voice.degradation.new_self_device" = "You started using a new device.";
+"voice.degradation.new_self_device" = "Du begyndte at bruge en ny enhed.";
 "voice.degradation.new_user_device" = "%@ begyndte at bruge en ny enhed.";
 "voice.degradation_outgoing.prompt" = "Vil du stadig placere opkaldet?";
 "voice.degradation_incoming.prompt" = "Vil du stadig besvare opkaldet?";
@@ -305,6 +322,10 @@
 "voice.speaker_button.title" = "Højtaler";
 "voice.cancel_button.title" = "Annuller";
 "voice.call_button.title" = "Ring op";
+
+"voice.alert.call_in_progress.title" = "Opkald i gang";
+"voice.alert.call_in_progress.message" = "Kun ét opkald af gangen er muligt";
+"voice.alert.call_in_progress.confirm" = "OK";
 
 "voice.alert.microphone_warning.title" = "Wire kræver adgang til Mikrofonen.";
 "voice.alert.microphone_warning.explanation" = "Aktiver det i Wire Indstillinger.";
@@ -546,6 +567,9 @@
 "self.settings.callkit.title" = "Opkald";
 "self.settings.callkit.caption" = "Del med iOS";
 "self.settings.callkit.description" = "Vis tråd opfordrer låsen skærmen og i iOS opkald historie. Hvis iCloud er aktiveret, delt Opkaldshistorie med Apple. Genstart Wire for at anvende denne indstilling.";
+
+"self.settings.vbr.title" = "Variable Bit Rate Encoding";
+"self.settings.vbr.description" = "This makes audio calls use less data and work better on slower networks. Turn off to use Constant Bitrate Encoding.";
 
 "self.settings.sound_menu.sounds.wire_call" = "Wire Opkald";
 "self.settings.sound_menu.sounds.wire_message" = "Wire Besked";

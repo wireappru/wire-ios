@@ -75,6 +75,9 @@
 "contacts_ui.no_contact.title" = "Нет активных разговоров";
 "contacts_ui.no_contact.message" = "Нажмите на контакты, чтобы начать новый разговор";
 
+// Conversation List Indicator
+"conversation_list.right_accessory.join_button.title" = "Присоединиться";
+
 // Conversation List Bottom Bar
 "bottom_bar.contacts_button.title" = "знакомых";
 
@@ -192,8 +195,15 @@
 "content.system.other_removed_other" = "%@ удалил %@";
 "content.system.other_removed_you" = "%@ удалил вас";
 "content.system.you_removed_other" = "Вы удалили %@";
-"content.system.other_renamed_conv" = "%@ переименовал разговор";
-"content.system.you_renamed_conv" = "Вы переименовали разговор";
+
+// New conversation participants added / removed / started system message
+
+"content.system.conversation.started" = "%@ начал беседу с %@";
+"content.system.conversation.added" = "%@ добавил %@";
+"content.system.conversation.removed" = "%@ удалил %@";
+"content.system.conversation.left" = "%@ покинул(а) разговор";
+"content.system.conversation.you" = "Вы";
+
 "content.system.other_renamed_conv_to_nothing" = "%@ удалил(-а) название разговора";
 "content.system.you_renamed_conv_to_nothing" = "Вы удалили название разговора";
 "content.system.pending_message_timestamp" = "Отправка...";
@@ -211,6 +221,12 @@
 
 "content.system.you_started" = "Вы";
 "content.system.this_device" = "это устройство";
+
+"content.system.call.you" = "Вы";
+"content.system.call.called" = "%@ звонил(-а)";
+
+"content.system.renamed_conv.title" = "%@ переименовал беседу";
+"content.system.renamed_conv.title.you" = "Вы";
 
 "content.system.reactivated_device" = "Вы начали использовать %@ снова. Сообщения, отправленные ранее, не будут отображаться здесь.";
 
@@ -271,7 +287,7 @@
 "content.ping.text" = "%1$@ отправил(а) пинг";
 
 // Current user pinged
-"content.ping.you.text" = "Вы отправили пинг";
+"content.ping.text.you" = "Вы";
 
 // Inline Player
 "content.player.unable_to_play" = "Невозможно проиграть трек";
@@ -292,6 +308,7 @@
 "voice.status.video_not_available" = "Видео выключено";
 "voice.status.low_connection" = "Плохое соединение";
 "voice.network_error.title" = "Отсутствует подключение к интернету";
+"voice.status.cbr" = "Постоянный битрейт";
 "voice.network_error.body" = "Вы должны быть онлайн, чтобы позвонить. Проверьте подключение и повторите попытку.";
 "voice.degradation.new_self_device" = "Вы начали использовать новое устройство.";
 "voice.degradation.new_user_device" = "%@ начал(-а) использовать новое устройство.";
@@ -305,6 +322,10 @@
 "voice.speaker_button.title" = "Динамик";
 "voice.cancel_button.title" = "Отменить";
 "voice.call_button.title" = "Позвонить";
+
+"voice.alert.call_in_progress.title" = "Идёт вызов";
+"voice.alert.call_in_progress.message" = "Одновременно вы можете совершать только один звонок";
+"voice.alert.call_in_progress.confirm" = "OK";
 
 "voice.alert.microphone_warning.title" = "Wire необходим доступ к микрофону.";
 "voice.alert.microphone_warning.explanation" = "Включите его в настройках Wire.";
@@ -546,6 +567,9 @@
 "self.settings.callkit.title" = "Звонки";
 "self.settings.callkit.caption" = "Поделиться с iOS";
 "self.settings.callkit.description" = "Показывать звонки Wire на экране блокировки и в истории звонков iOS. Если Вы используете iCloud, история звонков будет передана Apple. Перезапустите Wire, чтобы изменения вступили в силу.";
+
+"self.settings.vbr.title" = "Кодирование с переменным битрейтом";
+"self.settings.vbr.description" = "Это позволяет аудиозвонкам использовать меньше трафика и работать лучше при медленном соединении. Выключите, чтобы использовать кодирование с постоянным битрейтом.";
 
 "self.settings.sound_menu.sounds.wire_call" = "Звонок Wire";
 "self.settings.sound_menu.sounds.wire_message" = "Сообщение Wire";
