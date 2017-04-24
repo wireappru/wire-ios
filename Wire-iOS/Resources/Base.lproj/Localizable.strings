@@ -73,7 +73,7 @@
 "contacts_ui.title" = "Invite people";
 
 "contacts_ui.no_contact.title" = "No active conversations\n";
-"contacts_ui.no_contact.message" = "Tap contacts to start a conversation";
+"contacts_ui.no_contact.message" = "Tap people to start a conversation";
 
 // Conversation List Indicator
 "conversation_list.right_accessory.join_button.title" = "Join";
@@ -117,9 +117,37 @@
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // List (labels) - Needs to be revised with updated guidance
+"list.title" = "Conversations";
 "list.archived_conversations" = "ARCHIVE";
 "list.archived_conversations_close" = "Close archive";
 
+"conversation.status.call" = "Ongoing call";
+"conversation.status.typing" = "Typing a message…";
+"conversation.status.typing.group" = "%@: typing a message…";
+"conversation.status.silenced" = "Muted";
+"conversation.status.blocked" = "Blocked";
+
+"conversation.status.message.text" = "%@";
+"conversation.status.message.link" = "Shared a link";
+"conversation.status.message.image" = "Shared a picture";
+"conversation.status.message.location" = "Shared a location";
+"conversation.status.message.audio" = "Shared an audio message";
+"conversation.status.message.video" = "Shared a video";
+"conversation.status.message.file" = "Shared a file";
+"conversation.status.message.knock" = "Pinged";
+"conversation.status.message.missedcall" = "Missed call";
+"conversation.status.message.ephemeral" = "Timed message";
+
+"conversation.status.unsent" = "⚠️ Unsent message";
+"conversation.status.you" = "You";
+"conversation.status.added_multiple" = "People added";
+"conversation.status.you_was_added" = "%@ added you";
+"conversation.status.added_users" = "%@ added %@";
+"conversation.status.removed_multiple" = "People removed";
+"conversation.status.you_were_removed" = "You were removed";
+"conversation.status.you_left" = "You left";
+"conversation.status.started_conversation" = "%@ started a conversation";
+"conversation.status.removed_users" = "%@ removed %@";
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Conversation
@@ -211,6 +239,7 @@
 "content.system.message_delivered_timestamp" = "Delivered";
 "content.system.failedtosend_message_timestamp" = "Sending failed.";
 "content.system.failedtosend_message_timestamp_resend" = "Resend";
+"content.system.failedtosend_message_timestamp_delete" = "Delete";
 "content.system.like_tooltip" = "Tap to like";
 "content.system.deleted_message_prefix_timestamp" = "Deleted on %@";
 "content.system.edited_message_prefix_timestamp" = "Edited on %@";
@@ -224,8 +253,10 @@
 
 "content.system.call.you" = "You";
 "content.system.call.called" = "%@ called";
+"content.system.call.called-you" = "%@ called";
 
 "content.system.renamed_conv.title" = "%@ renamed the conversation";
+"content.system.renamed_conv.title-you" = "%@ renamed the conversation";
 "content.system.renamed_conv.title.you" = "You";
 
 "content.system.reactivated_device" = "You started using %@ again. Messages sent in the meantime will not appear here.";
@@ -570,6 +601,8 @@
 
 "self.settings.vbr.title" = "Variable Bit Rate Encoding";
 "self.settings.vbr.description" = "This makes audio calls use less data and work better on slower networks. Turn off to use Constant Bitrate Encoding.";
+
+"self.settings.workspace.title" = "Workspace Name";
 
 "self.settings.sound_menu.sounds.wire_call" = "Wire Call";
 "self.settings.sound_menu.sounds.wire_message" = "Wire Message";

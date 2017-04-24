@@ -256,8 +256,6 @@ func SettingsPropertyLabelText(_ name: SettingsPropertyName) -> String {
         return "self.settings.link_options.maps.title".localized
     case .browserOpeningOption:
         return "self.settings.link_options.browser.title".localized
-    case .sendV3Assets:
-        return "Send assets using the v3 endpoint"
     case .callingProtocolStrategy:
         return "Calling protocol"
     case .enableBatchCollections:
@@ -268,6 +266,8 @@ func SettingsPropertyLabelText(_ name: SettingsPropertyName) -> String {
         return "Last app lock date"
     case .callingConstantBitRate:
         return "self.settings.vbr.title".localized
+    case .workspaceName:
+        return "self.settings.workspace.title".localized
     }
 }
 

@@ -20,13 +20,16 @@
 #import "ConversationListViewModel.h"
 #import "AggregateArray.h"
 #import "SessionObjectCache.h"
-#import "zmessaging+iOS.h"
-#import "ConversationListConnectRequestsItem.h"
-@import ZMCDataModel;
+#import "WireSyncEngine+iOS.h"
+@import WireDataModel;
+#import "Wire-Swift.h"
 
 void debugLog (NSString *format, ...) NS_FORMAT_FUNCTION(1,2);
 void debugLogUpdate (ConversationListChangeInfo *note);
 
+
+@implementation ConversationListConnectRequestsItem
+@end
 
 
 @interface ConversationListViewModel () <ZMConversationListObserver>
@@ -63,6 +66,11 @@ void debugLogUpdate (ConversationListChangeInfo *note);
         [NSNotificationCenter.defaultCenter addObserver:self
                                                selector:@selector(applicationWillEnterForeground:)
                                                    name:UIApplicationWillEnterForegroundNotification
+                                                 object:nil];
+        [self subscribeToSpacesUpdates];
+        [NSNotificationCenter.defaultCenter addObserver:self
+                                               selector:@selector(subscribeToSpacesUpdates)
+                                                   name:[Space didChangeNotificationNameString]
                                                  object:nil];
     }
     return self;
@@ -101,7 +109,7 @@ void debugLogUpdate (ConversationListChangeInfo *note);
 
     if (sectionIndex == SectionIndexConversations || sectionIndex == SectionIndexAll) {
         // Make a new copy of the conversation list
-        self.conversations = items ? : [SessionObjectCache sharedCache].conversationList;
+        self.conversations = items ? : [self newConversationList];
     }
     
     
@@ -205,13 +213,6 @@ void debugLogUpdate (ConversationListChangeInfo *note);
             result = [NSIndexPath indexPathForItem:itemIndex inSection:sectionIndex];
             *stop = YES;
         }
-        else if ([item isKindOfClass:[ConversationListInteractiveItem class]]) {
-            ConversationListInteractiveItem *conversationListItem = (ConversationListInteractiveItem *)item;
-            if ([conversationListItem.conversation isEqual:conversation]) {
-                result = [NSIndexPath indexPathForItem:itemIndex inSection:sectionIndex];
-                *stop = YES;
-            }
-        }
     }];
     
     return result;
@@ -220,46 +221,77 @@ void debugLogUpdate (ConversationListChangeInfo *note);
 - (void)conversationListDidChange:(ConversationListChangeInfo *)change
 {
     debugLogUpdate(change);
-
+    
     if (change.conversationList == [SessionObjectCache sharedCache].conversationList) {
-
         // If the section was empty in certain cases collection view breaks down on the big amount of conversations,
         // so we prefer to do the simple reload instead.
-        if ([self numberOfItemsInSection:SectionIndexConversations] == 0) {
-            [self reloadConversationListViewModel];
-        } else {
-            NSArray *oldConversationList = [self.aggregatedItems sectionAtIndex:SectionIndexConversations];
-            NSArray *newConversationList = [[SessionObjectCache sharedCache].conversationList.asArray copy];
 
-            if ([oldConversationList isEqualToArray:newConversationList]) {
-                return;
-            }
-            
-            ZMOrderedSetState *startState = [[ZMOrderedSetState alloc] initWithOrderedSet:[NSOrderedSet orderedSetWithArray:oldConversationList]];
-            ZMOrderedSetState *endState = [[ZMOrderedSetState alloc] initWithOrderedSet:[NSOrderedSet orderedSetWithArray:newConversationList]];
-            ZMOrderedSetState *updatedState = [[ZMOrderedSetState alloc] initWithOrderedSet:[NSOrderedSet orderedSet]];
-            
-            ZMChangedIndexes *changedIndexes = [[ZMChangedIndexes alloc] initWithStartState:startState
-                                                                                   endState:endState
-                                                                               updatedState:updatedState
-                                                                                   moveType:ZMSetChangeMoveTypeUICollectionView];
-            
-            if (changedIndexes.requiresReload) {
-                [self reloadConversationListViewModel];
-            } else {
-                // We need to capture the state of `newConversationList` to make sure that we are updating the value
-                // of the list to the exact new state.
-                // It is important to keep the data source of the collection view consistent, since
-                // any inconsistency in the delta update would make it throw an exception.
-                dispatch_block_t modelUpdates = ^{ [self updateSection:SectionIndexConversations
-                                                             withItems:newConversationList]; };
-                [self.delegate listViewModel:self didUpdateSection:SectionIndexConversations usingBlock:modelUpdates withChangedIndexes:changedIndexes];
-            }
-        }
+        [self updateConversationListAnimated];
     } else if (change.conversationList == [SessionObjectCache sharedCache].pendingConnectionRequests) {
         debugLog(@"RELOAD contact requests");
         [self updateSection:SectionIndexContactRequests];
         [self.delegate listViewModel:self didUpdateSectionForReload:SectionIndexContactRequests];
+    }
+}
+
+- (NSArray *)newConversationList
+{
+    NSArray *newConversationList = @[];
+    
+    if ([Space spaces].count > 0) {
+        NSMutableArray *predicates = [NSMutableArray array];
+        for (Space *space in [Space spaces]) {
+            if (space.selected) {
+                [predicates addObject:space.predicate];
+            }
+        }
+        if (predicates.count == 0) {
+            newConversationList = @[];
+        }
+        else {
+            NSPredicate *compoundOR = [[NSCompoundPredicate alloc] initWithType:NSOrPredicateType subpredicates:predicates];
+            newConversationList = [[[SessionObjectCache sharedCache].conversationList.asArray copy] filteredArrayUsingPredicate:compoundOR];
+        }
+        
+    }
+    else {
+        newConversationList = [[SessionObjectCache sharedCache].conversationList.asArray copy];
+    }
+    
+    return newConversationList;
+}
+
+- (void)updateConversationListAnimated
+{
+    if ([self numberOfItemsInSection:SectionIndexConversations] == 0) {
+        [self reloadConversationListViewModel];
+    } else {
+        NSArray *oldConversationList = [self.aggregatedItems sectionAtIndex:SectionIndexConversations];
+        NSArray *newConversationList = [self newConversationList];
+        if ([oldConversationList isEqualToArray:newConversationList]) {
+            return;
+        }
+        
+        ZMOrderedSetState *startState = [[ZMOrderedSetState alloc] initWithOrderedSet:[NSOrderedSet orderedSetWithArray:oldConversationList]];
+        ZMOrderedSetState *endState = [[ZMOrderedSetState alloc] initWithOrderedSet:[NSOrderedSet orderedSetWithArray:newConversationList]];
+        ZMOrderedSetState *updatedState = [[ZMOrderedSetState alloc] initWithOrderedSet:[NSOrderedSet orderedSet]];
+        
+        ZMChangedIndexes *changedIndexes = [[ZMChangedIndexes alloc] initWithStartState:startState
+                                                                               endState:endState
+                                                                           updatedState:updatedState
+                                                                               moveType:ZMSetChangeMoveTypeUICollectionView];
+        
+        if (changedIndexes.requiresReload) {
+            [self reloadConversationListViewModel];
+        } else {
+            // We need to capture the state of `newConversationList` to make sure that we are updating the value
+            // of the list to the exact new state.
+            // It is important to keep the data source of the collection view consistent, since
+            // any inconsistency in the delta update would make it throw an exception.
+            dispatch_block_t modelUpdates = ^{ [self updateSection:SectionIndexConversations
+                                                         withItems:newConversationList]; };
+            [self.delegate listViewModel:self didUpdateSection:SectionIndexConversations usingBlock:modelUpdates withChangedIndexes:changedIndexes];
+        }
     }
 }
 
@@ -393,17 +425,16 @@ void debugLogUpdate (ConversationListChangeInfo *change)
     if (DEBUG && 0) {
         
         NSUInteger __block movedCount = 0;
-        [change enumerateMovedIndexes:^(NSUInteger from, NSUInteger to) {
+        [change enumerateMovedIndexes:^(NSInteger from, NSInteger to) {
             movedCount++;
         }];
         
-        debugLog(@"update for list %p (update=%p) (conv=%p, archive=%p, pending=%p), (reload=%d, delete=%lu, insert=%lu, move=%lu, upd=%lu)",
+        debugLog(@"update for list %p (update=%p) (conv=%p, archive=%p, pending=%p), (delete=%lu, insert=%lu, move=%lu, upd=%lu)",
                  change.conversationList,
                  change,
                  [SessionObjectCache sharedCache].conversationList,
                  [SessionObjectCache sharedCache].archivedConversations,
                  [SessionObjectCache sharedCache].pendingConnectionRequests,
-                 change.needsReload,
                  (unsigned long)change.deletedIndexes.count,
                  (unsigned long)change.insertedIndexes.count,
                  (unsigned long)movedCount,

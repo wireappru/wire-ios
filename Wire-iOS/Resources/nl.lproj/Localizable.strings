@@ -73,7 +73,7 @@
 "contacts_ui.title" = "Nodig anderen uit";
 
 "contacts_ui.no_contact.title" = "Geen actieve gesprekken\n";
-"contacts_ui.no_contact.message" = "Druk op contacten om een gesprek te beginnen";
+"contacts_ui.no_contact.message" = "Tap een persoon om een gesprek te beginnen";
 
 // Conversation List Indicator
 "conversation_list.right_accessory.join_button.title" = "Deelnemen";
@@ -117,9 +117,37 @@
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // List (labels) - Needs to be revised with updated guidance
+"list.title" = "Gesprekken";
 "list.archived_conversations" = "ARCHIEF";
 "list.archived_conversations_close" = "Archief sluiten";
 
+"conversation.status.call" = "Uitgaand gesprek";
+"conversation.status.typing" = "Typt een bericht…";
+"conversation.status.typing.group" = "%@: Typt een bericht…";
+"conversation.status.silenced" = "Gedempt";
+"conversation.status.blocked" = "Geblokkeerd";
+
+"conversation.status.message.text" = "%@";
+"conversation.status.message.link" = "Deel een link";
+"conversation.status.message.image" = "Deelde een foto";
+"conversation.status.message.location" = "Deel een locatie";
+"conversation.status.message.audio" = "Deelde een audio bericht";
+"conversation.status.message.video" = "Deelde een video";
+"conversation.status.message.file" = "Deelde een bestand";
+"conversation.status.message.knock" = "Gepinged";
+"conversation.status.message.missedcall" = "Gemiste oproep";
+"conversation.status.message.ephemeral" = "Tijdelijk bericht";
+
+"conversation.status.unsent" = "⚠️ On verstuurt bericht";
+"conversation.status.you" = "Jij";
+"conversation.status.added_multiple" = "Personen toegevoegd";
+"conversation.status.you_was_added" = "%@ heeft jou toegevoegd";
+"conversation.status.added_users" = "%@ heeft %@ toegevoegd";
+"conversation.status.removed_multiple" = "Personen verwijderd";
+"conversation.status.you_were_removed" = "Je bent verwijderd";
+"conversation.status.you_left" = "Jij verliet";
+"conversation.status.started_conversation" = "%@ begon een gesprek";
+"conversation.status.removed_users" = "%@ verwijderde %@";
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Conversation
@@ -211,6 +239,7 @@
 "content.system.message_delivered_timestamp" = "Afgeleverd";
 "content.system.failedtosend_message_timestamp" = "Verzenden mislukt.";
 "content.system.failedtosend_message_timestamp_resend" = "Opnieuw sturen";
+"content.system.failedtosend_message_timestamp_delete" = "Verwijderen";
 "content.system.like_tooltip" = "Tap om leuk te vinden";
 "content.system.deleted_message_prefix_timestamp" = "Verwijderd op %@";
 "content.system.edited_message_prefix_timestamp" = "Gewijzigd op %@";
@@ -224,8 +253,10 @@
 
 "content.system.call.you" = "Jij";
 "content.system.call.called" = "%@ belde";
+"content.system.call.called-you" = "%@ belde";
 
 "content.system.renamed_conv.title" = "%@ hernoemde het gesprek";
+"content.system.renamed_conv.title-you" = "%@ hernoemde het gesprek";
 "content.system.renamed_conv.title.you" = "Jij";
 
 "content.system.reactivated_device" = "Je bent %@ weer gaan gebruiken. Berichten die in de tussentijd verzonden zijn worden hier niet getoond.";
@@ -308,7 +339,7 @@
 "voice.status.video_not_available" = "Video is uitgeschakeld";
 "voice.status.low_connection" = "Slechte verbinding";
 "voice.network_error.title" = "Geen verbinding met internet";
-"voice.status.cbr" = "Constant Bit Rate";
+"voice.status.cbr" = "Constante Bit Rate";
 "voice.network_error.body" = "Je moet online zijn om te bellen. Controleer je verbinding en probeer opnieuw.";
 "voice.degradation.new_self_device" = "Je gebruikt een nieuw apparaat.";
 "voice.degradation.new_user_device" = "%@ is een ander apparaat gaan gebruiken.";
@@ -568,8 +599,10 @@
 "self.settings.callkit.caption" = "Deel met iOS";
 "self.settings.callkit.description" = "Toon Wire-gesprekken op het toegangsscherm en in de iOS gespreksgeschiedenis. Als iCloud aan staat wordt de oproepgeschiedenis bewaard bij Apple. Herstart Wire om deze instelling toe te passen.";
 
-"self.settings.vbr.title" = "Variable Bit Rate Encoding";
-"self.settings.vbr.description" = "This makes audio calls use less data and work better on slower networks. Turn off to use Constant Bitrate Encoding.";
+"self.settings.vbr.title" = "Variable Bit Rate codering";
+"self.settings.vbr.description" = "Hierdoor gebruik je minder data tijdens het bellen, en het werkt beter op trage netwerken. Zet dit uit om een constante Bitrate Encoding te gebruiken.";
+
+"self.settings.workspace.title" = "Workspace Name";
 
 "self.settings.sound_menu.sounds.wire_call" = "Wire oproep";
 "self.settings.sound_menu.sounds.wire_message" = "Wire bericht";

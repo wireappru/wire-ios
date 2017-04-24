@@ -35,10 +35,9 @@
 #import "PermissionDeniedViewController.h"
 #import "AnalyticsTracker.h"
 
-#import "zmessaging+iOS.h"
+#import "WireSyncEngine+iOS.h"
 
 #import "ConversationListContentController.h"
-#import "ConversationListInteractiveItem.h"
 #import "StartUIViewController.h"
 #import "KeyboardAvoidingViewController.h"
 
@@ -82,6 +81,9 @@
 @interface ConversationListViewController (PermissionDenied) <PermissionDeniedViewControllerDelegate>
 @end
 
+@interface ConversationListViewController (InitialSyncObserver) <ZMInitialSyncCompletionObserver>
+@end
+
 @interface ConversationListViewController (ConversationListObserver) <ZMConversationListObserver>
 
 - (void)updateArchiveButtonVisibility;
@@ -90,47 +92,37 @@
 
 
 
-@interface ConversationListViewController () <UIGestureRecognizerDelegate>
+@interface ConversationListViewController ()
 
 @property (nonatomic) ZMConversation *selectedConversation;
 @property (nonatomic) ConversationListState state;
 
 @property (nonatomic, weak) id<UserProfile> userProfile;
 @property (nonatomic) NSObject *userProfileObserverToken;
+@property (nonatomic) id userObserverToken;
+@property (nonatomic) id allConversationsObserverToken;
+@property (nonatomic) id connectionRequestsObserverToken;
 
 @property (nonatomic) ConversationListContentController *listContentController;
 @property (nonatomic) InviteBannerViewController *invitationBannerViewController;
 @property (nonatomic) ConversationListBottomBarController *bottomBarController;
-@property (nonatomic) UIViewController *displayedAlternativeViewController;
 @property (nonatomic) ToolTipViewController *tooltipViewController;
 
-@property (nonatomic) id allConversationsObserverToken;
-
-@property (nonatomic, strong) UIViewController *visibleViewController;
-
-@property (nonatomic, strong) UIView *contentContainer;
-@property (nonatomic, strong) UIView *conversationListContainer;
-@property (nonatomic, strong) UILabel *noConversationLabel;
+@property (nonatomic) ConversationListTopBar *topBar;
+@property (nonatomic) UIView *contentContainer;
+@property (nonatomic) UIView *conversationListContainer;
+@property (nonatomic) UILabel *noConversationLabel;
 
 @property (nonatomic) PermissionDeniedViewController *pushPermissionDeniedViewController;
 
-@property (nonatomic, strong) NSLayoutConstraint *topConstraint;
-@property (nonatomic, strong) NSLayoutConstraint *conversationListTopOffset;
-@property (nonatomic, strong) NSLayoutConstraint *topItemsTopOffset;
+@property (nonatomic) NSLayoutConstraint *bottomBarBottomOffset;
+@property (nonatomic) NSLayoutConstraint *bottomBarToolTipConstraint;
 
-@property (nonatomic, strong) NSLayoutConstraint *bottomBarBottomOffset;
-@property (nonatomic, strong) NSLayoutConstraint *bottomBarToolTipConstraint;
-
-@property (nonatomic, assign) BOOL wasContentScrolledToBottomOnBeginnginOfGesture;
-@property (nonatomic, assign) BOOL scrollingStartedFromTheTop;
-@property (nonatomic, assign) NSTimeInterval gestureStartTime;
-
-@property (nonatomic, assign) BOOL openArchiveGestureStarted;
+@property (nonatomic, nullable) SpaceSelectorView *spacesView;
 @property (nonatomic) CGFloat contentControllerBottomInset;
 
 @property (nonatomic) BOOL initialSyncCompleted;
-
-@property (nonatomic) id userObserverToken;
+@property (nonatomic) BOOL spacesImagesCollapsed;
 
 - (void)setState:(ConversationListState)state animated:(BOOL)animated;
 
@@ -144,6 +136,7 @@
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [ZMUserSession removeInitalSyncCompletionObserver:self];
     [self removeUserProfileObserver];
 }
 
@@ -174,12 +167,14 @@
     self.conversationListContainer.backgroundColor = [UIColor clearColor];
     [self.contentContainer addSubview:self.conversationListContainer];
 
+    [ZMUserSession addInitalSyncCompletionObserver:self];
     self.initialSyncCompleted = ZMUserSession.sharedSession.initialSyncOnceCompleted.boolValue;
 
+    [self createTopBar];
     [self createNoConversationLabel];
     [self createListContentController];
     [self createBottomBarController];
-
+    
     [self createViewConstraints];
     if (![Settings.sharedSettings contactTipWasDisplayed]) {
         [self showTooltipView];
@@ -190,13 +185,21 @@
     [self updateArchiveButtonVisibility];
     
     self.allConversationsObserverToken = [ConversationListChangeInfo addObserver:self forList:[SessionObjectCache sharedCache].allConversations];
+    self.connectionRequestsObserverToken = [ConversationListChangeInfo addObserver:self forList:[SessionObjectCache sharedCache].pendingConnectionRequests];
 
+    [NSNotificationCenter.defaultCenter addObserver:self
+                                           selector:@selector(updateSpaces)
+                                               name:[Space didChangeNotificationNameString]
+                                             object:nil];
+    
     [self showPushPermissionDeniedDialogIfNeeded];
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    [Space update];
     
     [[ZMUserSession sharedSession] enqueueChanges:^{
         [self.selectedConversation savePendingLastRead];
@@ -264,7 +267,7 @@
 
 - (void)createBottomBarController
 {
-    self.bottomBarController = [[ConversationListBottomBarController alloc] initWithDelegate:self user:ZMUser.selfUser];
+    self.bottomBarController = [[ConversationListBottomBarController alloc] initWithDelegate:self];
     self.bottomBarController.view.translatesAutoresizingMaskIntoConstraints = NO;
     self.bottomBarController.showArchived = YES;
     [self addChildViewController:self.bottomBarController];
@@ -299,11 +302,28 @@
     self.listContentController.collectionView.contentInset = UIEdgeInsetsMake(0, 0, self.contentControllerBottomInset, 0);
     self.listContentController.view.translatesAutoresizingMaskIntoConstraints = NO;
     self.listContentController.contentDelegate = self;
-    self.listContentController.enableSubtitles = self.enableExtras;
 
     [self addChildViewController:self.listContentController];
     [self.conversationListContainer addSubview:self.listContentController.view];
     [self.listContentController didMoveToParentViewController:self];
+}
+
+- (void)setSpacesImagesCollapsed:(BOOL)spacesImagesCollapsed
+{
+    if (_spacesImagesCollapsed == spacesImagesCollapsed || ([Space spaces].count == 0 && spacesImagesCollapsed == NO)) {
+        return;
+    }
+    
+    _spacesImagesCollapsed = spacesImagesCollapsed;
+    
+    if ([Space spaces].count == 0) {
+        _spacesImagesCollapsed = YES;
+    }
+        
+    [UIView wr_animateWithEasing:RBBEasingFunctionEaseOutExpo duration:0.35f animations:^{
+        self.spacesView.imagesCollapsed = _spacesImagesCollapsed;
+        self.topBar.splitSeparator = !_spacesImagesCollapsed;
+    }];
 }
 
 - (void)setState:(ConversationListState)state animated:(BOOL)animated
@@ -323,7 +343,6 @@
 
     switch (state) {
         case ConversationListStateConversationList: {
-            [[ZClientViewController sharedZClientViewController].backgroundViewController setBlurPercentAnimated:0.0];
             [self.presentedViewController dismissViewControllerAnimated:YES completion:completion];
         }
             break;
@@ -354,8 +373,7 @@
 {
     viewController.transitioningDelegate = self;
     viewController.modalPresentationStyle = UIModalPresentationCurrentContext;
-    [ZClientViewController.sharedZClientViewController.backgroundViewController setBlurPercentAnimated:1.0];
-
+    
     [self presentViewController:viewController animated:animated completion:^{
         if (completion) {
             completion();
@@ -365,19 +383,15 @@
 
 - (void)createViewConstraints
 {
-    self.conversationListTopOffset = [self.conversationListContainer autoPinEdgeToSuperviewEdge:ALEdgeTop];
-    [self.conversationListContainer autoPinEdgeToSuperviewEdge:ALEdgeLeft];
-    [self.conversationListContainer autoPinEdgeToSuperviewEdge:ALEdgeRight];
-    [self.conversationListContainer autoMatchDimension:ALDimensionHeight toDimension:ALDimensionHeight ofView:self.contentContainer];
+    [self.conversationListContainer autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeTop];
     
     [self.bottomBarController.view autoPinEdgeToSuperviewEdge:ALEdgeLeft];
     [self.bottomBarController.view autoPinEdgeToSuperviewEdge:ALEdgeRight];
     self.bottomBarBottomOffset = [self.bottomBarController.view autoPinEdgeToSuperviewEdge:ALEdgeBottom];
     
-    [self.contentContainer autoPinEdgeToSuperviewEdge:ALEdgeLeft];
-    [self.contentContainer autoPinEdgeToSuperviewEdge:ALEdgeRight];
-    [self.contentContainer autoPinEdgeToSuperviewEdge:ALEdgeBottom];
-    [self.contentContainer autoPinEdgeToSuperviewEdge:ALEdgeTop];
+    [self.topBar autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeBottom];
+    [self.topBar autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.conversationListContainer];
+    [self.contentContainer autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(20, 0, 0, 0)];
     
     [self.noConversationLabel autoCenterInSuperview];
     [self.noConversationLabel autoSetDimension:ALDimensionHeight toSize:120.0f];
@@ -401,12 +415,6 @@
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 }
 
-- (void)didReceiveMemoryWarning
-{
-    DDLogWarn(@"Received memory warning.");
-    [super didReceiveMemoryWarning];
-}
-
 - (BOOL)shouldAutorotate
 {
     return YES;
@@ -422,12 +430,6 @@
     return UIInterfaceOrientationMaskPortrait;
 }
 
-- (void)setEnableExtras:(BOOL)enableExtras
-{
-    _enableExtras = enableExtras;
-    self.listContentController.enableSubtitles = enableExtras;
-}
-
 - (void)setBackgroundColorPreference:(UIColor *)color
 {
     [UIView animateWithDuration:0.4 animations:^{
@@ -438,14 +440,13 @@
 
 - (void)hideArchivedConversations
 {
-    self.listContentController.showingArchived = NO;
+    [self setState:ConversationListStateConversationList animated:YES];
 }
 
 #pragma mark - ToolTipView
 
 - (void)createToolTipController;
 {
-    
     @weakify(self)
     ToolTip *toolTip = [[ToolTip alloc] initWithTitle:NSLocalizedString(@"tool_tip.contacts.title", nil)
                                           description:NSLocalizedString(@"tool_tip.contacts.message", nil)
@@ -465,6 +466,7 @@
     [self addChildViewController:self.tooltipViewController];
     [self.tooltipViewController didMoveToParentViewController:self];
 }
+
 - (void)updateConstraintWithToolTip;
 {
     [self.tooltipViewController.view autoPinEdgeToSuperviewEdge:ALEdgeLeft];
@@ -477,6 +479,7 @@
                                                                           ofView:self.tooltipViewController.view
                                                                       withOffset:self.tooltipViewController.padding];
 }
+
 - (void)showTooltipView;
 {
     self.bottomBarController.showTooltip = YES;
@@ -617,6 +620,33 @@
     [self setState:ConversationListStatePeoplePicker animated:animated];
 }
 
+- (void)presentSettings
+{
+    SettingsNavigationController *settingsViewController = [self createSettingsViewController];
+    KeyboardAvoidingViewController *keyboardAvoidingWrapperController = [[KeyboardAvoidingViewController alloc] initWithViewController:settingsViewController];
+    
+    if (self.wr_splitViewController.layoutSize == SplitViewControllerLayoutSizeCompact) {
+        keyboardAvoidingWrapperController.topInset = 20;
+        @weakify(keyboardAvoidingWrapperController);
+        settingsViewController.dismissAction = ^(SettingsNavigationController *controller) {
+            @strongify(keyboardAvoidingWrapperController);
+            [keyboardAvoidingWrapperController dismissViewControllerAnimated:YES completion:nil];
+        };
+        
+        keyboardAvoidingWrapperController.modalPresentationStyle = UIModalPresentationCurrentContext;
+        keyboardAvoidingWrapperController.transitioningDelegate = self;
+        [self presentViewController:keyboardAvoidingWrapperController animated:YES completion:nil];
+    }
+    else {
+        settingsViewController.dismissAction = ^(SettingsNavigationController *controller) {
+            [self.parentViewController dismissViewControllerAnimated:YES completion:nil];
+        };
+        keyboardAvoidingWrapperController.modalPresentationStyle = UIModalPresentationFormSheet;
+        keyboardAvoidingWrapperController.view.backgroundColor = [UIColor blackColor];
+        [self.parentViewController presentViewController:keyboardAvoidingWrapperController animated:YES completion:nil];
+    }
+}
+
 - (void)dismissPeoplePickerWithCompletionBlock:(dispatch_block_t)block
 {
     [self setState:ConversationListStateConversationList animated:YES completion:block];
@@ -642,7 +672,7 @@
 
 - (void)updateNoConversationVisibility;
 {
-    NSUInteger conversationsCount = [SessionObjectCache sharedCache].conversationList.count;
+    NSUInteger conversationsCount = [SessionObjectCache sharedCache].conversationList.count + [SessionObjectCache sharedCache].pendingConnectionRequests.count;
     BOOL shouldDisplayNoContact = conversationsCount == 0;
     
     if (shouldDisplayNoContact) {
@@ -673,16 +703,18 @@
 - (void)conversationListDidScroll:(ConversationListContentController *)controller
 {
     [self updateBottomBarSeparatorVisibilityWithContentController:controller];
+    
+    self.spacesImagesCollapsed = controller.collectionView.contentOffset.y > 0;
+    
+    if (![self showSpaces]) {
+        [self.topBar.leftSeparatorLineView scrollViewDidScroll:controller.collectionView];
+        [self.topBar.rightSeparatorLineView scrollViewDidScroll:controller.collectionView];
+    }
 }
 
 - (void)conversationList:(ConversationListViewController *)controller didSelectConversation:(ZMConversation *)conversation focusOnView:(BOOL)focus
 {
     _selectedConversation = conversation;
-}
-
-- (void)conversationList:(ConversationListViewController *)controller didSelectInteractiveItem:(ConversationListInteractiveItem *)interactiveItem focusOnView:(BOOL)focus
-{
-    
 }
 
 - (void)conversationList:(ConversationListContentController *)controller willSelectIndexPathAfterSelectionDeleted:(NSIndexPath *)conv
@@ -726,35 +758,6 @@
         }
             break;
             
-        case ConversationListButtonTypeSettings:
-        {
-            SettingsNavigationController *settingsViewController = [self createSettingsViewController];
-            KeyboardAvoidingViewController *keyboardAvoidingWrapperController = [[KeyboardAvoidingViewController alloc] initWithViewController:settingsViewController];
-            
-            if (self.wr_splitViewController.layoutSize == SplitViewControllerLayoutSizeCompact) {
-                keyboardAvoidingWrapperController.topInset = 20;
-                @weakify(keyboardAvoidingWrapperController);
-                settingsViewController.dismissAction = ^(SettingsNavigationController *controller) {
-                    @strongify(keyboardAvoidingWrapperController);
-                    [keyboardAvoidingWrapperController dismissViewControllerAnimated:YES completion:nil];
-                    [[ZClientViewController sharedZClientViewController].backgroundViewController setBlurPercentAnimated:0.0];
-                };
-                [[ZClientViewController sharedZClientViewController].backgroundViewController setBlurPercentAnimated:1.0];
-                
-                keyboardAvoidingWrapperController.modalPresentationStyle = UIModalPresentationCurrentContext;
-                keyboardAvoidingWrapperController.transitioningDelegate = self;
-                [self presentViewController:keyboardAvoidingWrapperController animated:YES completion:nil];
-            }
-            else {
-                settingsViewController.dismissAction = ^(SettingsNavigationController *controller) {
-                    [self.parentViewController dismissViewControllerAnimated:YES completion:nil];
-                };
-                keyboardAvoidingWrapperController.modalPresentationStyle = UIModalPresentationFormSheet;
-                keyboardAvoidingWrapperController.view.backgroundColor = [UIColor blackColor];
-                [self.parentViewController presentViewController:keyboardAvoidingWrapperController animated:YES completion:nil];
-            }
-            break;
-        }
         case ConversationListButtonTypeArchive:
             [self setState:ConversationListStateArchived animated:YES];
             [Analytics.shared tagArchiveOpened];
@@ -809,6 +812,7 @@
 }
 
 @end
+
 
 @implementation ConversationListViewController (InitialSyncObserver)
 

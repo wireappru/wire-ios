@@ -19,7 +19,7 @@
 
 
 // Data model
-@import zmessaging;
+@import WireSyncEngine;
 @import avs;
 #import "ZMUserSession+iOS.h"
 #import <CommonCrypto/CommonCrypto.h>
@@ -40,8 +40,8 @@
 #import "UIViewController+Errors.h"
 #import "ConversationViewController.h"
 #import "ConversationViewController+Private.h"
-#import "ConversationListCollectionViewLayout.h"
 #import "ConversationListCell.h"
+#import "ConversationListItemView.h"
 #import "GapLoadingBar.h"
 #import "WAZUIMagicIOS.h"
 #import "ResizingTextView.h"

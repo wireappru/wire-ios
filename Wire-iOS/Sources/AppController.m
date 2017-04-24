@@ -20,7 +20,7 @@
 #import "AppController.h"
 #import "AppController+Internal.h"
 
-#import "zmessaging+iOS.h"
+#import "WireSyncEngine+iOS.h"
 #import "ZMUserSession+Additions.h"
 #import "MagicConfig.h"
 #import "PassthroughWindow.h"
@@ -45,6 +45,7 @@
 #import "AVSLogObserver.h"
 #import "Wire-Swift.h"
 #import "Message+Formatting.h"
+#import "ConversationListCell.h"
 
 NSString *const ZMUserSessionDidBecomeAvailableNotification = @"ZMUserSessionDidBecomeAvailableNotification";
 
@@ -236,7 +237,7 @@ NSString *const ZMUserSessionDidBecomeAvailableNotification = @"ZMUserSessionDid
     self.window.frame = [[UIScreen mainScreen] bounds];
     self.window.accessibilityIdentifier = @"ZClientMainWindow";
     
-    // Just load the fonts here. Don't load the Magic yet, to avoid to have any problems with zmessaging before we allowed to use it
+    // Just load the fonts here. Don't load the Magic yet, to avoid to have any problems with WireSyncEngine before we allowed to use it
     LaunchImageViewController *launchController = [[LaunchImageViewController alloc] initWithNibName:nil bundle:nil];
 
     self.launchImageViewController = launchController;
@@ -390,6 +391,7 @@ NSString *const ZMUserSessionDidBecomeAvailableNotification = @"ZMUserSessionDid
     [Message invalidateMarkdownStyle];
     [UIFont wr_flushFontCache];
     [NSAttributedString wr_flushCellParagraphStyleCache];
+    [ConversationListCell invalidateCachedCellSize];
     [self applyFontScheme];
 }
 
@@ -492,6 +494,8 @@ NSString *const ZMUserSessionDidBecomeAvailableNotification = @"ZMUserSessionDid
     
     // Singletons
     AddressBookHelper.sharedHelper.configuration = AutomationHelper.sharedHelper;
+    
+    [DeveloperMenuState prepareForDebugging];
 }
 
 #pragma mark - User Session block queueing

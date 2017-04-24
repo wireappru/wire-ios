@@ -73,7 +73,7 @@
 "contacts_ui.title" = "Invitér personer";
 
 "contacts_ui.no_contact.title" = "Ingen aktive samtaler\n";
-"contacts_ui.no_contact.message" = "Tryk på kontakter for at starte en samtale";
+"contacts_ui.no_contact.message" = "Tap people to start a conversation";
 
 // Conversation List Indicator
 "conversation_list.right_accessory.join_button.title" = "Deltag";
@@ -117,9 +117,37 @@
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // List (labels) - Needs to be revised with updated guidance
+"list.title" = "Conversations";
 "list.archived_conversations" = "ARKIV";
 "list.archived_conversations_close" = "Luk arkiv";
 
+"conversation.status.call" = "Ongoing call";
+"conversation.status.typing" = "Typing a message…";
+"conversation.status.typing.group" = "%@: typing a message…";
+"conversation.status.silenced" = "Muted";
+"conversation.status.blocked" = "Blokeret";
+
+"conversation.status.message.text" = "%@";
+"conversation.status.message.link" = "Shared a link";
+"conversation.status.message.image" = "Delte et billede";
+"conversation.status.message.location" = "Delte en placering";
+"conversation.status.message.audio" = "Delte en lyd besked";
+"conversation.status.message.video" = "Delte en video";
+"conversation.status.message.file" = "Delte en fil";
+"conversation.status.message.knock" = "Pingede";
+"conversation.status.message.missedcall" = "Missed call";
+"conversation.status.message.ephemeral" = "Tidsbestemt besked";
+
+"conversation.status.unsent" = "⚠️ Unsent message";
+"conversation.status.you" = "Dig";
+"conversation.status.added_multiple" = "People added";
+"conversation.status.you_was_added" = "%@ har tilføjet dig";
+"conversation.status.added_users" = "%@ har tilføjet %@";
+"conversation.status.removed_multiple" = "People removed";
+"conversation.status.you_were_removed" = "You were removed";
+"conversation.status.you_left" = "Du forlod";
+"conversation.status.started_conversation" = "%@ started a conversation";
+"conversation.status.removed_users" = "%@ har fjernet %@";
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Conversation
@@ -211,6 +239,7 @@
 "content.system.message_delivered_timestamp" = "Leveret";
 "content.system.failedtosend_message_timestamp" = "Send mislykkedes.";
 "content.system.failedtosend_message_timestamp_resend" = "Send igen";
+"content.system.failedtosend_message_timestamp_delete" = "Slet";
 "content.system.like_tooltip" = "Tryk for at syntes om";
 "content.system.deleted_message_prefix_timestamp" = "Slettet d. %@";
 "content.system.edited_message_prefix_timestamp" = "Redigeret d. %@";
@@ -224,8 +253,10 @@
 
 "content.system.call.you" = "Dig";
 "content.system.call.called" = "%@ har ringet";
+"content.system.call.called-you" = "%@ har ringet";
 
 "content.system.renamed_conv.title" = "%@ omdøbte samtalen";
+"content.system.renamed_conv.title-you" = "%@ omdøbte samtalen";
 "content.system.renamed_conv.title.you" = "Dig";
 
 "content.system.reactivated_device" = "Du begyndte at bruge %@ igen. Beskeder der sendes, vises i mellemtiden ikke her.";
@@ -568,8 +599,10 @@
 "self.settings.callkit.caption" = "Del med iOS";
 "self.settings.callkit.description" = "Vis tråd opfordrer låsen skærmen og i iOS opkald historie. Hvis iCloud er aktiveret, delt Opkaldshistorie med Apple. Genstart Wire for at anvende denne indstilling.";
 
-"self.settings.vbr.title" = "Variable Bit Rate Encoding";
-"self.settings.vbr.description" = "This makes audio calls use less data and work better on slower networks. Turn off to use Constant Bitrate Encoding.";
+"self.settings.vbr.title" = "Variable bithastighed";
+"self.settings.vbr.description" = "Dette gør, at lydopkald bruger færre data og fungerer bedre med langsommere netværk. Sluk for at anvende konstant bithastighed.";
+
+"self.settings.workspace.title" = "Workspace Name";
 
 "self.settings.sound_menu.sounds.wire_call" = "Wire Opkald";
 "self.settings.sound_menu.sounds.wire_message" = "Wire Besked";

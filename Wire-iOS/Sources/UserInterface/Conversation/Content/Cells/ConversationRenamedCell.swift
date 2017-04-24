@@ -62,8 +62,7 @@ final class ConversationRenamedCell: IconSystemCell {
         guard let systemMessage = message.systemMessageData,
             systemMessage.systemMessageType == .conversationNameChanged else { return }
 
-        labelView.attributedText = attributedTitle(for: message)
-        labelView.accessibilityLabel = labelView.attributedText.string
+        attributedText = attributedTitle(for: message)
 
         nameLabel.attributedText = attributedName(for: systemMessage)
         nameLabel.accessibilityLabel = nameLabel.attributedText?.string
@@ -73,9 +72,10 @@ final class ConversationRenamedCell: IconSystemCell {
         guard let labelFont = labelFont,
             let labelBoldFont = labelBoldFont,
             let labelTextColor = labelTextColor,
-            let senderString = sender(for: message) else { return nil }
+            let sender = message.sender,
+            let senderString = self.sender(for: message) else { return nil }
 
-        let title = key(with: "title").localized(args: senderString) && labelFont
+        let title = key(with: "title").localized(pov: sender.pov, args: senderString) && labelFont
         return title.adding(font: labelBoldFont, to: senderString) && labelTextColor
     }
 

@@ -63,8 +63,8 @@ class SettingsBaseTableViewController: UIViewController, UITableViewDelegate, UI
     private func createTableView() {
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.separatorColor = UIColor(white: 1, alpha: 0.1)
-        tableView.backgroundColor = UIColor.clear
+        tableView.separatorStyle = .none
+        tableView.backgroundColor = .clear
         tableView.clipsToBounds = true
         tableView.tableFooterView = UIView()
         view.addSubview(tableView)
@@ -165,7 +165,6 @@ class SettingsTableViewController: SettingsBaseTableViewController {
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(SettingsTableViewController.dismissRootNavigation(_:)))
     }
 
-
     func setupTableView() {
         let allCellTypes: [SettingsTableCell.Type] = [SettingsTableCell.self, SettingsGroupCell.self, SettingsButtonCell.self, SettingsToggleCell.self, SettingsValueCell.self, SettingsTextCell.self]
 
@@ -196,6 +195,7 @@ class SettingsTableViewController: SettingsBaseTableViewController {
         if let cell = tableView.dequeueReusableCell(withIdentifier: type(of: cellDescriptor).cellType.reuseIdentifier, for: indexPath) as? SettingsTableCell {
             cell.descriptor = cellDescriptor
             cellDescriptor.featureCell(cell)
+            cell.isFirst = indexPath.row == 0
             return cell
         }
 

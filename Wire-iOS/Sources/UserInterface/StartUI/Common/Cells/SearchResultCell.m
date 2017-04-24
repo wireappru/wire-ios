@@ -23,14 +23,14 @@
 #import "UIView+MTAnimation.h"
 #import "BadgeUserImageView.h"
 #import "UIImage+ZetaIconsNeue.h"
-#import "zmessaging+iOS.h"
-#import <ZMCDataModel/ZMBareUser.h>
+#import "WireSyncEngine+iOS.h"
+#import <WireDataModel/ZMBareUser.h>
 #import "Wire-Swift.h"
 
 @interface SearchResultCell ()
 @property (nonatomic, strong) UIView *gesturesView;
 @property (nonatomic, strong) BadgeUserImageView *badgeUserImageView;
-@property (nonatomic, strong) UIImageView *conversationImageView;
+@property (nonatomic, strong) ConversationAvatarView *conversationImageView;
 @property (nonatomic, strong) UILabel *nameLabel;
 @property (nonatomic, strong) UIView *avatarContainer;
 @property (nonatomic, strong) IconButton *instantConnectButton;
@@ -93,7 +93,7 @@
         self.avatarContainer.opaque = NO;
         [self.swipeView addSubview:self.avatarContainer];
 
-        self.conversationImageView = [[UIImageView alloc] initForAutoLayout];
+        self.conversationImageView = [[ConversationAvatarView alloc] initForAutoLayout];
         self.conversationImageView.opaque = NO;
         [self.avatarContainer addSubview:self.conversationImageView];
 
@@ -216,7 +216,7 @@
 {
     [super prepareForReuse];
     [UIView performWithoutAnimation:^{
-        self.conversationImageView.image = nil;
+        self.conversationImageView.conversation = nil;
         self.conversationImageView.hidden = NO;
         self.badgeUserImageView.hidden = NO;
         self.subtitleLabel.text = @"";
@@ -349,10 +349,10 @@
         ZMUser *otherUser = conversation.connectedUser;
         self.user = otherUser;
         self.badgeUserImageView.hidden = NO;
-        self.conversationImageView.image = nil;
+        self.conversationImageView.conversation = nil;
     }
     else {
-        self.conversationImageView.image = [UIImage imageNamed:@"group-icon.png"];
+        self.conversationImageView.conversation = self.conversation;
         self.badgeUserImageView.hidden = YES;
         self.user = nil;
         self.displayName = conversation.displayName;

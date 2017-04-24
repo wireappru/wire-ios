@@ -19,7 +19,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-@import zmessaging;
+@import WireSyncEngine;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -55,7 +55,8 @@ extern NSString * const ColorSchemeColorAvatarBorder;
 extern NSString * const ColorSchemeColorLoadingDotActive;
 extern NSString * const ColorSchemeColorLoadingDotInactive;
 
-extern NSString * const ColorSchemeColorBurstBackground;
+extern NSString * const ColorSchemeColorPaleSeparator;
+extern NSString * const ColorSchemeColorListAvatarInitials;
 
 extern NSString * const ColorSchemeColorNameAccentPrefix;
 

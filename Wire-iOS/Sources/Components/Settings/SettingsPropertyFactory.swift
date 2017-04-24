@@ -74,7 +74,7 @@ class SettingsPropertyFactory {
     var crashlogManager: CrashlogManager?
     
     static let userDefaultsPropertiesToKeys: [SettingsPropertyName: String] = [
-        SettingsPropertyName.disableMarkdown                   : UserDefaultDisableMarkdown,
+        SettingsPropertyName.disableMarkdown            : UserDefaultDisableMarkdown,
         SettingsPropertyName.chatHeadsDisabled          : UserDefaultChatHeadsDisabled,
         SettingsPropertyName.preferredFlashMode         : UserDefaultPreferredCameraFlashMode,
         SettingsPropertyName.messageSoundName           : UserDefaultMessageSoundName,
@@ -92,6 +92,7 @@ class SettingsPropertyFactory {
         SettingsPropertyName.callingProtocolStrategy    : UserDefaultCallingProtocolStrategy,
         SettingsPropertyName.enableBatchCollections     : UserDefaultEnableBatchCollections,
         SettingsPropertyName.callingConstantBitRate     : UserDefaultCallingConstantBitRate,
+        SettingsPropertyName.workspaceName              : SettingsPropertyName.workspaceName.rawValue
     ]
     
     init(userDefaults: UserDefaults, analytics: AnalyticsInterface?, mediaManager: AVSMediaManagerInterface?, userSession: ZMUserSessionInterface, selfUser: SettingsSelfUser, crashlogManager: CrashlogManager? = .none) {
@@ -288,23 +289,13 @@ class SettingsPropertyFactory {
                 setAction: { _, value in
                     switch value {
                     case .number(value: let lockAppLastDate):
-                        var value: UInt32 = lockAppLastDate as UInt32
+                        var value: UInt32 = lockAppLastDate.uint32Value
                         let data = withUnsafePointer(to: &value) {
                             Data(bytes: UnsafePointer($0), count: MemoryLayout.size(ofValue: lockAppLastDate))
                         }
                         
                         ZMKeychain.setData(data, forAccount: SettingsPropertyName.lockAppLastDate.rawValue)
                     default: throw SettingsPropertyError.WrongValue("Incorrect type \(value) for key \(propertyName)")
-                    }
-            })
-
-        case .sendV3Assets:
-            return SettingsBlockProperty(
-                propertyName: propertyName,
-                getAction: { _ in return SettingsPropertyValue(ExtensionSettings.shared.useAssetsV3) },
-                setAction: { _, value in
-                    if case .number(let v3) = value {
-                        ExtensionSettings.shared.useAssetsV3 = v3.boolValue
                     }
             })
         
@@ -325,5 +316,21 @@ class SettingsPropertyFactory {
         }
         
         fatalError("Cannot create SettingsProperty for \(propertyName)")
+    }
+}
+
+extension SettingsPropertyFactory {
+    static var shared: SettingsPropertyFactory? {
+        guard let session = ZMUserSession.shared() else {
+            return .none
+        }
+        let settingsPropertyFactory = SettingsPropertyFactory(userDefaults: UserDefaults.standard,
+                                                              analytics: Analytics.shared(),
+                                                              mediaManager: AVSProvider.shared.mediaManager,
+                                                              userSession: session,
+                                                              selfUser: ZMUser.selfUser(),
+                                                              crashlogManager: BITHockeyManager.shared())
+        
+        return settingsPropertyFactory
     }
 }

@@ -22,13 +22,11 @@
 #import <PureLayout/PureLayout.h>
 
 #import "ConversationListItemView.h"
-#import "ConversationListIndicator.h"
-#import "ListItemRightAccessoryView.h"
 @import WireExtensionComponents;
 
 #import "Constants.h"
 #import "WAZUIMagicIOS.h"
-#import "zmessaging+iOS.h"
+#import "WireSyncEngine+iOS.h"
 #import "avs+iOS.h"
 #import "Settings.h"
 
@@ -40,9 +38,8 @@
 #import "UIView+Borders.h"
 
 #import "ZClientViewController.h"
-#import "AccentColorChangeHandler.h"
 #import "AnimatedListMenuView.h"
-
+#import "Wire-Swift.h"
 
 
 static const CGFloat MaxVisualDrawerOffsetRevealDistance = 48;
@@ -50,26 +47,20 @@ static const NSTimeInterval IgnoreOverscrollTimeInterval = 0.005;
 static const NSTimeInterval OverscrollRatio = 2.5;
 
 
-@interface ConversationListCell (RightAccesory) <ListItemRightAccessoryViewDelegate>
-@end
-
-
 @interface ConversationListCell () <AVSMediaManagerClientObserver>
 
-@property (nonatomic, strong) ConversationListItemView *itemView;
-@property (nonatomic, assign) BOOL hasCreatedInitialConstraints;
-@property (nonatomic, strong) NSLayoutConstraint *titleBottomMarginConstraint;
+@property (nonatomic) ConversationListItemView *itemView;
+@property (nonatomic) BOOL hasCreatedInitialConstraints;
 
-@property (nonatomic, strong) NSLayoutConstraint *archiveRightMarginConstraint;
+@property (nonatomic) NSLayoutConstraint *titleBottomMarginConstraint;
 
-@property (nonatomic, strong) AccentColorChangeHandler *accentColorHandler;
-@property (nonatomic) AnimatedListMenuView *animatedListView;
+@property (nonatomic) AnimatedListMenuView *menuDotsView;
 @property (nonatomic) NSDate *overscrollStartDate;
-
 
 @end
 
-
+@interface ConversationListCell (Typing) <ZMTypingChangeObserver>
+@end
 
 @implementation ConversationListCell
 
@@ -78,6 +69,7 @@ static const NSTimeInterval OverscrollRatio = 2.5;
     if (![[Settings sharedSettings] disableAVS]) {
         [AVSMediaManagerClientChangeNotification removeObserver:self];
     }
+    [ZMConversation removeTypingObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -99,19 +91,14 @@ static const NSTimeInterval OverscrollRatio = 2.5;
     self.clipsToBounds = YES;
     
     self.itemView = [[ConversationListItemView alloc] initForAutoLayout];
+    
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                                           action:@selector(onRightAccessorySelected:)];
+    [self.itemView.rightAccessory addGestureRecognizer:tapGestureRecognizer];
     [self.swipeView addSubview:self.itemView];
 
-    AnimatedListMenuView *animatedView = [[AnimatedListMenuView alloc] initForAutoLayout];
-    
-    [self.menuView addSubview:animatedView];
-    self.animatedListView = animatedView;
-    [self.animatedListView enable1PixelBlueBorder];
-
-    self.itemView.rightAccessory.delegate = self;
-    
-    self.accentColorHandler = [AccentColorChangeHandler addObserver:self handlerBlock:^(UIColor *newColor, ConversationListCell *cell) {
-        cell.itemView.selectionColor = newColor;
-    }];
+    self.menuDotsView = [[AnimatedListMenuView alloc] initForAutoLayout];
+    [self.menuView addSubview:self.menuDotsView];
     
     [self setNeedsUpdateConstraints];
     
@@ -126,7 +113,7 @@ static const NSTimeInterval OverscrollRatio = 2.5;
     
     // After X % of reveal we consider animation should be finished
     const CGFloat progress = (visualDrawerOffset / MaxVisualDrawerOffsetRevealDistance);
-    [self.animatedListView setProgress:progress animated:YES];
+    [self.menuDotsView setProgress:progress animated:YES];
     if (progress >= 1 && ! self.overscrollStartDate) {
         self.overscrollStartDate = [NSDate date];
     }
@@ -139,7 +126,6 @@ static const NSTimeInterval OverscrollRatio = 2.5;
     [super setSelected:selected];
     if (IS_IPAD) {
         self.itemView.selected  = self.selected || self.highlighted;
-        [self updateAccessoryViews];
     }
 }
 
@@ -155,25 +141,15 @@ static const NSTimeInterval OverscrollRatio = 2.5;
 
 - (void)updateConstraints
 {
-    CGFloat leftMarginConvList = [WAZUIMagic floatForIdentifier:@"list.left_margin"];
+    CGFloat leftMarginConvList = 64;
     
     if (! self.hasCreatedInitialConstraints) {
         self.hasCreatedInitialConstraints = YES;
         [self.itemView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
 
-        [self.animatedListView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
-
-        [NSLayoutConstraint autoSetPriority:UILayoutPriorityDefaultLow forConstraints:^{
-            [self.animatedListView autoPinEdgeToSuperviewEdge:ALEdgeLeading withInset:leftMarginConvList];
-            self.archiveRightMarginConstraint = [self.animatedListView autoPinEdgeToSuperviewEdge:ALEdgeTrailing withInset:leftMarginConvList / 2.0f];
-        }];
-    }
-
-    if ([self.itemView.statusIndicator isDisplayingAnyIndicators]) {
-        self.archiveRightMarginConstraint.constant = -leftMarginConvList / 2.0f;
-    }
-    else {
-        self.archiveRightMarginConstraint.constant = -leftMarginConvList;
+        [self.menuDotsView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
+        
+        [self.menuDotsView autoPinEdgeToSuperviewEdge:ALEdgeLeading withInset:leftMarginConvList];
     }
 
     [super updateConstraints];
@@ -193,55 +169,75 @@ static const NSTimeInterval OverscrollRatio = 2.5;
 - (void)setConversation:(ZMConversation *)conversation
 {
     if (_conversation != conversation) {
-        
+        [ZMConversation removeTypingObserver:self];
         _conversation = conversation;
+        [_conversation addTypingObserver:self];
         
         [self updateAppearance];
     }
 }
-
+    
 - (void)updateAppearance
 {
-    self.itemView.titleText = self.conversation.displayName;
-    [self updateSubtitle];
-    [self updateAccessoryViews];
+    [self.itemView updateForConversation:self.conversation];
 }
 
-- (void)updateAccessoryViews
+- (void)onRightAccessorySelected:(UIButton *)sender
 {
-    if (self.conversation != nil) {
-        self.itemView.statusIndicator.indicatorType = self.conversation.conversationListIndicator;
-        self.itemView.statusIndicator.unreadCount = self.conversation.estimatedUnreadCount;
-    }
-    else {
-        self.itemView.statusIndicator.indicatorType = ZMConversationListIndicatorNone;
-        self.itemView.statusIndicator.unreadCount = 0;
-    }
+    MediaPlaybackManager *mediaPlaybackManager = [AppDelegate sharedAppDelegate].mediaPlaybackManager;
     
-    [self updateRightAccessory];
-    [self setNeedsUpdateConstraints];
+    if (mediaPlaybackManager.activeMediaPlayer != nil &&
+        mediaPlaybackManager.activeMediaPlayer.sourceMessage.conversation == self.conversation) {
+        [self toggleMediaPlayer];
+    }
+    else if (self.conversation.voiceChannel.state == VoiceChannelV2StateIncomingCallInactive) {
+        [self.conversation acceptIncomingCall];
+    }
 }
-
-- (void)updateSubtitle
+    
+- (void)toggleMediaPlayer
 {
-    if (! self.enableSubtitles) {
-        return;
+    MediaPlaybackManager *mediaPlaybackManager = [AppDelegate sharedAppDelegate].mediaPlaybackManager;
+    
+    if (mediaPlaybackManager.activeMediaPlayer.state == MediaPlayerStatePlaying) {
+        [mediaPlaybackManager pause];
+    } else {
+        [mediaPlaybackManager play];
     }
     
-    id<ZMConversationMessage> lastMessage = [self.conversation lastTextMessage];
-    
-    NSString *content = [lastMessage.textMessageData.messageText stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-    NSString *subtitle = content;
-    
-    if (self.conversation.conversationType == ZMConversationTypeGroup) {
-        subtitle = [NSString stringWithFormat:@"%@: %@", lastMessage.sender.displayName, content];
-    }
-    self.itemView.subtitleText = subtitle ? subtitle : @"";
+    [self updateAppearance];
 }
-
+    
 - (BOOL)canOpenDrawer
 {
     return YES;
+}
+
+static CGSize cachedSize = {0, 0};
+
+- (CGSize)sizeInCollectionViewSize:(CGSize)collectionViewSize
+{
+    if (!CGSizeEqualToSize(cachedSize, CGSizeZero) && cachedSize.width == collectionViewSize.width) {
+        return cachedSize;
+    }
+        
+    NSString *fullHeightString = @"Ü";
+    [self.itemView configureWith:fullHeightString subtitle:[[NSAttributedString alloc] initWithString:fullHeightString attributes:[ZMConversation statusRegularStyle]]];
+    
+    CGSize fittingSize = CGSizeMake(collectionViewSize.width, 0);
+    
+    self.itemView.frame = CGRectMake(0, 0, fittingSize.width, 0);
+    [self.itemView setNeedsLayout];
+    [self.itemView layoutIfNeeded];
+    CGSize cellSize = [self.itemView systemLayoutSizeFittingSize:fittingSize];
+    cellSize.width = collectionViewSize.width;
+    cachedSize = cellSize;
+    return cellSize;
+}
+
++ (void)invalidateCachedCellSize
+{
+    cachedSize = CGSizeZero;
 }
 
 #pragma mark - AVSMediaManagerClientChangeNotification
@@ -251,7 +247,7 @@ static const NSTimeInterval OverscrollRatio = 2.5;
     // AUDIO-548 AVMediaManager notifications arrive on a background thread.
     dispatch_async(dispatch_get_main_queue(), ^{
         if (notification.microphoneMuteChanged && (self.conversation.voiceChannel.state > VoiceChannelV2StateNoActiveUsers)) {
-            [self updateAccessoryViews];
+            [self updateAppearance];
         }
     });
 }
@@ -260,7 +256,7 @@ static const NSTimeInterval OverscrollRatio = 2.5;
 
 - (void)drawerScrollingEndedWithOffset:(CGFloat)offset
 {
-    if (self.animatedListView.progress >= 1) {
+    if (self.menuDotsView.progress >= 1) {
         BOOL overscrolled = NO;
         if (offset > (CGRectGetWidth(self.frame) / OverscrollRatio)) {
             overscrolled = YES;
@@ -284,50 +280,11 @@ static const NSTimeInterval OverscrollRatio = 2.5;
 @end
 
 
+@implementation ConversationListCell (Typing)
 
-@implementation ConversationListCell (RightAccessory)
-
-
-- (void)accessoryViewWantsToJoinCall:(ListItemRightAccessoryView *)accessoryView
+- (void)typingDidChange:(ZMTypingChangeNotification *)note
 {
-    if (self.conversation.voiceChannel.state == VoiceChannelV2StateIncomingCallInactive) {
-        [self.conversation startAudioCallWithCompletionHandler:nil];
-    } else {
-        DDLogError(@"Cannot join a call in a conversation without ongoing call");
-    }
-}
-
-- (void)updateRightAccessory
-{
-    if ([self shouldShowMediaButton]) {
-        self.itemView.rightAccessoryType = ConversationListRightAccessoryMediaButton;
-    }
-    else if (self.conversation.isSilenced) {
-        self.itemView.rightAccessoryType = ConversationListRightAccessorySilencedIcon;
-    }
-    else if (self.conversation.conversationListIndicator == ZMConversationListIndicatorInactiveCall) {
-        self.itemView.rightAccessoryType = ConversationListRightAccessoryJoinCall;
-    }
-    else {
-        self.itemView.rightAccessoryType = ConversationListRightAccessoryNone;
-    }
-
-    [self.itemView updateRightAccessoryAppearance];
-}
-
-- (BOOL)shouldShowMediaButton
-{
-    if (self.selected && IS_IPAD_LANDSCAPE_LAYOUT) {
-        return NO;
-    }
-    
-    MediaPlaybackManager *mediaPlaybackManager = [AppDelegate sharedAppDelegate].mediaPlaybackManager;
-    
-    if ([mediaPlaybackManager.activeMediaPlayer.sourceMessage.conversation isEqual:self.conversation]) {
-        return YES;
-    }
-    
-    return NO;
+    [self updateAppearance];
 }
 
 @end

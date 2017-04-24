@@ -222,7 +222,7 @@ private struct InputBarConstants {
             buttonRowSeparator.top == buttonContainer.top
             buttonRowSeparator.leading == buttonRowSeparator.superview!.leading + 16
             buttonRowSeparator.trailing == buttonRowSeparator.superview!.trailing - 16
-            buttonRowSeparator.height == 0.5
+            buttonRowSeparator.height == .hairline
         }
         
         constrain(editingView, buttonsView, buttonInnerContainer) { editingView, buttonsView, buttonInnerContainer in
@@ -252,7 +252,7 @@ private struct InputBarConstants {
             inputBarSeparator.top == inputBarSeparator.superview!.top
             inputBarSeparator.leading == inputBarSeparator.superview!.leading
             inputBarSeparator.trailing == inputBarSeparator.superview!.trailing
-            inputBarSeparator.height == 0.5
+            inputBarSeparator.height == .hairline
         }
         
         constrain(fakeCursor) { fakeCursor in
@@ -275,7 +275,7 @@ private struct InputBarConstants {
             animation.keyTimes = [0, 0.4, 0.7, 0.9]
             animation.duration = 0.64
             animation.autoreverses = true
-            animation.repeatCount = FLT_MAX
+            animation.repeatCount =  .greatestFiniteMagnitude
             fakeCursor.layer.add(animation, forKey: "blinkAnimation")
         }
     }

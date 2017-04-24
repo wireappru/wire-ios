@@ -22,7 +22,7 @@
 #import <PureLayout/PureLayout.h>
 #import <Classy/Classy.h>
 
-#import "zmessaging+iOS.h"
+#import "WireSyncEngine+iOS.h"
 #import "ZMUserSession+iOS.h"
 #import "ZMUserSession+Additions.h"
 
@@ -37,9 +37,7 @@
 
 #import "ZClientViewController+Internal.h"
 
-#import "ConversationListConnectRequestsItem.h"
 #import "UIView+MTAnimation.h"
-#import "ConversationListCollectionViewLayout.h"
 #import "UIColor+WR_ColorScheme.h"
 
 #import "ConnectRequestsCell.h"
@@ -48,6 +46,7 @@
 #import "ConversationContentViewController.h"
 #import "Wire-Swift.h"
 
+static NSString * const CellReuseIdConnectionRequests = @"CellIdConnectionRequests";
 static NSString * const CellReuseIdConversation = @"CellId";
 
 
@@ -60,7 +59,7 @@ static NSString * const CellReuseIdConversation = @"CellId";
 @property (nonatomic) BOOL focusOnNextSelection;
 @property (nonatomic) BOOL animateNextSelection;
 @property (nonatomic, copy) dispatch_block_t selectConversationCompletion;
-
+@property (nonatomic) ConversationListCell *layoutCell;
 @end
 
 @interface ConversationListContentController (ConversationListCellDelegate) <ConversationListCellDelegate>
@@ -80,8 +79,10 @@ static NSString * const CellReuseIdConversation = @"CellId";
 
 - (instancetype)init
 {
-    UICollectionViewFlowLayout *flowLayout = [[ConversationListCollectionViewLayout alloc] init];
-    
+    UICollectionViewFlowLayout *flowLayout = [[BoundsAwareFlowLayout alloc] init];
+    flowLayout.minimumLineSpacing = 0;
+    flowLayout.minimumInteritemSpacing = 0;
+    flowLayout.sectionInset = UIEdgeInsetsMake(0, 0, 0, 0);
     self = [super initWithCollectionViewLayout:flowLayout];
     if (self) {
         StopWatch *stopWatch = [StopWatch stopWatch];
@@ -97,6 +98,8 @@ static NSString * const CellReuseIdConversation = @"CellId";
 {
     [super loadView];
     
+    self.layoutCell = [[ConversationListCell alloc] init];
+    
     self.listViewModel = [[ConversationListViewModel alloc] init];
     self.listViewModel.delegate = self;
     [self setupViews];
@@ -111,10 +114,8 @@ static NSString * const CellReuseIdConversation = @"CellId";
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-
-    // This is here to ensure that the collection view is updated when going back to the list
-    // from another view
-    [self reload];
+    [self updateVisibleCells];
+    
     [self scrollToCurrentSelectionAnimated:NO];
 
     self.activeMediaPlayerObserver = [KeyValueObserver observeObject:AppDelegate.sharedAppDelegate.mediaPlaybackManager
@@ -131,13 +132,15 @@ static NSString * const CellReuseIdConversation = @"CellId";
 
 - (void)setupViews
 {
-    [self.collectionView registerClass:[ConnectRequestsCell class] forCellWithReuseIdentifier:self.listViewModel.contactRequestsItem.reuseIdentifier];
+    [self.collectionView registerClass:[ConnectRequestsCell class] forCellWithReuseIdentifier:CellReuseIdConnectionRequests];
     [self.collectionView registerClass:[ConversationListCell class] forCellWithReuseIdentifier:CellReuseIdConversation];
     
     self.collectionView.backgroundColor = [UIColor clearColor];
     self.collectionView.alwaysBounceVertical = YES;
     self.collectionView.allowsSelection = YES;
     self.collectionView.allowsMultipleSelection = NO;
+    self.collectionView.contentInset = UIEdgeInsetsMake(8, 0, 0, 0);
+    self.collectionView.delaysContentTouches = NO;
     self.clearsSelectionOnViewWillAppear = NO;
 }
 
@@ -222,8 +225,8 @@ static NSString * const CellReuseIdConversation = @"CellId";
             [self.contentDelegate conversationList:self didSelectConversation:item focusOnView:! self.focusOnNextSelection];
         }
         else if ([item isKindOfClass:[ConversationListConnectRequestsItem class]]) {
-            [[ZClientViewController sharedZClientViewController] loadIncomingContactRequestsAndFocusOnView:self.focusOnNextSelection animated:YES];
-            [self.contentDelegate conversationList:self didSelectInteractiveItem:item focusOnView:! self.focusOnNextSelection];
+            [[ZClientViewController sharedZClientViewController] loadIncomingContactRequestsAndFocusOnView:self.focusOnNextSelection
+                                                                                                  animated:YES];
         }
         else {
             NSAssert(NO, @"Invalid item in conversation list view model!!");
@@ -245,13 +248,23 @@ static NSString * const CellReuseIdConversation = @"CellId";
         change.connectionStateChanged ||
         change.isSilencedChanged) {
         
-        for (UICollectionViewCell *cell in self.collectionView.visibleCells) {
-            if ([cell isKindOfClass:[ConversationListCell class]]) {
-                ConversationListCell *convListCell = (ConversationListCell *)cell;
-                
-                if ([convListCell.conversation isEqual:change.conversation]) {
-                    [convListCell updateAppearance];
-                }
+        [self updateCellForConversation:change.conversation];
+    }
+}
+
+- (void)updateVisibleCells
+{
+    [self updateCellForConversation:nil];
+}
+
+- (void)updateCellForConversation:(ZMConversation *)conversation
+{
+    for (UICollectionViewCell *cell in self.collectionView.visibleCells) {
+        if ([cell isKindOfClass:[ConversationListCell class]]) {
+            ConversationListCell *convListCell = (ConversationListCell *)cell;
+            
+            if (conversation == nil || [convListCell.conversation isEqual:conversation]) {
+                [convListCell updateAppearance];
             }
         }
     }
@@ -368,12 +381,6 @@ static NSString * const CellReuseIdConversation = @"CellId";
     [self.view layoutIfNeeded];
 }
 
-- (void)setEnableSubtitles:(BOOL)enableSubtitles
-{
-    _enableSubtitles = enableSubtitles;
-    [self.collectionView reloadData];
-}
-
 #pragma mark - Custom
 
 + (NSArray *)indexPathsForIndexes:(NSIndexSet *)indexes inSection:(NSUInteger)section
@@ -390,7 +397,7 @@ static NSString * const CellReuseIdConversation = @"CellId";
 - (void)activeMediaPlayerChanged:(NSDictionary *)change
 {
     for (ConversationListCell *cell in self.collectionView.visibleCells) {
-        [cell updateRightAccessory];
+        [cell updateAppearance];
     }
 }
 
@@ -402,7 +409,6 @@ static NSString * const CellReuseIdConversation = @"CellId";
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
 {
-    [self.collectionView.collectionViewLayout invalidateLayout];
     NSInteger sections = self.listViewModel.sectionCount;
     return sections;
 }
@@ -418,10 +424,8 @@ static NSString * const CellReuseIdConversation = @"CellId";
     id item = [self.listViewModel itemForIndexPath:indexPath];
     UICollectionViewCell *cell = nil;
 
-    if ([item isKindOfClass:[ConversationListInteractiveItem class]]) {
-        ConversationListInteractiveItem *customItem = (ConversationListInteractiveItem *)item;
-        ConnectRequestsCell *labelCell = [self.collectionView dequeueReusableCellWithReuseIdentifier:customItem.reuseIdentifier forIndexPath:indexPath];
-        [customItem featureCell:cell];
+    if ([item isKindOfClass:[ConversationListConnectRequestsItem class]]) {
+        ConnectRequestsCell *labelCell = [self.collectionView dequeueReusableCellWithReuseIdentifier:CellReuseIdConnectionRequests forIndexPath:indexPath];
         cell = labelCell;
     }
     else if ([item isKindOfClass:[ZMConversation class]]) {
@@ -467,12 +471,11 @@ static NSString * const CellReuseIdConversation = @"CellId";
 
 @implementation ConversationListContentController (UICollectionViewDelegateFlowLayout)
 
-- (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section
+- (CGSize)collectionView:(UICollectionView *)collectionView
+                  layout:(UICollectionViewLayout *)collectionViewLayout
+  sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (section == 0) {
-        return UIEdgeInsetsMake(32, 0, 0, 0);
-    }
-    return UIEdgeInsetsZero;
+    return [self.layoutCell sizeInCollectionViewSize:collectionView.bounds.size];
 }
 
 @end

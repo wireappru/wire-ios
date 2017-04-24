@@ -18,19 +18,20 @@
 
 
 import Foundation
-
+import Cartography
+import WireExtensionComponents
 
 struct CallCellViewModel {
 
     let icon: ZetaIconType
-    let iconColor: ZMAccentColor
+    let iconColor: UIColor?
     let systemMessageType: ZMSystemMessageType
     let font, boldFont: UIFont?
     let textColor: UIColor?
     let message: ZMConversationMessage
 
-    func image() -> UIImage {
-        return UIImage(for: icon, iconSize: .tiny, color: UIColor(for: iconColor))
+    func image() -> UIImage? {
+        return iconColor.map { UIImage(for: icon, iconSize: .tiny, color: $0) }
     }
 
     func attributedTitle() -> NSAttributedString? {
@@ -43,7 +44,8 @@ struct CallCellViewModel {
             else { return nil }
 
         let senderString = string(for: sender)
-        let called = key(with: "called").localized(args:  senderString) && labelFont
+        
+        let called = key(with: "called").localized(pov: sender.pov, args: senderString) && labelFont
         var title = called.adding(font: labelBoldFont, to: senderString)
 
         if systemMessageData.childMessages.count > 0 {
@@ -60,11 +62,14 @@ struct CallCellViewModel {
     private func key(with component: String) -> String {
         return "content.system.call.\(component)"
     }
-
 }
 
 
 class MissedCallCell: IconSystemCell {
+
+    override class var userRegularLabel: Bool {
+        return true
+    }
 
     override var verticalInset: CGFloat {
         return 6
@@ -74,7 +79,7 @@ class MissedCallCell: IconSystemCell {
         super.configure(for: message, layoutProperties: layoutProperties)
         let model = CallCellViewModel(
             icon: .endCall,
-            iconColor: .vividRed,
+            iconColor: labelTextColor,
             systemMessageType: .missedCall,
             font: labelFont,
             boldFont: labelBoldFont,
@@ -82,8 +87,7 @@ class MissedCallCell: IconSystemCell {
             message: message
         )
         leftIconView.image = model.image()
-        labelView.attributedText = model.attributedTitle()
-        labelView.accessibilityLabel = labelView.attributedText?.string
+        attributedText = model.attributedTitle()
         lineView.isHidden = true
     }
 
@@ -107,6 +111,10 @@ class PerformedCallCell: IconSystemCell {
         return formatter
     }
 
+    override class var userRegularLabel: Bool {
+        return true
+    }
+
     override var verticalInset: CGFloat {
         return 6
     }
@@ -115,7 +123,7 @@ class PerformedCallCell: IconSystemCell {
         super.configure(for: message, layoutProperties: layoutProperties)
         let model = CallCellViewModel(
             icon: .callAudio,
-            iconColor: .strongLimeGreen,
+            iconColor: UIColor(for: .strongLimeGreen),
             systemMessageType: .performedCall,
             font: labelFont,
             boldFont: labelBoldFont,
@@ -123,8 +131,7 @@ class PerformedCallCell: IconSystemCell {
             message: message
         )
         leftIconView.image = model.image()
-        labelView.attributedText = model.attributedTitle()
-        labelView.accessibilityLabel = labelView.attributedText?.string
+        attributedText = model.attributedTitle()
         lineView.isHidden = true
     }
 

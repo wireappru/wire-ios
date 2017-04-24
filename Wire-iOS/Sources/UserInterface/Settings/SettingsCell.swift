@@ -36,11 +36,13 @@ protocol SettingsCellType: class {
     var icon: ZetaIconType {get set}
 }
 
-class SettingsTableCell: UITableViewCell, SettingsCellType, Reusable {
-    var iconImageView = UIImageView()
-    var cellNameLabel = UILabel()
-    var valueLabel = UILabel()
-    var imagePreview = UIImageView()
+@objc class SettingsTableCell: UITableViewCell, SettingsCellType, Reusable {
+    let iconImageView = UIImageView()
+    public let cellNameLabel = UILabel()
+    let valueLabel = UILabel()
+    let imagePreview = UIImageView()
+    let separatorLine = UIView()
+    let topSeparatorLine = UIView()
     var cellNameLabelToIconInset: NSLayoutConstraint!
     
     var titleText: String = "" {
@@ -97,6 +99,12 @@ class SettingsTableCell: UITableViewCell, SettingsCellType, Reusable {
         }
     }
     
+    var isFirst: Bool = false {
+        didSet {
+            self.topSeparatorLine.isHidden = !isFirst
+        }
+    }
+    
     var titleColor: UIColor = UIColor.white {
         didSet {
             self.cellNameLabel.textColor = self.titleColor
@@ -143,10 +151,8 @@ class SettingsTableCell: UITableViewCell, SettingsCellType, Reusable {
             iconImageView.centerY == contentView.centerY
         }
         
-        self.cellNameLabel.font = UIFont.systemFont(ofSize: 17)
         self.cellNameLabel.translatesAutoresizingMaskIntoConstraints = false
         self.cellNameLabel.setContentHuggingPriority(UILayoutPriorityRequired, for: .horizontal)
-        self.cellNameLabel.textColor = UIColor.white
         self.contentView.addSubview(self.cellNameLabel)
         
         constrain(self.contentView, self.cellNameLabel, self.iconImageView) { contentView, cellNameLabel, iconImageView in
@@ -186,6 +192,26 @@ class SettingsTableCell: UITableViewCell, SettingsCellType, Reusable {
             imagePreview.trailing == contentView.trailing - 16
             imagePreview.centerY == contentView.centerY
         }
+        
+        self.separatorLine.backgroundColor = UIColor(white: 1.0, alpha: 0.08)
+        self.addSubview(self.separatorLine)
+        
+        constrain(self, self.separatorLine, self.cellNameLabel) { selfView, separatorLine, cellNameLabel in
+            separatorLine.leading == cellNameLabel.leading
+            separatorLine.trailing == selfView.trailing
+            separatorLine.bottom == selfView.bottom
+            separatorLine.height == .hairline
+        }
+        
+        self.topSeparatorLine.backgroundColor = UIColor(white: 1.0, alpha: 0.08)
+        self.addSubview(self.topSeparatorLine)
+        
+        constrain(self, self.topSeparatorLine, self.cellNameLabel) { selfView, topSeparatorLine, cellNameLabel in
+            topSeparatorLine.leading == cellNameLabel.leading
+            topSeparatorLine.trailing == selfView.trailing
+            topSeparatorLine.top == selfView.top
+            topSeparatorLine.height == .hairline
+        }
     }
     
     func setupAccessibiltyElements() {
@@ -204,21 +230,21 @@ class SettingsTableCell: UITableViewCell, SettingsCellType, Reusable {
     }
 }
 
-class SettingsGroupCell: SettingsTableCell {
+@objc class SettingsGroupCell: SettingsTableCell {
     override func setup() {
         super.setup()
         self.accessoryType = UITableViewCellAccessoryType.disclosureIndicator
     }
 }
 
-class SettingsButtonCell: SettingsTableCell {
+@objc class SettingsButtonCell: SettingsTableCell {
     override func setup() {
         super.setup()
         self.cellNameLabel.textColor = UIColor.accent()
     }
 }
 
-class SettingsToggleCell: SettingsTableCell {
+@objc class SettingsToggleCell: SettingsTableCell {
     var switchView: UISwitch!
     
     override func setup() {
@@ -239,7 +265,7 @@ class SettingsToggleCell: SettingsTableCell {
     }
 }
 
-class SettingsValueCell: SettingsTableCell {
+@objc class SettingsValueCell: SettingsTableCell {
     override var descriptor: SettingsCellDescriptorType?{
         willSet {
             if let propertyDescriptor = self.descriptor as? SettingsPropertyCellDescriptorType {
@@ -264,7 +290,7 @@ class SettingsValueCell: SettingsTableCell {
     }
 }
 
-class SettingsTextCell: SettingsTableCell, UITextFieldDelegate {
+@objc class SettingsTextCell: SettingsTableCell, UITextFieldDelegate {
     var textInput: UITextField!
 
     override func setup() {
@@ -284,6 +310,9 @@ class SettingsTextCell: SettingsTableCell, UITextFieldDelegate {
             textInput.bottom == contentView.bottom + 8
             textInput.trailing == trailingBoundaryView.trailing - 16
         }
+        
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(onCellSelected(_:)))
+        self.contentView.addGestureRecognizer(tapGestureRecognizer)
     }
     
     override func setupAccessibiltyElements() {
@@ -292,6 +321,12 @@ class SettingsTextCell: SettingsTableCell, UITextFieldDelegate {
         var currentElements = self.accessibilityElements ?? []
         currentElements.append(contentsOf: [textInput])
         self.accessibilityElements = currentElements
+    }
+    
+    @objc public func onCellSelected(_ sender: AnyObject!) {
+        if !self.textInput.isFirstResponder {
+            self.textInput.becomeFirstResponder()
+        }
     }
     
     // MARK: - UITextFieldDelegate

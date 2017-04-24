@@ -19,14 +19,23 @@
 
 #import "ConversationListViewController.h"
 
-@class SearchViewController;
+NS_ASSUME_NONNULL_BEGIN
 
+@class SearchViewController;
+@class ConversationListTopBar;
+@class SpaceSelectorView;
+@class ConversationListContentController;
 
 @interface ConversationListViewController (Private)
-@property (nonatomic) SearchViewController *searchViewController;
+@property (nonatomic, nullable) SearchViewController *searchViewController;
+@property (nonatomic) ConversationListContentController *listContentController;
 @property (nonatomic, weak, readonly) id<UserProfile> userProfile;
+@property (nonatomic) ConversationListTopBar *topBar;
+@property (nonatomic, nullable) SpaceSelectorView *spacesView;
+@property (nonatomic) BOOL spacesImagesCollapsed;
 
 - (void)removeUserProfileObserver;
-
+- (void)presentSettings;
 @end
 
+NS_ASSUME_NONNULL_END
