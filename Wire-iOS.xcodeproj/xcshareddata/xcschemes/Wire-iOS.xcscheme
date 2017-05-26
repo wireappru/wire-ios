@@ -119,10 +119,6 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-ZMBackendEnvironmentType edge"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
             argument = "-ConsoleAnalytics"
             isEnabled = "NO">
          </CommandLineArgument>
@@ -132,6 +128,11 @@
             key = "DYLD_PRINT_RPATHS"
             value = ""
             isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "IMAGE_DIFF_DIR"
+            value = "$(SOURCE_ROOT)/SnapshotResults"
+            isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "OS_ACTIVITY_MODE"

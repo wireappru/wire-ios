@@ -154,14 +154,7 @@ class VoiceChannelOverlay: UIView {
     var videoViewFullscreen: Bool = true {
         didSet {
             createVideoPreviewIfNeeded()
-            guard let videoPreview = videoPreview, let videoView = videoView else { return }
-            if videoViewFullscreen {
-                videoPreview.frame = bounds
-                insertSubview(videoPreview, aboveSubview: videoView)
-            } else {
-                videoPreview.frame = cameraPreviewView.videoFeedContainer.bounds
-                cameraPreviewView.videoFeedContainer.addSubview(videoPreview)
-            }
+            updateVideoPreviewLocation()
         }
     }
     
@@ -203,6 +196,7 @@ class VoiceChannelOverlay: UIView {
     let degradationBottomLabel = UILabel.multiline
     let topStatusLabel = UILabel.multiline
     let centerStatusLabel = UILabel()
+    let callingProtocolLabel = UILabel()
     
     var statusLabelToTopUserImageInset: NSLayoutConstraint?
     var degradationTopConstraint: NSLayoutConstraint?
@@ -216,6 +210,9 @@ class VoiceChannelOverlay: UIView {
         self.participantsCollectionViewLayout = VoiceChannelCollectionViewLayout()
         self.participantsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: participantsCollectionViewLayout)
         super.init(frame: frame)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
+        
         setupVoiceOverlay()
         createConstraints()
     }
@@ -225,7 +222,13 @@ class VoiceChannelOverlay: UIView {
     }
     
     deinit {
+        NotificationCenter.default.removeObserver(self)
         cancelHideControlsAfterElapsedTime()
+    }
+    
+    func applicationDidBecomeActive() {
+        createVideoViewIfNeeded()
+        createVideoPreviewIfNeeded()
     }
 }
 
@@ -382,18 +385,45 @@ extension VoiceChannelOverlay {
 extension VoiceChannelOverlay {
     
     fileprivate func createVideoPreviewIfNeeded() {
-        if !Settings.shared().disableAVS && videoPreview == nil {
-            // Preview view is moving from one subview to another. We cannot use constraints because renderer break if the view
-            // is removed from hierarchy and immediately being added to the new superview (we need that to reapply constraints)
-            // therefore we use @c autoresizingMask here
-            guard let videoView = videoView else { return }
-            let preview = AVSVideoPreview(frame: bounds)
-            preview.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            preview.isUserInteractionEnabled = false
-            preview.backgroundColor = .clear
-            insertSubview(preview, aboveSubview: videoView)
-            videoPreview = preview
+        guard videoPreview == nil, UIApplication.shared.applicationState == .active, isVideoCall else { return }
+        
+        // Preview view is moving from one subview to another. We cannot use constraints because renderer break if the view
+        // is removed from hierarchy and immediately being added to the new superview (we need that to re-apply constraints)
+        // therefore we use @c autoresizingMask here
+        let preview = AVSVideoPreview(frame: bounds)
+        preview.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        preview.isUserInteractionEnabled = false
+        preview.backgroundColor = .clear
+        preview.isHidden = false
+        videoPreview = preview
+        
+        updateVideoPreviewLocation()
+    }
+    
+    fileprivate func updateVideoPreviewLocation() {
+        guard let videoPreview = videoPreview, let videoView = videoView else { return }
+        
+        if videoViewFullscreen {
+            videoPreview.frame = bounds
+            insertSubview(videoPreview, aboveSubview: videoView)
+        } else {
+            videoPreview.frame = cameraPreviewView.videoFeedContainer.bounds
+            cameraPreviewView.videoFeedContainer.addSubview(videoPreview)
         }
+    }
+    
+    fileprivate func createVideoViewIfNeeded() {
+        guard videoView == nil, UIApplication.shared.applicationState == .active else { return }
+        
+        let video = AVSVideoView()
+        video.shouldFill = true
+        video.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        video.isUserInteractionEnabled = false
+        video.backgroundColor = UIColor(patternImage: .dot(9))
+        video.frame = self.bounds
+        video.isHidden = !isVideoCall
+        insertSubview(video, at: 0)
+        self.videoView = video
     }
 
     fileprivate func setupVoiceOverlay() {
@@ -402,14 +432,7 @@ extension VoiceChannelOverlay {
         callDurationFormatter.allowedUnits = [.minute, .second]
         callDurationFormatter.zeroFormattingBehavior = DateComponentsFormatter.ZeroFormattingBehavior(rawValue: 0)
         
-        if !Settings.shared().disableAVS {
-            let video = AVSVideoView()
-            video.shouldFill = true
-            video.isUserInteractionEnabled = false
-            video.backgroundColor = UIColor(patternImage: .dot(9))
-            addSubview(video)
-            self.videoView = video
-        }
+        createVideoViewIfNeeded()
         
         shadow.isUserInteractionEnabled = false
         shadow.backgroundColor = UIColor(white: 0, alpha: 0.4)
@@ -460,8 +483,14 @@ extension VoiceChannelOverlay {
         centerStatusLabel.textAlignment = .center
         centerStatusLabel.numberOfLines = 2
         centerStatusLabel.text = "voice.status.video_not_available".localized.uppercasedWithCurrentLocale
+        
+        if let callingProtocol = callingConversation.voiceChannel?.callingProtocol, callingProtocol == .version2 {
+            callingProtocolLabel.text = "V2";
+        } else {
+            callingProtocolLabel.isHidden = true
+        }
 
-        [topStatusLabel, centerStatusLabel, degradationTopLabel, degradationBottomLabel].forEach(contentContainer.addSubview)
+        [topStatusLabel, centerStatusLabel, degradationTopLabel, degradationBottomLabel, callingProtocolLabel].forEach(contentContainer.addSubview)
     }
     
     private func configureParticipantsCollectionViewLayout(layout: VoiceChannelCollectionViewLayout) {
@@ -479,7 +508,7 @@ extension VoiceChannelOverlay {
     
     fileprivate func createConstraints(){
         
-        let videoViews: [UIView?] = [videoView, shadow, videoNotAvailableBackground]
+        let videoViews: [UIView?] = [shadow, videoNotAvailableBackground]
         
         constrain(videoViews.flatMap{ $0 }) { views in
             let superview = (views.first?.superview)!
@@ -519,7 +548,7 @@ extension VoiceChannelOverlay {
             degradationBottomLabel.bottom <= callButton.top - 16
         }
         
-        constrain(contentContainer, callingTopUserImage, topStatusLabel, centerStatusLabel) { contentContainer, callingTopUserImage, topStatusLabel, centerStatusLabel in
+        constrain(contentContainer, callingTopUserImage, topStatusLabel, centerStatusLabel, callingProtocolLabel) { contentContainer, callingTopUserImage, topStatusLabel, centerStatusLabel, callingProtocolLabel in
             
             topStatusLabel.leading == contentContainer.leadingMargin ~ 750
             topStatusLabel.trailing == contentContainer.trailingMargin
@@ -530,6 +559,9 @@ extension VoiceChannelOverlay {
             centerStatusLabel.leading == contentContainer.leadingMargin
             centerStatusLabel.trailing == contentContainer.trailingMargin
             centerStatusLabel.centerY == contentContainer.centerY
+            
+            callingProtocolLabel.leading == contentContainer.leading + 16
+            callingProtocolLabel.top == contentContainer.top + 16
         }
 
         constrain(contentContainer, avatarContainer, topStatusLabel, callingUserImage, shieldOverlay) { contentContainer, avatarContainer, topStatusLabel, callingUserImage, shieldOverlay in
@@ -617,7 +649,7 @@ extension VoiceChannelOverlay: UICollectionViewDelegateFlowLayout {
 // MARK: - State transitions
 extension VoiceChannelOverlay {
     
-    private var isVideoCall: Bool {
+    fileprivate var isVideoCall: Bool {
         return callingConversation.voiceChannel?.isVideoCall ?? false
     }
     
@@ -701,6 +733,8 @@ extension VoiceChannelOverlay {
         videoButton.isSelected = videoButton.isEnabled && outgoingVideoActive
         
         if isVideoCall {
+            videoView?.isHidden = false
+            videoPreview?.isHidden = false
             videoViewFullscreen = !connected
         } else {
             videoView?.isHidden = true

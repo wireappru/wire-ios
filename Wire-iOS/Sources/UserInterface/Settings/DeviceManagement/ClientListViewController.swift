@@ -75,13 +75,15 @@ import CocoaLumberjackSwift
         self.title = NSLocalizedString("registration.devices.title", comment:"")
         self.edgesForExtendedLayout = []
 
-        self.initalizeProperties(clientsList ?? [])
+        self.initalizeProperties(clientsList ?? Array(ZMUser.selfUser().clients.filter { !$0.isSelfClient() } ))
 
         self.clientsObserverToken = ZMUserSession.shared()?.add(self)
         self.userObserverToken = UserChangeInfo.add(observer: self, forBareUser: ZMUser.selfUser())
         
         if clientsList == nil {
-            self.showLoadingView = true
+            if clients.isEmpty {
+                self.showLoadingView = true
+            }
             ZMUserSession.shared()?.fetchAllClients()
         }
     }
@@ -120,8 +122,8 @@ import CocoaLumberjackSwift
             self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.cancel, target: self, action: #selector(ClientListViewController.backPressed(_:)))
         }
         
-        if let rootViewController = self.navigationController?.viewControllers.first
-            , self.isEqual(rootViewController) {
+        if let rootViewController = self.navigationController?.viewControllers.first,
+            self.isEqual(rootViewController) {
                 self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(ClientListViewController.backPressed(_:)))
         }
     }
@@ -208,7 +210,7 @@ import CocoaLumberjackSwift
     func finishedFetching(_ userClients: [UserClient]!) {
         self.showLoadingView = false
         
-        self.clients = userClients
+        self.clients = userClients.filter { !$0.isSelfClient() }
     }
     
     func failedToFetchClientsWithError(_ error: Error!) {

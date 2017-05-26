@@ -25,8 +25,10 @@
 
 
 @interface MockConversationListBottomBarDelegate : NSObject <ConversationListBottomBarControllerDelegate>
-@property (nonatomic) NSUInteger contactsButtonTapCount;
+@property (nonatomic) NSUInteger plusButtonCallCount;
 @property (nonatomic) NSUInteger archiveButtonTapCount;
+@property (nonatomic) NSUInteger cameraButtonTapCount;
+@property (nonatomic) NSUInteger composeButtonCallCount;
 @end
 
 
@@ -44,8 +46,14 @@
         case ConversationListButtonTypeArchive:
             self.archiveButtonTapCount++;
             break;
-        case ConversationListButtonTypeContacts:
-            self.contactsButtonTapCount++;
+        case ConversationListButtonTypeCompose:
+            self.composeButtonCallCount++;
+            break;
+        case ConversationListButtonTypeCamera:
+            self.cameraButtonTapCount++;
+            break;
+        case ConversationListButtonTypePlus:
+            self.plusButtonCallCount++;
             break;
     }
 }
@@ -115,23 +123,16 @@
     ZMVerifyViewInAllIPhoneWidths(self.sut.view);
 }
 
-- (void)testThatTheSelectionIsOn_showTooltipSetToYes
-{
-    // when
-    self.sut.showTooltip = YES;
-    
-    // then
-    ZMVerifyViewInAllIPhoneWidths(self.sut.view);
-}
-
 - (void)testThatItCallsTheDelegateWhenTheContactsButtonIsTapped
 {
     // when
-    [self.sut.contactsButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self.sut.plusButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     
     // then
-    XCTAssertEqual(self.mockDelegate.contactsButtonTapCount, 1lu);
+    XCTAssertEqual(self.mockDelegate.plusButtonCallCount, 1lu);
     XCTAssertEqual(self.mockDelegate.archiveButtonTapCount, 0lu);
+    XCTAssertEqual(self.mockDelegate.cameraButtonTapCount, 0lu);
+    XCTAssertEqual(self.mockDelegate.composeButtonCallCount, 0lu);
 }
 
 - (void)testThatItCallsTheDelegateWhenTheArchivedButtonIsTapped
@@ -140,8 +141,34 @@
     [self.sut.archivedButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     
     // then
-    XCTAssertEqual(self.mockDelegate.contactsButtonTapCount, 0lu);
+    XCTAssertEqual(self.mockDelegate.plusButtonCallCount, 0lu);
     XCTAssertEqual(self.mockDelegate.archiveButtonTapCount, 1lu);
+    XCTAssertEqual(self.mockDelegate.cameraButtonTapCount, 0lu);
+    XCTAssertEqual(self.mockDelegate.composeButtonCallCount, 0lu);
+}
+
+- (void)testThatItCallsTheDelegateWhenTheCameraButtonIsTapped
+{
+    // when
+    [self.sut.cameraButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    
+    // then
+    XCTAssertEqual(self.mockDelegate.plusButtonCallCount, 0lu);
+    XCTAssertEqual(self.mockDelegate.archiveButtonTapCount, 0lu);
+    XCTAssertEqual(self.mockDelegate.cameraButtonTapCount, 1lu);
+    XCTAssertEqual(self.mockDelegate.composeButtonCallCount, 0lu);
+}
+
+- (void)testThatItCallsTheDelegateWhenTheComposeButtonIsTapped
+{
+    // when
+    [self.sut.composeButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+
+    // then
+    XCTAssertEqual(self.mockDelegate.plusButtonCallCount, 0lu);
+    XCTAssertEqual(self.mockDelegate.archiveButtonTapCount, 0lu);
+    XCTAssertEqual(self.mockDelegate.cameraButtonTapCount, 0lu);
+    XCTAssertEqual(self.mockDelegate.composeButtonCallCount, 1lu);
 }
 
 @end

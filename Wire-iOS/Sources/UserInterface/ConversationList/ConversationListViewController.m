@@ -90,8 +90,6 @@
 
 @end
 
-
-
 @interface ConversationListViewController ()
 
 @property (nonatomic) ZMConversation *selectedConversation;
@@ -106,7 +104,6 @@
 @property (nonatomic) ConversationListContentController *listContentController;
 @property (nonatomic) InviteBannerViewController *invitationBannerViewController;
 @property (nonatomic) ConversationListBottomBarController *bottomBarController;
-@property (nonatomic) ToolTipViewController *tooltipViewController;
 
 @property (nonatomic) ConversationListTopBar *topBar;
 @property (nonatomic) UIView *contentContainer;
@@ -118,11 +115,9 @@
 @property (nonatomic) NSLayoutConstraint *bottomBarBottomOffset;
 @property (nonatomic) NSLayoutConstraint *bottomBarToolTipConstraint;
 
-@property (nonatomic, nullable) SpaceSelectorView *spacesView;
 @property (nonatomic) CGFloat contentControllerBottomInset;
 
 @property (nonatomic) BOOL initialSyncCompleted;
-@property (nonatomic) BOOL spacesImagesCollapsed;
 
 - (void)setState:(ConversationListState)state animated:(BOOL)animated;
 
@@ -176,9 +171,6 @@
     [self createBottomBarController];
     
     [self createViewConstraints];
-    if (![Settings.sharedSettings contactTipWasDisplayed]) {
-        [self showTooltipView];
-    }
     [self.listContentController.collectionView scrollRectToVisible:CGRectMake(0, 0, self.view.bounds.size.width, 1) animated:NO];
     
     [self updateNoConversationVisibility];
@@ -308,24 +300,6 @@
     [self.listContentController didMoveToParentViewController:self];
 }
 
-- (void)setSpacesImagesCollapsed:(BOOL)spacesImagesCollapsed
-{
-    if (_spacesImagesCollapsed == spacesImagesCollapsed || ([Space spaces].count == 0 && spacesImagesCollapsed == NO)) {
-        return;
-    }
-    
-    _spacesImagesCollapsed = spacesImagesCollapsed;
-    
-    if ([Space spaces].count == 0) {
-        _spacesImagesCollapsed = YES;
-    }
-        
-    [UIView wr_animateWithEasing:RBBEasingFunctionEaseOutExpo duration:0.35f animations:^{
-        self.spacesView.imagesCollapsed = _spacesImagesCollapsed;
-        self.topBar.splitSeparator = !_spacesImagesCollapsed;
-    }];
-}
-
 - (void)setState:(ConversationListState)state animated:(BOOL)animated
 {
     [self setState:state animated:animated completion:nil];
@@ -441,63 +415,6 @@
 - (void)hideArchivedConversations
 {
     [self setState:ConversationListStateConversationList animated:YES];
-}
-
-#pragma mark - ToolTipView
-
-- (void)createToolTipController;
-{
-    @weakify(self)
-    ToolTip *toolTip = [[ToolTip alloc] initWithTitle:NSLocalizedString(@"tool_tip.contacts.title", nil)
-                                          description:NSLocalizedString(@"tool_tip.contacts.message", nil)
-                                              handler:^{
-                                                  [Settings.sharedSettings setContactTipWasDisplayed:YES];
-                                                  @strongify(self)
-                                                  [self setState:ConversationListStatePeoplePicker animated:YES completion:^{
-                                                      @strongify(self)
-                                                      [self removeTooltipView];
-                                                  }];
-                                              }];
-    
-    self.tooltipViewController = [[ToolTipViewController alloc] initWithToolTip:toolTip];
-    self.tooltipViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
-    self.tooltipViewController.toolTip = toolTip;
-    [self.conversationListContainer addSubview:self.tooltipViewController.view];
-    [self addChildViewController:self.tooltipViewController];
-    [self.tooltipViewController didMoveToParentViewController:self];
-}
-
-- (void)updateConstraintWithToolTip;
-{
-    [self.tooltipViewController.view autoPinEdgeToSuperviewEdge:ALEdgeLeft];
-    [self.tooltipViewController.view autoPinEdgeToSuperviewEdge:ALEdgeRight];
-    [self.tooltipViewController.view autoPinEdgeToSuperviewEdge:ALEdgeBottom];
-    
-    self.bottomBarBottomOffset.active = NO;
-    self.bottomBarToolTipConstraint = [self.bottomBarController.view autoPinEdge:ALEdgeBottom
-                                                                          toEdge:ALEdgeTop
-                                                                          ofView:self.tooltipViewController.view
-                                                                      withOffset:self.tooltipViewController.padding];
-}
-
-- (void)showTooltipView;
-{
-    self.bottomBarController.showTooltip = YES;
-    [self createToolTipController];
-    [self updateConstraintWithToolTip];
-    [self.tooltipViewController makeTipPointToView:self.bottomBarController.contactsButton.imageView];
-}
-
-- (void)removeTooltipView;
-{
-    self.bottomBarController.showTooltip = NO;
-    if (self.tooltipViewController.parentViewController) {
-        self.bottomBarToolTipConstraint.active = NO;
-        self.bottomBarBottomOffset.active = YES;
-        
-        [self.tooltipViewController.view removeFromSuperview];
-        [self.tooltipViewController removeFromParentViewController];
-    }
 }
 
 #pragma mark - Selection
@@ -704,12 +621,7 @@
 {
     [self updateBottomBarSeparatorVisibilityWithContentController:controller];
     
-    self.spacesImagesCollapsed = controller.collectionView.contentOffset.y > 0;
-    
-    if (![self showSpaces]) {
-        [self.topBar.leftSeparatorLineView scrollViewDidScroll:controller.collectionView];
-        [self.topBar.rightSeparatorLineView scrollViewDidScroll:controller.collectionView];
-    }
+    [self.topBar scrollViewDidScroll:controller.collectionView];
 }
 
 - (void)conversationList:(ConversationListViewController *)controller didSelectConversation:(ZMConversation *)conversation focusOnView:(BOOL)focus
@@ -748,24 +660,34 @@
 - (void)conversationListBottomBar:(ConversationListBottomBarController *)bar didTapButtonWithType:(enum ConversationListButtonType)buttonType
 {
     switch (buttonType) {
-        case ConversationListButtonTypeContacts: {
-            [Settings.sharedSettings setContactTipWasDisplayed:YES];
-            @weakify(self)
-            [self setState:ConversationListStatePeoplePicker animated:YES completion:^{
-                @strongify(self)
-                [self removeTooltipView];
-            }];
-        }
-            break;
-            
         case ConversationListButtonTypeArchive:
             [self setState:ConversationListStateArchived animated:YES];
             [Analytics.shared tagArchiveOpened];
             break;
+
+        case ConversationListButtonTypePlus:
+            [self presentPeoplePicker];
+            break;
+
+        case ConversationListButtonTypeCompose:
+            [self presentDraftsViewController];
+            break;
             
-        default:
+        case ConversationListButtonTypeCamera:
+            [self showCameraPicker];
             break;
     }
+}
+
+- (void)presentDraftsViewController
+{
+    DraftsRootViewController *draftsController = [[DraftsRootViewController alloc] init];
+    [ZClientViewController.sharedZClientViewController presentViewController:draftsController animated:YES completion:nil];
+}
+
+- (void)presentPeoplePicker
+{
+    [self setState:ConversationListStatePeoplePicker animated:YES completion:nil];
 }
 
 @end
@@ -803,11 +725,16 @@
 
 - (void)updateArchiveButtonVisibility
 {
+    BOOL showArchived = [SessionObjectCache.sharedCache archivedConversations].count > 0;
+    if (showArchived == self.bottomBarController.showArchived) {
+        return;
+    }
+
     [UIView transitionWithView:self.bottomBarController.view
                       duration:0.35
                        options:UIViewAnimationOptionTransitionCrossDissolve
                     animations:^{
-        self.bottomBarController.showArchived = [SessionObjectCache.sharedCache archivedConversations].count > 0;
+                        self.bottomBarController.showArchived = showArchived;
     } completion:nil];
 }
 

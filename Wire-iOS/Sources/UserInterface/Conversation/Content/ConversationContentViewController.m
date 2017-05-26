@@ -347,6 +347,8 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
                 
             case MessageActionDelete:
             {
+                assert([message canBeDeleted]);
+                
                 self.deletionDialogPresenter = [[DeletionDialogPresenter alloc] initWithSourceViewController:self.presentedViewController ?: self];
                 [self.deletionDialogPresenter presentDeletionAlertControllerForMessage:cell.message source:cell completion:^(BOOL deleted) {
                     if (self.presentedViewController && deleted) {
@@ -617,14 +619,16 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
 
 - (void)activeMediaPlayerChanged:(NSDictionary *)change
 {
-    MediaPlaybackManager *mediaPlaybackManager = [AppDelegate sharedAppDelegate].mediaPlaybackManager;
-    id<ZMConversationMessage>mediaPlayingMessage = mediaPlaybackManager.activeMediaPlayer.sourceMessage;
-    
-    if (mediaPlayingMessage && [mediaPlayingMessage.conversation isEqual:self.conversation] && ! [self displaysMessage:mediaPlayingMessage]) {
-        [self.delegate conversationContentViewController:self didEndDisplayingActiveMediaPlayerForMessage:nil];
-    } else {
-        [self.delegate conversationContentViewController:self willDisplayActiveMediaPlayerForMessage:nil];
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{        
+        MediaPlaybackManager *mediaPlaybackManager = [AppDelegate sharedAppDelegate].mediaPlaybackManager;
+        id<ZMConversationMessage>mediaPlayingMessage = mediaPlaybackManager.activeMediaPlayer.sourceMessage;
+        
+        if (mediaPlayingMessage && [mediaPlayingMessage.conversation isEqual:self.conversation] && ! [self displaysMessage:mediaPlayingMessage]) {
+            [self.delegate conversationContentViewController:self didEndDisplayingActiveMediaPlayerForMessage:nil];
+        } else {
+            [self.delegate conversationContentViewController:self willDisplayActiveMediaPlayerForMessage:nil];
+        }
+    });
 }
 
 @end

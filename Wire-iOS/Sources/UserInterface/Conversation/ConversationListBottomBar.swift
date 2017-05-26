@@ -22,7 +22,7 @@ import Cartography
 
 
 @objc enum ConversationListButtonType: UInt {
-    case contacts, archive
+    case archive, compose, camera, plus
 }
 
 @objc protocol ConversationListBottomBarControllerDelegate: class {
@@ -31,127 +31,161 @@ import Cartography
 
 
 @objc final class ConversationListBottomBarController: UIViewController {
-    
+
     weak var delegate: ConversationListBottomBarControllerDelegate?
-    
-    let contactsButton = IconButton()
+
+    let plusButton     = IconButton()
     let archivedButton = IconButton()
-    let contactsButtonContainer = UIView()
-    let archivedButtonContainer = UIView()
+    let cameraButton   = IconButton()
+    let composeButton  = IconButton()
+
     let separator = UIView()
-    let contactsButtonTitle = "bottom_bar.contacts_button.title".localized.uppercased()
-    let heightConstant: CGFloat = 56
-    var accentColorHandler: AccentColorChangeHandler?
+    private let heightConstant: CGFloat = 56
+    private let xInset: CGFloat = 16
+
+    private var didLayout = false
 
     var showArchived: Bool = false {
         didSet {
-            updateArchivedVisibility()
+            guard didLayout else { return }
+            updateViews()
         }
     }
-    
+
+    lazy private var showComposeButtons: Bool = {
+        let debugHideComposeButtonsOverride = false // Set this to not show the compose buttons when debugging
+        return DeveloperMenuState.developerMenuEnabled() && !debugHideComposeButtonsOverride
+    }()
+
     var showSeparator: Bool {
         set { separator.fadeAndHide(!newValue) }
         get { return !separator.isHidden }
     }
-    
-    var showTooltip: Bool = false {
-        didSet {
-            self.updateContactsButtonIconColor()
-        }
-    }
-    
-    private func updateContactsButtonIconColor() {
-        if self.showTooltip {
-            self.contactsButton.setIconColor(UIColor.accent(), for: .normal)
-        }
-        else {
-            self.contactsButton.setIconColor(UIColor.clear, for: UIControlState())
-        }
-    }
-    
+
     required init(delegate: ConversationListBottomBarControllerDelegate? = nil) {
         super.init(nibName: nil, bundle: nil)
         self.delegate = delegate
         createViews()
-        createConstraints()
     }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    
-    fileprivate func createViews() {
-        contactsButton.setTitle(contactsButtonTitle, for: UIControlState())
-        contactsButton.setIcon(.contactsCircle, with: .actionButton, for: UIControlState(), renderingMode: .alwaysOriginal)
-        contactsButton.setIconColor(UIColor.clear, for: UIControlState())
-        contactsButton.titleImageSpacing = 18
-        contactsButton.adjustsTitleWhenHighlighted = true
-        contactsButton.addTarget(self, action: #selector(ConversationListBottomBarController.contactsButtonTapped(_:)), for: .touchUpInside)
-        contactsButton.accessibilityIdentifier = "bottomBarContactsButton"
-        
+
+
+    private func createViews() {
         archivedButton.setIcon(.archive, with: .tiny, for: UIControlState())
-        archivedButton.addTarget(self, action: #selector(ConversationListBottomBarController.archivedButtonTapped(_:)), for: .touchUpInside)
+        archivedButton.addTarget(self, action: #selector(archivedButtonTapped), for: .touchUpInside)
         archivedButton.accessibilityIdentifier = "bottomBarArchivedButton"
 
-        contactsButtonContainer.addSubview(contactsButton)
-        archivedButtonContainer.addSubview(archivedButton)
-        [separator, archivedButton].forEach { $0.isHidden = true }
-        [contactsButtonContainer, archivedButtonContainer, separator].forEach(view.addSubview)
-        
-        accentColorHandler = AccentColorChangeHandler.addObserver(self) { [weak self] _, _ in
-            if let `self` = self {
-                self.updateContactsButtonIconColor()
-            }
+        plusButton.setIcon(.plus, with: .tiny, for: .normal)
+        plusButton.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)
+        plusButton.accessibilityIdentifier = "bottomBarPlusButton"
+
+        composeButton.setIcon(.compose, with: .tiny, for: .normal)
+        composeButton.addTarget(self, action: #selector(composeButtonTapped), for: .touchUpInside)
+        composeButton.accessibilityIdentifier = "bottomBarComposeButton"
+
+        cameraButton.setIcon(.cameraLens, with: .tiny, for: .normal)
+        cameraButton.addTarget(self, action: #selector(cameraButtonTapped), for: .touchUpInside)
+        cameraButton.accessibilityIdentifier = "bottomBarCameraButton"
+
+        addSubviews()
+        [separator, archivedButton].forEach{ $0.isHidden = true }
+
+        if !showComposeButtons {
+            createConstraints()
         }
     }
-    
-    fileprivate func createConstraints() {
-        constrain(view, contactsButton, separator) { view, contactsButton, separator in
+
+    private func addSubviews() {
+        if showComposeButtons {
+            [cameraButton, composeButton, archivedButton, plusButton, separator].forEach(view.addSubview)
+        } else {
+            [archivedButton, plusButton, separator].forEach(view.addSubview)
+        }
+    }
+
+    private func createConstraints() {
+        constrain(view, separator) { view, separator in
             view.height == heightConstant ~ 750
-            
             separator.height == .hairline
             separator.leading == view.leading
             separator.trailing == view.trailing
             separator.top == view.top
         }
-        
-        constrain(view, contactsButtonContainer, contactsButton) { view, container, contactsButton in
-            container.leading == view.leading
-            container.top == view.top
-            container.bottom == view.bottom
-            
-            contactsButton.leading == container.leading + 10
-            contactsButton.trailing == container.trailing - 18
-            contactsButton.centerY == container.centerY
-        }
-        
-        constrain(view, archivedButtonContainer, archivedButton) { view, container, archivedButton in
-            container.trailing == view.trailing
-            container.top == view.top
-            container.bottom == view.bottom
-            
-            archivedButton.trailing == container.trailing - 16
-            archivedButton.leading == container.leading + 24
-            archivedButton.centerY == container.centerY
+
+        if showComposeButtons {
+            createConstraintsWithComposeButtons()
+        } else {
+            createConstraintsWithoutComposeButtons()
         }
     }
-    
-    func updateArchivedVisibility() {
-        contactsButton.setTitle(showArchived ? nil : contactsButtonTitle, for: UIControlState())
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateViews()
+        didLayout = true
+    }
+
+    private func createConstraintsWithoutComposeButtons() {
+        constrain(view, cameraButton, plusButton, archivedButton, composeButton) { view, cameraButton, plusButton, archivedButton, composeButton in
+            plusButton.centerY == view.centerY
+            archivedButton.centerY == view.centerY
+            plusButton.leading == view.leading + xInset
+            archivedButton.trailing == view.trailing - xInset
+        }
+    }
+
+    private func createConstraintsWithComposeButtons() {
+        let containerWidth = composeButton.frame.midX - cameraButton.frame.midX
+
+        constrain(view, cameraButton, plusButton, archivedButton, composeButton) { view, cameraButton, plusButton, archivedButton, composeButton in
+            plusButton.centerY == view.centerY
+            archivedButton.centerY == view.centerY
+
+            cameraButton.centerY == view.centerY
+            composeButton.centerY == view.centerY
+            cameraButton.leading == view.leading + xInset
+            composeButton.trailing == view.trailing - xInset
+
+            if showArchived {
+                let spacingX = containerWidth / 3
+                plusButton.centerX == cameraButton.centerX + spacingX
+                archivedButton.centerX == plusButton.centerX + spacingX
+            } else {
+                plusButton.center == view.center
+            }
+        }
+    }
+
+    func updateViews() {
         archivedButton.isHidden = !showArchived
+
+        if showComposeButtons {
+            [cameraButton, composeButton, archivedButton, plusButton, separator].forEach { $0.removeFromSuperview() }
+            addSubviews()
+            createConstraints()
+        }
     }
-    
+
     // MARK: - Target Action
-    
-    func contactsButtonTapped(_ sender: IconButton) {
-        delegate?.conversationListBottomBar(self, didTapButtonWithType: .contacts)
-    }
-    
-    func archivedButtonTapped(_ sender: IconButton) {
+
+    private dynamic func archivedButtonTapped(_ sender: IconButton) {
         delegate?.conversationListBottomBar(self, didTapButtonWithType: .archive)
     }
-    
+
+    private dynamic func plusButtonTapped(_ sender: IconButton) {
+        delegate?.conversationListBottomBar(self, didTapButtonWithType: .plus)
+    }
+
+    private dynamic func cameraButtonTapped(_ sender: IconButton) {
+        delegate?.conversationListBottomBar(self, didTapButtonWithType: .camera)
+    }
+
+    private dynamic func composeButtonTapped(_ sender: IconButton) {
+        delegate?.conversationListBottomBar(self, didTapButtonWithType: .compose)
+    }
 }
 
 // MARK: - Helper
@@ -162,7 +196,7 @@ public extension UIView {
             alpha = 0
             isHidden = false
         }
-        
+
         let animations = { self.alpha = hide ? 0 : 1 }
         let completion: (Bool) -> Void = { _ in self.isHidden = hide }
         UIView.animate(withDuration: duration, delay: 0, options: UIViewAnimationOptions(), animations: animations, completion: completion)

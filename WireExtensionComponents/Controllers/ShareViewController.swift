@@ -26,7 +26,7 @@ public protocol ShareDestination: Hashable {
 public protocol Shareable {
     associatedtype I: ShareDestination
     func share<I>(to: [I])
-    func previewView() -> UIView
+    func previewView() -> UIView?
 }
 
 final public class ShareViewController<D: ShareDestination, S: Shareable>: UIViewController, UITableViewDelegate, UITableViewDataSource, TokenFieldDelegate, UIViewControllerTransitioningDelegate {
@@ -38,13 +38,14 @@ final public class ShareViewController<D: ShareDestination, S: Shareable>: UIVie
         }
     }
     
-    public var showPreview: Bool = true
-    public var onDismiss: ((ShareViewController)->())?
+    public let showPreview: Bool
+    public var onDismiss: ((ShareViewController, Bool)->())?
     
-    public init(shareable: S, destinations: [D]) {
+    public init(shareable: S, destinations: [D], showPreview: Bool = true) {
         self.destinations = destinations
         self.filteredDestinations = destinations
         self.shareable = shareable
+        self.showPreview = showPreview
         super.init(nibName: nil, bundle: nil)
         self.transitioningDelegate = self
     }
@@ -53,23 +54,21 @@ final public class ShareViewController<D: ShareDestination, S: Shareable>: UIVie
         fatalError("init(coder:) has not been implemented")
     }
     
-    internal var blurView: UIVisualEffectView!
-    internal var containerView  = UIView()
-    internal var shareablePreviewView: UIView?
-    internal var shareablePreviewWrapper: UIView?
-    internal var searchIcon: UIImageView!
-    internal var topSeparatorView: OverflowSeparatorView!
-    internal var destinationsTableView: UITableView!
-    internal var closeButton: IconButton!
-    internal var sendButton: IconButton!
-    internal var tokenField: TokenField!
-    internal var bottomSeparatorLine: UIView!
+    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+    let containerView  = UIView()
+    var shareablePreviewView: UIView?
+    var shareablePreviewWrapper: UIView?
+    let searchIcon = UIImageView()
+    let topSeparatorView = OverflowSeparatorView()
+    let destinationsTableView = UITableView()
+    let closeButton = IconButton.iconButtonDefaultLight()
+    let sendButton = IconButton.iconButtonDefaultDark()
+    let tokenField = TokenField()
+    let bottomSeparatorLine = UIView()
     
     override public func viewDidLoad() {
         super.viewDidLoad()
-        
         self.createViews()
-        
         self.createConstraints()
     }
     
@@ -100,13 +99,13 @@ final public class ShareViewController<D: ShareDestination, S: Shareable>: UIVie
     // MARK: - Actions
     
     public func onCloseButtonPressed(sender: AnyObject?) {
-        self.onDismiss?(self)
+        self.onDismiss?(self, false)
     }
     
     public func onSendButtonPressed(sender: AnyObject?) {
         if self.selectedDestinations.count > 0 {
             self.shareable.share(to: Array(self.selectedDestinations))
-            self.onDismiss?(self)
+            self.onDismiss?(self, true)
         }
     }
     

@@ -78,9 +78,6 @@
 // Conversation List Indicator
 "conversation_list.right_accessory.join_button.title" = "Join";
 
-// Conversation List Bottom Bar
-"bottom_bar.contacts_button.title" = "people";
-
 
 // Profile Header View
 "conversation.connection_view.in_address_book" = "in Contacts";
@@ -148,6 +145,13 @@
 "conversation.status.you_left" = "You left";
 "conversation.status.started_conversation" = "%@ started a conversation";
 "conversation.status.removed_users" = "%@ removed %@";
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Compose Entry Point
+
+"compose.contact.title" = "Conversation";
+"compose.message.title" = "Message";
+
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Conversation
@@ -473,6 +477,7 @@
 
 // Options menu contents
 "self.settings" = "Settings";
+"self.profile" = "Profile";
 "self.help_center" = "Support";
 "self.help_center.support_website" = "Wire Support Website";
 "self.help_center.contact_support" = "Contact Support";
@@ -895,3 +900,17 @@
 "collections.search.field.placeholder" = "Search text messages";
 "collections.search.no_items" = "No results";
 
+
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Message composing / drafts
+
+"compose.drafts.title" = "Messages";
+"compose.drafts.empty.title" = "No messages";
+"compose.drafts.empty.subtitle" = "Tap + to compose one";
+"compose.drafts.compose.title" = "Write a message";
+"compose.drafts.compose.subject.placeholder" = "Tap to set a subject";
+
+"compose.drafts.compose.delete.confirm.title" = "Confirm Deletion";
+"compose.drafts.compose.delete.confirm.message" = "This action will permamently delete this draft and cannot be undone.";
+"compose.drafts.compose.delete.confirm.action.title" = "Delete";

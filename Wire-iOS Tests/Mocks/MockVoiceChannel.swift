@@ -20,6 +20,8 @@ import Foundation
 
 @objc
 class MockVoiceChannel : NSObject, VoiceChannel {
+    var initiator: ZMUser?
+
     public func continueByDecreasingConversationSecurity(userSession: ZMUserSession) {}
     func leaveAndKeepDegradedConversationSecurity(userSession: ZMUserSession) {}
 
@@ -32,6 +34,10 @@ class MockVoiceChannel : NSObject, VoiceChannel {
     }
     
     // MARK - Call Properties
+    
+    var callingProtocol: CallingProtocol {
+        return .version3
+    }
     
     var isVideoCall: Bool = false
     

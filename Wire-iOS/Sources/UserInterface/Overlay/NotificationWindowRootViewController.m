@@ -151,13 +151,12 @@
 
 - (BOOL)shouldAutorotate
 {
-    AppDelegate *appDelegate = [AppDelegate sharedAppDelegate];
-    return [appDelegate.window.rootViewController shouldAutorotate];
+    return UIApplication.sharedApplication.wr_topMostViewController.shouldAutorotate;
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
-    return [self.class wr_supportedInterfaceOrientations];
+    return UIApplication.sharedApplication.wr_topMostViewController.supportedInterfaceOrientations;
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
@@ -209,7 +208,7 @@
 - (void)updateAppearanceForNetworkState:(ZMNetworkState)networkState
 {
     [[ZMUserSession sharedSession] checkIfLoggedInWithCallback:^(BOOL isLoggedIn) {
-        if (networkState == ZMNetworkStateOnlineSynchronizing && [SessionObjectCache sharedCache].conversationList.count == 0 && isLoggedIn) {
+        if (isLoggedIn && networkState == ZMNetworkStateOnlineSynchronizing && [SessionObjectCache sharedCache].conversationList.count == 0) {
             self.networkActivityViewController.view.hidden = YES;
         } else {
             self.networkActivityViewController.view.hidden = NO;
