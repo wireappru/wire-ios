@@ -19,13 +19,18 @@
 
 #import <Foundation/Foundation.h>
 #import "CollectionViewSectionController.h"
+#import "UIColor+WR_ColorScheme.h"
 
-FOUNDATION_EXPORT NSString *const PeoplePickerUsersInContactsReuseIdentifier;
+FOUNDATION_EXPORT NSString * _Nonnull const PeoplePickerUsersInContactsReuseIdentifier;
 
-@class ZMSearchDirectory;
+@class ZMUser, UserSelection, Team;
 
 @interface UsersInContactsSection : NSObject <CollectionViewSectionController>
-@property (nonatomic, strong) ZMSearchDirectory *searchDirectory;
 
-@property (nonatomic) NSArray *contacts;
+@property (nonatomic, nonnull) NSArray<ZMUser *> * contacts;
+@property (nonatomic, nullable) UserSelection *userSelection;
+@property (nonatomic, nullable) NSString *title;
+@property (nonatomic, nullable) Team *team;
+@property (nonatomic) ColorSchemeVariant colorSchemeVariant;
+
 @end

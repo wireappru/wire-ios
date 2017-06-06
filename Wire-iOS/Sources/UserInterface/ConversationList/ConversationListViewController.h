@@ -34,10 +34,12 @@ typedef NS_ENUM(NSUInteger, ConversationListState) {
 
 
 @interface ConversationListViewController : UIViewController
+
 @property (nonatomic, readonly) ZMConversation *selectedConversation;
 @property (nonatomic) UserNameTakeOverViewController *usernameTakeoverViewController;
 @property (nonatomic) BOOL isComingFromRegistration;
 @property (nonatomic, readonly) UIView *contentContainer;
+@property (nonatomic) id startCallToken;
 
 @property (nonatomic, readonly) ConversationListState state;
 
@@ -45,7 +47,7 @@ typedef NS_ENUM(NSUInteger, ConversationListState) {
 - (void)selectConversation:(ZMConversation *)conversation focusOnView:(BOOL)focus animated:(BOOL)animated;
 - (void)selectConversation:(ZMConversation *)conversation focusOnView:(BOOL)focus animated:(BOOL)animated completion:(dispatch_block_t)completion;
 
-- (BOOL)selectInboxAndFocusOnView:(BOOL)focus;
+- (void)selectInboxAndFocusOnView:(BOOL)focus;
 
 /**
  * Scroll to the current selection
@@ -56,5 +58,7 @@ typedef NS_ENUM(NSUInteger, ConversationListState) {
 
 - (void)presentPeoplePickerAnimated:(BOOL)animated;
 - (void)dismissPeoplePickerWithCompletionBlock:(dispatch_block_t)block;
+
+- (void)updateNoConversationVisibility;
 
 @end

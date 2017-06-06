@@ -32,9 +32,7 @@ typedef NS_ENUM(NSUInteger, StartUIAction) {
 
 @interface StartUIViewController : UIViewController
 
-- (instancetype)initWithSearchDirectoryClass:(Class)searchDirectoryClass;
 @property (nonatomic, weak) id <StartUIDelegate> delegate;
-@property (nonatomic, weak) PeopleInputController *peopleInputController;
 @property (nonatomic, readonly) UIScrollView *scrollView;
 
 - (void)showKeyboardIfNeeded;

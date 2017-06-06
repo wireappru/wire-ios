@@ -130,6 +130,7 @@ final public class ConversationAvatarView: UIView {
                 $0.size = .tiny
                 $0.showInitials = (self.mode == .one)
                 $0.isCircular = false
+                $0.team = ZMUser.selfUser().activeTeam
                 if index < users.count {
                     $0.user = users[index]
                 }
@@ -147,7 +148,7 @@ final public class ConversationAvatarView: UIView {
     public var conversation: ZMConversation? = .none {
         didSet {
             guard let conversation = self.conversation else {
-                self.clippingView.subviews.forEach { $0.removeFromSuperview() }
+                self.clippingView.subviews.forEach { $0.isHidden = true }
                 return
             }
             
@@ -160,8 +161,8 @@ final public class ConversationAvatarView: UIView {
     
     private var mode: Mode = .one {
         didSet {
-            self.clippingView.subviews.forEach { $0.removeFromSuperview() }
-            self.userImages().forEach(self.clippingView.addSubview)
+            self.clippingView.subviews.forEach { $0.isHidden = true }
+            self.userImages().forEach { $0.isHidden = false }
             
             if mode == .one {
                 layer.borderWidth = 0
@@ -210,8 +211,9 @@ final public class ConversationAvatarView: UIView {
     
     init() {
         super.init(frame: .zero)
+        [imageViewLeftTop, imageViewRightTop, imageViewLeftBottom, imageViewRightBottom].forEach(self.clippingView.addSubview)
         updateCornerRadius()
-        
+        autoresizesSubviews = false
         layer.masksToBounds = true
         clippingView.clipsToBounds = true
         self.addSubview(clippingView)

@@ -22,9 +22,7 @@
 @import WireExtensionComponents;
 
 #import "StartUIViewController.h"
-#import "StartUIViewController+Testing.h"
 #import "StartUIView.h"
-#import "PeopleSelection.h"
 #import "ProfilePresenter.h"
 #import "ShareContactsViewController.h"
 #import "ZClientViewController.h"
@@ -35,7 +33,6 @@
 #import "Button.h"
 #import "IconButton.h"
 
-#import "SearchTokenStore.h"
 #import "ShareItemProvider.h"
 #import "ActionSheetController.h"
 #import "PeoplePickerEmptyResultsView.h"
@@ -58,18 +55,15 @@
 static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
 
 
-@interface StartUIViewController () <UsersInDirectorySectionDelegate, ZMSearchResultObserver, PeopleSelectionDelegate, PeopleInputControllerTextDelegate, FormStepDelegate, UIPopoverControllerDelegate, ContactsViewControllerDelegate, SearchViewControllerDelegate>
+@interface StartUIViewController () <FormStepDelegate, UIPopoverControllerDelegate, ContactsViewControllerDelegate, UserSelectionObserver, SearchResultsControllerDelegate, SearchHeaderViewControllerDelegate>
 
 @property (nonatomic) StartUIView *startUIView;
 @property (nonatomic) ProfilePresenter *profilePresenter;
 
-@property (nonatomic) SearchViewController *searchViewController;
-@property (nonatomic) ZMSearchDirectory *searchDirectory;
-@property (nonatomic) Class searchDirectoryClass;
-@property (nonatomic) PeopleSelection *selection;
-@property (nonatomic) SearchTokenStore *searchTokenStore;
+@property (nonatomic) SearchHeaderViewController *searchHeaderViewController;
+@property (nonatomic) SearchResultsController *searchResultsController;
+@property (nonatomic) UserSelection *userSelection;
 @property (nonatomic) AnalyticsTracker *analyticsTracker;
-@property (nonatomic) ZMSearchRequest *initialSearchRequest;
 
 @property (nonatomic) UIPopoverController *presentedPopover;
 @property (nonatomic) BOOL addressBookUploadLogicHandled;
@@ -81,106 +75,69 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
 
 - (void)dealloc
 {
-    [self.searchDirectory tearDown];
-}
-
-- (instancetype)initWithSearchDirectoryClass:(Class)searchDirectoryClass
-{
-    self = [super init];
-    if (self) {
-        _searchDirectoryClass = searchDirectoryClass;
-        _mode = StartUIModeNotSet;
-        self.analyticsTracker = [AnalyticsTracker analyticsTrackerWithContext:@"people_picker"];
-        
-        self.initialSearchRequest = [[ZMSearchRequest alloc] init];
-        self.initialSearchRequest.query = @"";
-        self.initialSearchRequest.includeContacts = YES;
-        
-        self.topPeopleLineSection = [TopPeopleLineSection new];
-        self.topPeopleLineSection.delegate = self;
-        
-        self.usersInDirectorySection = [UsersInDirectorySection new];
-        self.usersInDirectorySection.delegate = self;
-        
-        self.usersInContactsSection = [UsersInContactsSection new];
-        self.usersInContactsSection.delegate = self;
-        
-        self.groupConversationsSection = [GroupConversationsSection new];
-        self.groupConversationsSection.delegate = self;
-
-    }
-    return self;
+    [self.userSelection removeObserver:self];
 }
 
 - (instancetype)init
 {
-    self = [self initWithSearchDirectoryClass:[ZMSearchDirectory class]];
+    self = [super init];
+    if (self) {
+        self.analyticsTracker = [AnalyticsTracker analyticsTrackerWithContext:@"people_picker"];
+    }
     return self;
-}
-
-- (void)loadView
-{
-    [super loadView];
-    
-    self.searchViewController = [SearchViewController new];
-    self.searchViewController.delegate = self;
-    [self addChildViewController:self.searchViewController];
-    [self.view addSubview:self.searchViewController.view];
-    [self.searchViewController didMoveToParentViewController:self];
-    
-    [self.searchViewController.view autoPinEdgeToSuperviewEdge:ALEdgeTop];
-    [self.searchViewController.view autoPinEdgeToSuperviewEdge:ALEdgeRight];
-    [self.searchViewController.view autoPinEdgeToSuperviewEdge:ALEdgeLeft];
-    
-    self.startUIView = [[StartUIView alloc] initForAutoLayout];
-    
-    [self.view addSubview:self.startUIView];
-    
-    [self.startUIView autoPinEdgeToSuperviewEdge:ALEdgeLeft];
-    [self.startUIView autoPinEdgeToSuperviewEdge:ALEdgeRight];
-    [self.startUIView autoPinEdgeToSuperviewEdge:ALEdgeBottom];
-    [self.startUIView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.searchViewController.view];
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
+    Team *team = [[ZMUser selfUser] activeTeam];
+    
+    self.userSelection = [[UserSelection alloc] init];
+    [self.userSelection addObserver:self];
+    
+    self.startUIView = [[StartUIView alloc] initForAutoLayout];
+    [self.view addSubview:self.startUIView];
+    
+    self.searchHeaderViewController = [[SearchHeaderViewController alloc] initWithUserSelection:self.userSelection variant:ColorSchemeVariantDark];
+    self.searchHeaderViewController.title = team != nil ? team.name : ZMUser.selfUser.displayName;
+    self.searchHeaderViewController.delegate = self;
+    [self addChildViewController:self.searchHeaderViewController];
+    [self.view addSubview:self.searchHeaderViewController.view];
+    [self.searchHeaderViewController didMoveToParentViewController:self];
+    
+    self.searchResultsController = [[SearchResultsController alloc] initWithCollectionView:self.startUIView.collectionView userSelection:self.userSelection team:[[ZMUser selfUser] activeTeam] variant:ColorSchemeVariantDark isAddingParticipants:NO];
+    self.searchResultsController.mode = SearchResultsControllerModeList;
+    self.searchResultsController.delegate = self;
+    [self.searchResultsController searchContactList];
 
     [self.startUIView.quickActionsBar.inviteButton addTarget:self action:@selector(inviteMoreButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self.startUIView.quickActionsBar.conversationButton addTarget:self action:@selector(createConversationButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self.startUIView.quickActionsBar.callButton addTarget:self action:@selector(callButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self.startUIView.quickActionsBar.videoCallButton addTarget:self action:@selector(videoCallButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    
     [self.startUIView.quickActionsBar.cameraButton addTarget:self action:@selector(cameraButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    
     [self.startUIView.sendInviteActionView setTarget:self action:@selector(sendInvitation:)];
     [self.startUIView.shareContactsActionView setTarget:self action:@selector(shareContacts:)];
     
-    self.searchTokenStore = [SearchTokenStore new];
-    
-    self.selection = [PeopleSelection new];
-    self.selection.peopleInputController = self.searchViewController.peopleInputController;
-    self.selection.delegate = self;
-    self.peopleInputController = self.searchViewController.peopleInputController;
-    self.peopleInputController.selectionDelegate = self.selection;
-    self.peopleInputController.delegate = self;
-    
-    self.sectionAggregator = [[CollectionViewSectionAggregator alloc] init];
-    self.sectionAggregator.collectionView = self.startUIView.collectionView;
-
     self.profilePresenter = [ProfilePresenter new];
 
     self.view.backgroundColor = [UIColor clearColor];
-    [self.view setNeedsUpdateConstraints];
     
-    [self recreateSearchDirectory];
-    [self doInitialSearch];
-        
+    [self createConstraints];
     [self updateActionBar];
-    self.mode = StartUIModeInitial;
-    
     [self handleUploadAddressBookLogicIfNeeded];
+}
+
+- (void)createConstraints
+{
+    [self.searchHeaderViewController.view autoPinEdgeToSuperviewEdge:ALEdgeTop];
+    [self.searchHeaderViewController.view autoPinEdgeToSuperviewEdge:ALEdgeRight];
+    [self.searchHeaderViewController.view autoPinEdgeToSuperviewEdge:ALEdgeLeft];
+    
+    [self.startUIView autoPinEdgeToSuperviewEdge:ALEdgeLeft];
+    [self.startUIView autoPinEdgeToSuperviewEdge:ALEdgeRight];
+    [self.startUIView autoPinEdgeToSuperviewEdge:ALEdgeBottom];
+    [self.startUIView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.searchHeaderViewController.view];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -215,42 +172,31 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
 
 - (void)showKeyboardIfNeeded
 {
-    NSUInteger conversationCount = [SessionObjectCache sharedCache].conversationList.count;
+    NSUInteger conversationCount = [ZMConversationList conversationsInUserSession:[ZMUserSession sharedSession] team:[[ZMUser selfUser] activeTeam]].count;
     if (conversationCount > StartUIInitiallyShowsKeyboardConversationThreshold) {
-        [self.peopleInputController.tokenField becomeFirstResponder];
+        [self.searchHeaderViewController.tokenField becomeFirstResponder];
     }
     
 }
 
-- (void)recreateSearchDirectory
-{
-    [self.searchDirectory removeSearchResultObserver:self];
-    [self.searchDirectory tearDown];
-    self.searchDirectory = nil;
-
-    self.searchDirectory = [[self.searchDirectoryClass alloc] initWithUserSession:ZMUserSession.sharedSession];
-    
-    [self.searchDirectory addSearchResultObserver:self];
-    
-    self.topPeopleLineSection.topConversationDirectory = ZMUserSession.sharedSession.topConversationsDirectory;
-    self.usersInDirectorySection.searchDirectory = self.searchDirectory;
-    self.usersInContactsSection.searchDirectory = self.searchDirectory;
-    self.groupConversationsSection.searchDirectory = self.searchDirectory;
-}
-
 - (void)updateActionBar
 {
-    if (self.selection.selectedUsers.count == 0) {
-        if (self.peopleInputController.plainTextContent.length != 0) {
+    if (self.userSelection.users.count == 0) {
+        if (self.searchHeaderViewController.query.length != 0 ||
+            [[ZMUser selfUser] activeTeam] != nil) {
             self.startUIView.quickActionsBar.hidden = YES;
         } else {
             self.startUIView.quickActionsBar.hidden = NO;
             self.startUIView.quickActionsBar.mode = StartUIQuickActionBarModeInvite;
         }
     }
-    else if (self.selection.selectedUsers.count == 1) {
+    else if (self.userSelection.users.count == 1) {
         self.startUIView.quickActionsBar.hidden = NO;
-        self.startUIView.quickActionsBar.mode = StartUIQuickActionBarModeOpenConversation;
+        if ([[ZMUser selfUser] activeTeam] != nil) { // When in a team we always open group conversations
+            self.startUIView.quickActionsBar.mode = StartUIQuickActionBarModeOpenGroupConversation;
+        } else {
+            self.startUIView.quickActionsBar.mode = StartUIQuickActionBarModeOpenConversation;
+        }
     }
     else {
         self.startUIView.quickActionsBar.hidden = NO;
@@ -260,92 +206,10 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
     [self.view setNeedsLayout];
 }
 
-- (void)setMode:(StartUIMode)mode
-{
-    if (mode == _mode) {
-        return;
-    }
-    
-    _mode = mode;
-    
-    switch (mode) {
-        case StartUIModeInitial:
-        case StartUIModeUsersSelected:
-                self.sectionAggregator.sectionControllers = @[self.topPeopleLineSection, self.usersInContactsSection];
-            break;
-            
-        case StartUIModeSearch:
-                self.sectionAggregator.sectionControllers = @[self.usersInContactsSection, self.groupConversationsSection, self.usersInDirectorySection];
-            break;
-        default:
-            break;
-    }
-
-    [self.sectionAggregator reloadData];
-}
-
-- (NSUInteger)numberOfItems
-{
-    NSInteger items = 0;
-    for (NSInteger section = 0; section < [self.sectionAggregator numberOfSectionsInCollectionView:self.startUIView.collectionView]; section++) {
-        items += [self.sectionAggregator collectionView:self.startUIView.collectionView numberOfItemsInSection:section];
-    }
-    
-    return items;
-}
-
 - (BOOL)shouldShowShareContacts
 {
     AddressBookHelper *helper = [AddressBookHelper sharedHelper];
     return (! helper.isAddressBookAccessDisabled && ! helper.addressBookSearchPerformedAtLeastOnce);
-}
-
-- (BOOL)hasSearchResults
-{
-    BOOL hasResults = NO;
-
-    for (id<CollectionViewSectionController> sectionController in self.sectionAggregator.sectionControllers) {
-        hasResults = hasResults || [sectionController hasSearchResults];
-    }
-
-    return hasResults;
-}
-
-- (void)updateEmptyResultsViewForSearchType:(StartUISearchType)searchType
-{
-    if (self.mode == StartUIModeInitial || self.mode == StartUIModeUsersSelected || (self.mode == StartUIModeSearch && [self hasSearchResults])) {
-        [self.startUIView hideEmptyResutsView];
-    }
-    else {
-        
-        if (searchType == StartUISearchTypeUnknown && [AddressBookHelper sharedHelper].addressBookSearchPerformedAtLeastOnce) {
-            
-            [self.startUIView showEmptySearchResultsAfterAddressBookUpload];
-        }
-        else if (searchType == StartUISearchTypeDirectory) {
-            
-            [self.startUIView showEmptySearchResultsViewForSuggestedUsersShowingShareContacts:self.shouldShowShareContacts];
-        }
-        else {
-            
-            if (self.peopleInputController.userDidConfirmInput) {
-                NSString *currentSearchQuery = self.peopleInputController.plainTextContent;
-                
-                BOOL isEmailLike = currentSearchQuery.length > 0 && [currentSearchQuery rangeOfString:@"@"].length != 0;
-                
-                BOOL validEmail = YES;
-                NSError *emailValidationError;
-                
-                if (isEmailLike) {
-                    NSString *possibleEmailString = currentSearchQuery;
-                    ZMUser<ZMEditableUser> *fullSelfUser = [ZMUser selfUserInUserSession:[ZMUserSession sharedSession]];
-                    validEmail = [fullSelfUser validateValue:&possibleEmailString forKey:@"emailAddress" error:&emailValidationError];
-                }
-                
-                [self.startUIView showEmptySearchResultsViewForEmail:isEmailLike && validEmail showShareContacts:self.shouldShowShareContacts];
-            }
-        }
-    }
 }
 
 - (UIScrollView *)scrollView
@@ -353,98 +217,22 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
     return self.startUIView.collectionView;
 }
 
-- (void)setPeopleInputController:(PeopleInputController *)peopleInputController
-{
-    _peopleInputController = peopleInputController;
-}
-
 #pragma mark - Instance methods
-
-- (void)doInitialSearch
-{
-    [self executeSearch:^{
-        return [self.searchDirectory performRequest:self.initialSearchRequest];
-    } withType:StartUISearchTypeDirectory];
-}
-
-- (void)executeSearch:(ZMSearchToken (^)(void))searchBlock withType:(StartUISearchType)searchType
-{
-    if (!searchBlock) {
-        return;
-    }
-
-    ZMSearchToken searchToken = searchBlock();
-    if (searchToken == nil) {
-        return;
-    }
-    
-    [self.searchTokenStore searchStarted:searchType withToken:searchToken];
-    @weakify(self);
-    
-    NSInteger secondsToDelaySearchProgressViews = 2;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(secondsToDelaySearchProgressViews * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        
-        @strongify(self);
-        
-        BOOL isSearchForTokenLatestSeach = [self.searchTokenStore isLatestSearchOfType:searchType matchingToken:searchToken];
-        if (isSearchForTokenLatestSeach) {
-            NSInteger itemCount = [self numberOfItems];
-            if (itemCount < 0) {
-                [self.startUIView showSearchProgressView];
-            }
-        }
-    });
-}
 
 - (void)performSearch
 {
-    NSString *searchString = self.peopleInputController.plainTextContent;
+    NSString *searchString = self.searchHeaderViewController.query;
     DDLogInfo(@"Search for %@", searchString);
-    [self.startUIView hideEmptyResutsView];
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performSearch) object:nil];
-
+    
     if (searchString.length == 0) {
-        if (self.selection.selectedUsers.count == 0) {
-            self.mode = StartUIModeInitial;
-            [self doInitialSearch];
-        }
-        else {
-            self.mode = StartUIModeUsersSelected;
-            [self executeSearch:^{
-                return [self.searchDirectory searchForLocalUsersAndConversationsMatchingQueryString:searchString];
-            } withType:StartUISearchTypeContactsAndConverastions];
-        }
-    }
-    else {
-        self.mode = StartUIModeSearch;
+        self.searchResultsController.mode = SearchResultsControllerModeList;
+        [self.searchResultsController searchContactList];
+    } else {
         BOOL leadingAt = [[searchString substringToIndex:1] isEqualToString:@"@"];
+        BOOL hasSelection = self.userSelection.users.count > 0;
         [Analytics.shared tagEnteredSearchWithLeadingAtSign:leadingAt context:SearchContextStartUI];
-        // invoke directory search with the new text    
-        [self executeSearch:^{
-            return [self.searchDirectory searchForUsersAndConversationsMatchingQueryString:searchString];
-        } withType:StartUISearchTypeContactsAndConverastions];
-    }
-}
-
-- (void)tagAnalyticsForSelectionIndexPath:(NSIndexPath *)indexPath
-{
-    if (self.mode == StartUIModeInitial) {
-        
-        if (indexPath.section == 0) {
-            [[Analytics shared] tagSelectedTopContact];
-        }
-        else if (indexPath.section == 1) {
-            [[Analytics shared] tagSelectedSuggestedUserWithIndex:indexPath.row];
-        }
-    }
-    else if (self.mode == StartUIModeSearch) {
-        
-        if (indexPath.section == 0) {
-            [[Analytics shared] tagSelectedSearchResultUserWithIndex:indexPath.row isEmailSearch:NO];
-        }
-        else if (indexPath.section == 2) {
-            [[Analytics shared] tagSelectedSuggestedUserWithIndex:indexPath.row];
-        }
+        self.searchResultsController.mode = hasSelection ? SearchResultsControllerModeSelection : SearchResultsControllerModeSearch;
+        [self.searchResultsController searchWithQuery:searchString local:hasSelection];
     }
 }
 
@@ -464,26 +252,26 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
 
 - (void)createConversationButtonTapped:(id)sender
 {
-    [self.peopleInputController.tokenField resignFirstResponder];
-    [self.delegate startUI:self didSelectUsers:self.selection.selectedUsers forAction:StartUIActionCreateOrOpenConversation];
+    [self.searchHeaderViewController.tokenField resignFirstResponder];
+    [self.delegate startUI:self didSelectUsers:self.userSelection.users forAction:StartUIActionCreateOrOpenConversation];
 }
 
 - (void)callButtonTapped:(id)sender
 {
-    [self.peopleInputController.tokenField resignFirstResponder];
-    [self.delegate startUI:self didSelectUsers:self.selection.selectedUsers forAction:StartUIActionCall];
+    [self.searchHeaderViewController.tokenField resignFirstResponder];
+    [self.delegate startUI:self didSelectUsers:self.userSelection.users forAction:StartUIActionCall];
 }
 
 - (void)videoCallButtonTapped:(id)sender
 {
-    [self.peopleInputController.tokenField resignFirstResponder];
-    [self.delegate startUI:self didSelectUsers:self.selection.selectedUsers forAction:StartUIActionVideoCall];
+    [self.searchHeaderViewController.tokenField resignFirstResponder];
+    [self.delegate startUI:self didSelectUsers:self.userSelection.users forAction:StartUIActionVideoCall];
 }
 
 - (void)cameraButtonTapped:(id)sender
 {
-    [self.peopleInputController.tokenField resignFirstResponder];
-    [self.delegate startUI:self didSelectUsers:self.selection.selectedUsers forAction:StartUIActionPostPicture];
+    [self.searchHeaderViewController.tokenField resignFirstResponder];
+    [self.delegate startUI:self didSelectUsers:self.userSelection.users forAction:StartUIActionPostPicture];
 }
 
 #pragma mark - Empty results actions
@@ -500,7 +288,7 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
 
 - (void)presentProfileViewControllerForUser:(id<ZMSearchableUser>)bareUser atIndexPath:(NSIndexPath *)indexPath
 {
-    [self.peopleInputController.tokenField resignFirstResponder];
+    [self.searchHeaderViewController.tokenField resignFirstResponder];
 
     UICollectionViewCell *cell = [self.startUIView.collectionView cellForItemAtIndexPath:indexPath];
     
@@ -512,9 +300,8 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
             [self.startUIView.collectionView reloadItemsAtIndexPaths:self.startUIView.collectionView.indexPathsForVisibleItems];
         }
         else {
-            if (self.peopleInputController.retainSelectedState && self.profilePresenter.keyboardPersistedAfterOpeningProfile) {
-                [self.peopleInputController.tokenField becomeFirstResponder];
-                self.peopleInputController.retainSelectedState = NO;
+            if (self.profilePresenter.keyboardPersistedAfterOpeningProfile) {
+                [self.searchHeaderViewController.tokenField becomeFirstResponder];
                 self.profilePresenter.keyboardPersistedAfterOpeningProfile = NO;
             }
         }
@@ -524,7 +311,7 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
 
 - (void)presentAddressBookUploadDialogue
 {
-    [self.peopleInputController.tokenField resignFirstResponder];
+    [self.searchHeaderViewController.tokenField resignFirstResponder];
     
     ShareContactsViewController *shareContactsViewController = [[ShareContactsViewController alloc] init];
     shareContactsViewController.formStepDelegate = self;
@@ -540,264 +327,112 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
     });
 }
 
-#pragma mark - ZMSearchResultsObserver
+#pragma mark - UserSelectionObserver
 
-- (void)didReceiveSearchResult:(ZMSearchResult *)result forToken:(ZMSearchToken)searchToken
-{   
-    StartUISearchType searchType = [self.searchTokenStore searchTypeForSeachToken:searchToken];
-    BOOL isLatestSearch = [self.searchTokenStore isLatestSearchMatchingToken:searchToken];
-    
-    [self.searchTokenStore searchEndedWithToken:searchToken];
-    
-    if (isLatestSearch || searchType == StartUISearchTypeUnknown) { // the search that is returned after AB upload
-        [self.startUIView hideSearchProgressView];
-        
-        [self updateEmptyResultsViewForSearchType:searchType];
+- (void)userSelection:(UserSelection *)userSelection didAddUser:(ZMUser *)user
+{
+    [self updateActionBar];
+}
+
+- (void)userSelection:(UserSelection *)userSelection didRemoveUser:(ZMUser * _Nonnull)user
+{
+    [self updateActionBar];
+}
+
+- (void)userSelection:(UserSelection *)userSelection wasReplacedBy:(NSArray<ZMUser *> *)users
+{
+    [self updateActionBar];
+}
+
+#pragma mark - SearchResultsControllerDelegate
+
+- (void)searchResultsController:(SearchResultsController *)searchResultsController didTapOnUser:(id<ZMSearchableUser>)user indexPath:(NSIndexPath *)indexPath section:(enum SearchResultsControllerSection)section
+{
+    if ([user conformsToProtocol:@protocol(AnalyticsConnectionStateProvider)]) {
+        [Analytics.shared tagSelectedSearchResultWithConnectionStateProvider:(id<AnalyticsConnectionStateProvider>)user
+                                                                     context:SearchContextStartUI];
     }
     
-    NSInteger items = [self numberOfItems];
+    switch (section) {
+        case SearchResultsControllerSectionTopPeople:
+            [[Analytics shared] tagSelectedTopContact];
+            break;
+        case SearchResultsControllerSectionContacts:
+            [[Analytics shared] tagSelectedSearchResultUserWithIndex:indexPath.row];
+            break;
+        case SearchResultsControllerSectionDirectory:
+            [[Analytics shared] tagSelectedSuggestedUserWithIndex:indexPath.row];
+            break;
+        default:
+            break;
+    }
     
-    if (items != 0) {
+    if (! user.isConnected && section != SearchResultsControllerSectionTeamMembers) {
+        [self presentProfileViewControllerForUser:user atIndexPath:indexPath];
+    }
+}
+
+- (void)searchResultsController:(SearchResultsController *)searchResultsController didDoubleTapOnUser:(id<ZMSearchableUser>)user indexPath:(NSIndexPath *)indexPath
+{
+    ZMUser *unboxedUser = BareUserToUser(user);
+    
+    if (unboxedUser != nil && unboxedUser.isConnected && ! unboxedUser.isBlocked) {
+        if (user != nil && [self.delegate respondsToSelector:@selector(startUI:didSelectUsers:forAction:)]) {
+            if (self.userSelection.users.count == 1 && ![self.userSelection.users containsObject:unboxedUser]) {
+                return;
+            }
+            [self.delegate startUI:self didSelectUsers:[NSSet setWithObject:user] forAction:StartUIActionCreateOrOpenConversation];
+        }
+    }
+}
+
+- (void)searchResultsController:(SearchResultsController *)searchResultsController didTapOnConversation:(ZMConversation *)conversation
+{
+    if (conversation.conversationType == ZMConversationTypeGroup) {
+        if ([self.delegate respondsToSelector:@selector(startUI:didSelectConversation:)]) {
+            [self.delegate startUI:self didSelectConversation:conversation];
+        }
+    }
+}
+
+- (void)searchResultsController:(SearchResultsController *)searchResultsController didReceiveEmptyResult:(BOOL)empty mode:(enum SearchResultsControllerMode)mode
+{
+    if (empty && mode == SearchResultsControllerModeList) {
+        [self.startUIView showEmptySearchResultsViewForSuggestedUsersShowingShareContacts:self.shouldShowShareContacts];
+    } else {
         [self.startUIView hideEmptyResutsView];
     }
 }
 
-#pragma mark - UsersInDirectorySectionDelegate
+#pragma mark - SearchHeaderViewControllerDelegate
 
-- (void)usersInDirectoryWantsToLoadMoreSuggestions:(UsersInDirectorySection *)suggestions
+- (void)searchHeaderViewControllerDidCancelAction:(SearchHeaderViewController *)searchHeaderViewController
 {
-    [self recreateSearchDirectory];
+    [self.searchHeaderViewController.tokenField resignFirstResponder];
+    [self.delegate startUIDidCancel:self];
 }
 
-- (BOOL)usersInDirectoryIsSearchActive:(UsersInDirectorySection *)section
+- (void)searchHeaderViewControllerDidConfirmAction:(SearchHeaderViewController *)searchHeaderViewController
 {
-    return (self.mode == StartUIModeSearch);
-}
-
-#pragma mark - PeopleSelectionDelegate
-
-- (void)selectedUsersUpdated:(PeopleSelection *)selection
-{
-    [self updateActionBar];
-    
-    if (selection.selectedUsers.count == 0) {
-        self.mode = StartUIModeInitial;
-        [self doInitialSearch];
-    }
-}
-
-- (void)peopleSelection:(PeopleSelection *)selection didDeselectUsers:(NSSet *)users
-{
-    [[self.startUIView.collectionView visibleCells] enumerateObjectsUsingBlock:^(UICollectionViewCell* cell, NSUInteger idx, BOOL *stop) {
-        
-        id<ZMBareUser> user = nil;
-        if ([cell isKindOfClass:[SearchResultCell class]]) {
-            user = [(SearchResultCell *)cell user];
-        }
-        else if ([cell isKindOfClass:[TopPeopleCell class]]) {
-            user = [(TopPeopleCell *)cell user];
-        }
-        
-        if ([user isKindOfClass:[ZMSearchUser class]]) {
-            user = [(ZMSearchUser *)user user];
-        }
-        
-        if (user != nil && [users containsObject:user]) {
-            cell.selected = NO;
-            [self.startUIView.collectionView deselectItemAtIndexPath:[self.startUIView.collectionView indexPathForCell:cell] animated:NO];
-        }
-    }];
-    
-    [self.topPeopleLineSection peopleSelection:selection didDeselectUsers:users];
-}
-
-#pragma mark - CollectionViewSectionDelegate
-
-- (void)collectionViewSectionController:(id<CollectionViewSectionController>)controller featureCell:(UICollectionViewCell *)cell forItem:(id)modelObject inCollectionView:(UICollectionView *)collectionView atIndexPath:(NSIndexPath *)indexPath
-{
-    id<ZMBareUser> user = nil;
-    
-    // Top conversations are actual conversations, so model object can be conversation or user
-    if ([modelObject isKindOfClass:[ZMUser class]]) {
-        user = modelObject;
-    }
-    else if (BareUserToUser(modelObject) != nil) {
-        user = BareUserToUser(modelObject);
-    }
-    else if ([modelObject conformsToProtocol:@protocol(ZMBareUser)]) {
-        user = modelObject;
-    }
-    else if ([modelObject isKindOfClass:[ZMConversation class]]) {
-        ZMConversation *conversation = modelObject;
-        if (conversation.conversationType == ZMConversationTypeOneOnOne) {
-            user = conversation.firstActiveParticipantOtherThanSelf;
-        }
-    }
-    
-    if ([self.selection.selectedUsers containsObject:user]) {
-        cell.selected = YES;
-        [collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
-    }
-}
-
-- (NSIndexPath *)collectionViewSectionController:(id<CollectionViewSectionController>)controller indexPathForItemIndex:(NSUInteger)itemIndex
-{
-    NSUInteger sectionIndex = [self.sectionAggregator.visibleSectionControllers indexOfObject:controller];
-    assert(sectionIndex != NSNotFound);
-    return [NSIndexPath indexPathForItem:itemIndex inSection:sectionIndex];
-}
-
-- (void)collectionViewSectionController:(id<CollectionViewSectionController>)controller didSelectItem:(id)modelObject atIndexPath:(NSIndexPath *)indexPath
-{
-    if ([modelObject conformsToProtocol:@protocol(AnalyticsConnectionStateProvider)]) {
-        [Analytics.shared tagSelectedSearchResultWithConnectionStateProvider:(id<AnalyticsConnectionStateProvider>)modelObject
-                                                                     context:SearchContextStartUI];
-    }
-
-    if ([modelObject isKindOfClass:[ZMConversation class]]) {
-        ZMConversation *conversation = modelObject;
-        ZMUser *user = conversation.firstActiveParticipantOtherThanSelf;
-        
-        if (conversation.conversationType == ZMConversationTypeOneOnOne && user.isBlocked) {
-            [self presentProfileViewControllerForUser:user atIndexPath:indexPath];
-        }
-        else {
-            if (conversation.conversationType == ZMConversationTypeGroup) { // double tap condition
-                if ([self.delegate respondsToSelector:@selector(startUI:didSelectConversation:)]) {
-                    [self.delegate startUI:self didSelectConversation:modelObject];
-                }
-            }
-            else {
-                [self.selection addUserToSelectedResults:user];
-            }
-        }
-        
-    } else if ([modelObject conformsToProtocol:@protocol(ZMSearchableUser)]) {
-        id<ZMSearchableUser> searchableUser = modelObject;
-        ZMUser *user = BareUserToUser(searchableUser);
-            
-        BOOL isAlreadySelectedUser = [self.selection.selectedUsers containsObject:user];
-        
-        if (user &&
-            ! isAlreadySelectedUser &&
-            user.isConnected &&
-            ! user.isBlocked) {
-            [self.selection addUserToSelectedResults:user];
-        }
-        else {
-            [self presentProfileViewControllerForUser:searchableUser atIndexPath:indexPath];
-            [self.startUIView.collectionView deselectItemAtIndexPath:indexPath animated:NO];
-        }
-    }
-    
-    if (self.selection.selectedUsers.count == 1) {
-        self.mode = StartUIModeUsersSelected;
-        [self executeSearch:^{
-            return [self.searchDirectory searchForLocalUsersAndConversationsMatchingQueryString:self.peopleInputController.plainTextContent];
-        } withType:StartUISearchTypeContactsAndConverastions];
+    if (self.userSelection.users.count > 0) {
+        [self.delegate startUI:self didSelectUsers:self.userSelection.users forAction:StartUIActionCreateOrOpenConversation];
     }
     else {
-        [self.sectionAggregator reloadData];
-    }
-    
-    [self tagAnalyticsForSelectionIndexPath:indexPath];
-}
-
-- (void)collectionViewSectionController:(id<CollectionViewSectionController>)controller didDeselectItem:(id)modelObject atIndexPath:(NSIndexPath *)indexPath
-{
-    ZMSearchUser *searchUser = nil;
-    ZMUser *user = nil;
-    
-    if ([modelObject isKindOfClass:[ZMConversation class]]) {
-        ZMConversation *conversation = modelObject;
-        user = conversation.firstActiveParticipantOtherThanSelf;
-    } else if ([modelObject isKindOfClass:[ZMSearchUser class]]) {
-        searchUser = modelObject;
-        user = searchUser.user;
-    }
-    
-    if (user) {
-        [self.selection removeUserFromSelectedResults:user];
-    }
-    
-    [self.sectionAggregator reloadData];
-}
-
-- (void)collectionViewSectionController:(id<CollectionViewSectionController>)controller didDoubleTapItem:(id)modelObject atIndexPath:(NSIndexPath *)indexPath
-{
-    if ([modelObject isKindOfClass:[ZMConversation class]]) {
-        ZMConversation *conversation = modelObject;
-
-        if (conversation.conversationType == ZMConversationTypeOneOnOne) {
-            ZMUser *otherUser = conversation.firstActiveParticipantOtherThanSelf;
-
-            if (self.selection.selectedUsers.count == 1 && ![self.selection.selectedUsers containsObject:otherUser]) {
-                return;
-            }
-        }
-
-        if ([self.delegate respondsToSelector:@selector(startUI:didSelectConversation:)]) {
-            [self.delegate startUI:self didSelectConversation:modelObject];
-        }
-        
-    }
-    else if ([modelObject isKindOfClass:[ZMSearchUser class]]) {
-
-        id<ZMSearchableUser> searchableUser = modelObject;
-        ZMUser *user = BareUserToUser(searchableUser);
-
-        if (user.isConnected && ! user.isBlocked) {
-
-            if (user != nil && [self.delegate respondsToSelector:@selector(startUI:didSelectUsers:forAction:)]) {
-                if (self.selection.selectedUsers.count == 1 && ![self.selection.selectedUsers containsObject:user]) {
-                    return;
-                }
-
-                [self.delegate startUI:self didSelectUsers:[NSSet setWithObject:user] forAction:StartUIActionCreateOrOpenConversation];
-            }
-        }
-        else {
-            [self presentProfileViewControllerForUser:searchableUser atIndexPath:indexPath];
-
-            if (IS_IPHONE && self.peopleInputController.tokenField.isFirstResponder) {
-                self.peopleInputController.retainSelectedState = YES;
-                [self.peopleInputController.tokenField resignFirstResponder];
-                self.profilePresenter.keyboardPersistedAfterOpeningProfile = YES;
-            }
-
-            [self.startUIView.collectionView deselectItemAtIndexPath:indexPath animated:NO];
-        }
+        [self.searchHeaderViewController resetQuery];
     }
 }
 
-
-- (void)peopleInputController:(PeopleInputController *)controller changedFilterTextTo:(NSString *)text
+- (void)searchHeaderViewController:(SearchHeaderViewController *)searchHeaderViewController updatedSearchQuery:(NSString *)query
 {
+    [self.searchResultsController cancelPreviousSearch];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performSearch) object:nil];
-    [self performSelector:@selector(performSearch) withObject:nil afterDelay:0.3f];
-}
-
-- (void)peopleInputControllerDidConfirmInput:(PeopleInputController *)controller
-{
-    if (self.selection.selectedUsers.count > 0) {
-        [self.delegate startUI:self didSelectUsers:self.selection.selectedUsers forAction:StartUIActionCreateOrOpenConversation];
-    }
-    else {
-        [self.peopleInputController filterUnwantedAttachments];
-        [self peopleInputController:controller changedFilterTextTo:controller.plainTextContent];
-    }
+    [self performSelector:@selector(performSearch) withObject:nil afterDelay:0.2f];
 }
 
 #pragma mark - FormStepDelegate
 
 - (void)didCompleteFormStep:(UIViewController *)viewController
 {
-    if (self.searchTokenStore.isSearchRunning) {
-        [self.startUIView showSearchProgressView];
-    } else if (! [self hasSearchResults]) {
-        [self.startUIView showEmptySearchResultsViewForSuggestedUsersShowingShareContacts:self.shouldShowShareContacts];
-    }
-    
     [viewController dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -805,7 +440,6 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
 {
     [viewController dismissViewControllerAnimated:YES completion:nil];
 }
-
 
 #pragma mark - UIPopoverControllerDelegate
 
@@ -839,15 +473,6 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
     [self dismissViewControllerAnimated:YES completion:^{
         [self wr_presentInviteActivityViewControllerWithSourceView:self.startUIView.quickActionsBar logicalContext:GenericInviteContextStartUIBanner];
     }];
-}
-
-
-#pragma mark - SearchViewControllerDelegate
-
-- (void)searchViewControllerWantsToDismissController:(SearchViewController *)searchViewController
-{
-    [self.peopleInputController.tokenField resignFirstResponder];
-    [self.delegate startUIDidCancel:self];
 }
 
 @end

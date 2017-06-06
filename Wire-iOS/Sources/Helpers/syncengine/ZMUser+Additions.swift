@@ -24,3 +24,9 @@ extension ZMUser {
         return self.isSelfUser ? .secondPerson : .thirdPerson
     }
 }
+
+extension ZMUser {
+    var activeTeam: Team? {
+        return self.activeTeams.first
+    }
+}
