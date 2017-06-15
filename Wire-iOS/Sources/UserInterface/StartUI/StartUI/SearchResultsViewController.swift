@@ -19,33 +19,24 @@
 import Foundation
 import WireSyncEngine
 
-extension SearchResult {
+@objc
+public protocol SearchResultsViewControllerDelegate {
     
-    var isEmpty : Bool {
-        return contacts.count == 0 && teamMembers.count == 0 && conversations.count == 0 && directory.count == 0
-    }
+    func searchResultsViewController(_ searchResultsViewController: SearchResultsViewController, didTapOnUser user: ZMSearchableUser, indexPath: IndexPath, section: SearchResultsViewControllerSection)
+    func searchResultsViewController(_ searchResultsViewController: SearchResultsViewController, didDoubleTapOnUser user: ZMSearchableUser, indexPath: IndexPath)
+    func searchResultsViewController(_ searchResultsViewController: SearchResultsViewController, didTapOnConversation conversation: ZMConversation)
     
 }
 
 @objc
-public protocol SearchResultsControllerDelegate {
-    
-    func searchResultsController(_ searchResultsController: SearchResultsController, didTapOnUser user: ZMSearchableUser, indexPath: IndexPath, section: SearchResultsControllerSection)
-    func searchResultsController(_ searchResultsController: SearchResultsController, didDoubleTapOnUser user: ZMSearchableUser, indexPath: IndexPath)
-    func searchResultsController(_ searchResultsController: SearchResultsController, didTapOnConversation conversation: ZMConversation)
-    func searchResultsController(_ searchResultsController: SearchResultsController, didReceiveEmptyResult empty: Bool, mode: SearchResultsControllerMode)
-    
-}
-
-@objc
-public enum SearchResultsControllerMode : Int {
+public enum SearchResultsViewControllerMode : Int {
     case search
     case selection
     case list
 }
 
 @objc
-public enum SearchResultsControllerSection : Int {
+public enum SearchResultsViewControllerSection : Int {
     case unknown
     case topPeople
     case contacts
@@ -54,11 +45,53 @@ public enum SearchResultsControllerSection : Int {
     case directory
 }
 
-@objc
-public class SearchResultsController : NSObject {
+
+
+extension UIViewController {
+    class ControllerHierarchyIterator: IteratorProtocol {
+        private var current: UIViewController
+        
+        init(controller: UIViewController) {
+            current = controller
+        }
+        
+        func next() -> UIViewController? {
+            var candidate: UIViewController? = .none
+            if let controller = current.navigationController {
+                candidate = controller
+            }
+            else if let controller = current.presentingViewController {
+                candidate = controller
+            }
+            else if let controller = current.parent {
+                candidate = controller
+            }
+            if let candidate = candidate {
+                current = candidate
+            }
+            return candidate
+        }
+    }
     
+    func isContainedInPopover() -> Bool {
+        var hierarchy = ControllerHierarchyIterator(controller: self)
+        
+        return hierarchy.any {
+            if let arrowDirection = $0.popoverPresentationController?.arrowDirection,
+                arrowDirection != .unknown {
+                return true
+            }
+            else {
+                return false
+            }
+        }
+    }
+}
+
+public class SearchResultsViewController : UIViewController {
+    
+    var searchResultsView : SearchResultsView?
     let searchDirectory : SearchDirectory
-    let collectionView : UICollectionView
     let userSelection: UserSelection
     
     let sectionAggregator : CollectionViewSectionAggregator
@@ -74,9 +107,9 @@ public class SearchResultsController : NSObject {
     
     public var filterConversation : ZMConversation? = nil
     
-    public weak var delegate : SearchResultsControllerDelegate? = nil
+    public weak var delegate : SearchResultsViewControllerDelegate? = nil
     
-    public var mode : SearchResultsControllerMode = .search {
+    public var mode : SearchResultsViewControllerMode = .search {
         didSet{
             updateVisibleSections()
         }
@@ -87,8 +120,7 @@ public class SearchResultsController : NSObject {
     }
     
     @objc
-    public init(collectionView: UICollectionView, userSelection: UserSelection, team: Team?, variant: ColorSchemeVariant, isAddingParticipants : Bool = false) {
-        self.collectionView = collectionView
+    public init(userSelection: UserSelection, team: Team?, variant: ColorSchemeVariant, isAddingParticipants : Bool = false) {
         self.searchDirectory = SearchDirectory(userSession: ZMUserSession.shared()!)
         self.userSelection = userSelection
         self.isAddingParticipants = isAddingParticipants
@@ -96,9 +128,8 @@ public class SearchResultsController : NSObject {
         self.mode = .list
         
         let teamName = team?.name ?? ""
-        
+    
         sectionAggregator = CollectionViewSectionAggregator()
-        sectionAggregator.collectionView = collectionView
         contactsSection = UsersInContactsSection()
         contactsSection.userSelection = userSelection
         contactsSection.title = team != nil ? "peoplepicker.header.contacts_personal".localized : "peoplepicker.header.contacts".localized
@@ -115,13 +146,29 @@ public class SearchResultsController : NSObject {
         topPeopleSection.userSelection = userSelection
         topPeopleSection.topConversationDirectory = ZMUserSession.shared()?.topConversationsDirectory
         
-        super.init()
+        super.init(nibName: nil, bundle: nil)
         
         contactsSection.delegate = self
         teamMemberSection.delegate = self
         directorySection.delegate = self
         topPeopleSection.delegate = self
         conversationsSection.delegate = self
+    }
+    
+    required public init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    public override func loadView() {
+        searchResultsView  = SearchResultsView()
+        searchResultsView?.isContainedInPopover = isContainedInPopover()
+        view = searchResultsView
+    }
+    
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        sectionAggregator.collectionView = searchResultsView?.collectionView
         
         updateVisibleSections()
     }
@@ -140,16 +187,7 @@ public class SearchResultsController : NSObject {
         let request = SearchRequest(query: query, searchOptions:searchOptions, team: team)
         let task = searchDirectory.perform(request)
         
-        task.onResult { [weak self] (result, isCompleted) in
-            guard let `self` = self else { return }
-            
-            self.updateSections(withSearchResult: result)
-            
-            if isCompleted {
-                self.delegate?.searchResultsController(self, didReceiveEmptyResult: result.isEmpty, mode: .search)
-            }
-        }
-        
+        task.onResult({ [weak self] in self?.handleSearchResult(result: $0, isCompleted: $1)})
         task.start()
         
         pendingSearchTask = task
@@ -162,19 +200,18 @@ public class SearchResultsController : NSObject {
         let request = SearchRequest(query: "", searchOptions: [.contacts, .teamMembers], team: team)
         let task = searchDirectory.perform(request)
         
-        task.onResult { [weak self] (result, isCompleted) in
-            guard let `self` = self else { return }
-            
-            self.updateSections(withSearchResult: result)
-            
-            if isCompleted {
-                self.delegate?.searchResultsController(self, didReceiveEmptyResult: result.isEmpty, mode: .list)
-            }
-        }
-        
+        task.onResult({ [weak self] in self?.handleSearchResult(result: $0, isCompleted: $1)})
         task.start()
         
         pendingSearchTask = task
+    }
+    
+    func handleSearchResult(result: SearchResult, isCompleted: Bool) {
+        self.updateSections(withSearchResult: result)
+        
+        if isCompleted {
+            searchResultsView?.emptyResultContainer.isHidden = !sectionAggregator.visibleSectionControllers.isEmpty
+        }
     }
     
     func updateVisibleSections() {
@@ -230,10 +267,10 @@ public class SearchResultsController : NSObject {
         directorySection.suggestions = searchResult.directory
         conversationsSection.groupConversations = searchResult.conversations
         
-        collectionView.reloadData()
+        searchResultsView?.collectionView.reloadData()
     }
     
-    func sectionFor(controller: CollectionViewSectionController) -> SearchResultsControllerSection {
+    func sectionFor(controller: CollectionViewSectionController) -> SearchResultsViewControllerSection {
         if controller === topPeopleSection {
             return .topPeople
         } else if controller === contactsSection {
@@ -251,7 +288,7 @@ public class SearchResultsController : NSObject {
     
 }
 
-extension SearchResultsController : CollectionViewSectionDelegate {
+extension SearchResultsViewController : CollectionViewSectionDelegate {
     
     public func collectionViewSectionController(_ controller: CollectionViewSectionController!, indexPathForItemIndex itemIndex: UInt) -> IndexPath! {
         let section = sectionAggregator.visibleSectionControllers.index(where: { $0 === controller }) ?? 0
@@ -260,22 +297,22 @@ extension SearchResultsController : CollectionViewSectionDelegate {
     
     public func collectionViewSectionController(_ controller: CollectionViewSectionController!, didSelectItem item: Any!, at indexPath: IndexPath!) {
         if let user = item as? ZMUser {
-            delegate?.searchResultsController(self, didTapOnUser: user, indexPath: indexPath, section: sectionFor(controller: controller))
+            delegate?.searchResultsViewController(self, didTapOnUser: user, indexPath: indexPath, section: sectionFor(controller: controller))
         }
         else if let searchUser = item as? ZMSearchUser {
-            delegate?.searchResultsController(self, didTapOnUser: searchUser, indexPath: indexPath, section: sectionFor(controller: controller))
+            delegate?.searchResultsViewController(self, didTapOnUser: searchUser, indexPath: indexPath, section: sectionFor(controller: controller))
         }
         else if let conversation = item as? ZMConversation {
-            delegate?.searchResultsController(self, didTapOnConversation: conversation)
+            delegate?.searchResultsViewController(self, didTapOnConversation: conversation)
         }
     }
     
     public func collectionViewSectionController(_ controller: CollectionViewSectionController!, didDoubleTapItem item: Any!, at indexPath: IndexPath!) {
         if let user = item as? ZMUser {
-            delegate?.searchResultsController(self, didDoubleTapOnUser: user, indexPath: indexPath)
+            delegate?.searchResultsViewController(self, didDoubleTapOnUser: user, indexPath: indexPath)
         }
         else if let searchUser = item as? ZMSearchUser {
-            delegate?.searchResultsController(self, didDoubleTapOnUser: searchUser, indexPath: indexPath)
+            delegate?.searchResultsViewController(self, didDoubleTapOnUser: searchUser, indexPath: indexPath)
         }
     }
     

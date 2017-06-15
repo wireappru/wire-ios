@@ -30,13 +30,14 @@ public protocol AddParticipantsViewControllerDelegate : class {
 
 public class AddParticipantsViewController : UIViewController {
     
-    fileprivate let searchResultController : SearchResultsController
+    fileprivate let searchResultsViewController : SearchResultsViewController
     fileprivate let searchHeaderViewController : SearchHeaderViewController
     fileprivate let userSelection : UserSelection = UserSelection()
     fileprivate let collectionView : UICollectionView
     fileprivate let collectionViewLayout : UICollectionViewFlowLayout
     fileprivate let bottomContainer = UIView()
     fileprivate let confirmButton : IconButton
+    fileprivate let emptyResultLabel = UILabel()
     
     public weak var delegate : AddParticipantsViewControllerDelegate? = nil
     
@@ -83,17 +84,25 @@ public class AddParticipantsViewController : UIViewController {
         }
  
         searchHeaderViewController = SearchHeaderViewController(userSelection: userSelection, variant: ColorScheme.default().variant)
-        searchResultController = SearchResultsController(collectionView: collectionView, userSelection: userSelection, team: ZMUser.selfUser().activeTeam, variant: ColorScheme.default().variant, isAddingParticipants: true)
+        searchResultsViewController = SearchResultsViewController(userSelection: userSelection, team: ZMUser.selfUser().activeTeam, variant: ColorScheme.default().variant, isAddingParticipants: true)
         
         super.init(nibName: nil, bundle: nil)
         
+        emptyResultLabel.text = everyoneHasBeenAddedText
+        emptyResultLabel.textColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground)
+        emptyResultLabel.font = FontSpec(.normal, .none).font!
+        
         confirmButton.addTarget(self, action: #selector(searchHeaderViewControllerDidConfirmAction(_:)), for: .touchUpInside)
         
-        searchResultController.filterConversation = conversation
-        searchResultController.mode = .list
-        searchResultController.searchContactList()
+        searchResultsViewController.filterConversation = conversation.conversationType == .group ? conversation : nil
+        searchResultsViewController.mode = .list
+        searchResultsViewController.searchContactList()
         
         userSelection.add(observer: self)
+        
+        if conversation.conversationType == .oneOnOne, let connectedUser = conversation.connectedUser {
+            userSelection.add(connectedUser)
+        }
     }
 
     override public func viewDidLoad() {
@@ -103,55 +112,45 @@ public class AddParticipantsViewController : UIViewController {
         view.addSubview(searchHeaderViewController.view)
         searchHeaderViewController.didMove(toParentViewController: self)
         
-        view.addSubview(collectionView)
-        view.addSubview(bottomContainer)
+        addChildViewController(searchResultsViewController)
+        view.addSubview(searchResultsViewController.view)
+        searchResultsViewController.didMove(toParentViewController: self)
+        searchResultsViewController.searchResultsView?.emptyResultView = emptyResultLabel
         
         createConstraints()
+        updateConfirmButtonVisibility()
     }
     
     func createConstraints() {
-        constrain(view, collectionView, searchHeaderViewController.view, bottomContainer, confirmButton) { container, collectionView, searchHeaderView, bottomContainer, confirmButton in
+        constrain(view, searchHeaderViewController.view, searchResultsViewController.view, confirmButton) { container, searchHeaderView, searchResultsView, confirmButton in
             
             searchHeaderView.top == container.top
             searchHeaderView.left == container.left
             searchHeaderView.right == container.right
             
-            collectionView.top == searchHeaderView.bottom
-            collectionView.left == container.left
-            collectionView.right == container.right
-            
-            bottomContainer.top == collectionView.bottom
-            bottomContainer.left == container.left
-            bottomContainer.right == container.right
-            bottomContainer.bottom == container.bottom
+            searchResultsView.top == searchHeaderView.bottom
+            searchResultsView.left == container.left
+            searchResultsView.right == container.right
+            searchResultsView.bottom == container.bottom
             
             confirmButton.height == CGFloat(55.0)
         }
     }
-    
-    var bottomView : UIView? {
-        didSet {
-            guard oldValue != bottomView else { return }
-            
-            oldValue?.removeFromSuperview()
-            
-            if let bottomView = bottomView {
-                bottomContainer.addSubview(bottomView)
-                CASStyler.default().styleItem(bottomView)
-                
-                constrain(bottomContainer, bottomView) { container, bottomView in
-                    bottomView.edges == container.edges
-                }
-            }
+        
+    func updateConfirmButtonVisibility() {
+        if userSelection.users.isEmpty {
+            searchResultsViewController.searchResultsView?.accessoryView = nil
+        } else {
+            searchResultsViewController.searchResultsView?.accessoryView = confirmButton
         }
     }
     
-    func updateConfirmButtonVisibility() {
-        if userSelection.users.isEmpty {
-            bottomView = nil
-        } else {
-            bottomView = confirmButton
-        }
+    var emptySearchResultText : String {
+        return "peoplepicker.no_matching_results_after_address_book_upload_title".localized
+    }
+    
+    var everyoneHasBeenAddedText : String {
+        return "add_participants.all_contacts_added".localized
     }
 }
 
@@ -183,11 +182,13 @@ extension AddParticipantsViewController : SearchHeaderViewControllerDelegate {
     
     public func searchHeaderViewController(_ searchHeaderViewController: SearchHeaderViewController, updatedSearchQuery query: String) {
         if query.isEmpty {
-            searchResultController.mode = .list
-            searchResultController.searchContactList()
+            emptyResultLabel.text = everyoneHasBeenAddedText
+            searchResultsViewController.mode = .list
+            searchResultsViewController.searchContactList()
         } else {
-            searchResultController.mode = .search
-            searchResultController.search(withQuery: query, local: true)
+            emptyResultLabel.text = emptySearchResultText
+            searchResultsViewController.mode = .search
+            searchResultsViewController.search(withQuery: query, local: true)
         }
     }
     

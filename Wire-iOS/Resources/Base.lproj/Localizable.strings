@@ -63,6 +63,8 @@
 "peoplepicker.quick-action.open-conversation" = "Open";
 "peoplepicker.quick-action.create-conversation" = "Create group";
 
+"add_participants.all_contacts_added" = "Everyone's here.";
+
 // Contacts UI
 "contacts_ui.search_placeholder" = "Search by name";
 "contacts_ui.invite_others" = "Invite others";
@@ -221,6 +223,10 @@
 "input.ephemeral.title" = "Set a time for the message to disappear";
 
 // System messages
+"content.system.you_nominative" = "you";
+"content.system.you_dative" = "you";
+"content.system.you_accusative" = "you";
+
 "content.system.continued_conversation" = "Start a conversation with %@";
 
 "content.system.other_started_conversation" = "%@ started a conversation with %@";
@@ -240,11 +246,16 @@
 
 // New conversation participants added / removed / started system message
 
-"content.system.conversation.started" = "%@ started a conversation with %@";
-"content.system.conversation.added" = "%@ added %@";
-"content.system.conversation.removed" = "%@ removed %@";
-"content.system.conversation.left" = "%@ left";
-"content.system.conversation.you" = "You";
+"content.system.conversation.other.started" = "%@ started a conversation with %@";
+"content.system.conversation.other.added" = "%@ added %@";
+"content.system.conversation.other.removed" = "%@ removed %@";
+"content.system.conversation.other.left" = "%@ left";
+
+"content.system.conversation.you.started" = "%@ started a conversation with %@";
+"content.system.conversation.you.added" = "%@ added %@";
+"content.system.conversation.you.removed" = "%@ removed %@";
+"content.system.conversation.you.left" = "%@ left";
+"content.system.conversation.team.member-leave" = "%@ was removed from the team.";
 
 "content.system.other_renamed_conv_to_nothing" = "%@ removed the conversation name";
 "content.system.you_renamed_conv_to_nothing" = "You removed the conversation name";
@@ -461,6 +472,7 @@
 
 // User Details
 "profile.details.title" = "Details";
+"profile.details.guest_in_team" = "Guest in %@";
 
 // Device list
 "profile.devices.title" = "Devices";
@@ -672,6 +684,7 @@
 "self.settings.privacy_analytics_menu.devices.title" = "Devices";
 
 "self.settings.privacy_analytics_section.title" = "Usage and Crash Reports";
+"self.settings.privacy_analytics.title" = "Send Anonymous Data";
 "self.settings.privacy_analytics_menu.description.title" = "Make Wire better by sending anonymous information.\n";
 
 "self.settings.privacy.clear_history.title" = "Clear History";

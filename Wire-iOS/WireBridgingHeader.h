@@ -101,6 +101,8 @@
 #import "GroupConversationsSection.h"
 #import "TopPeopleLineSection.h"
 #import "CollectionViewSectionAggregator.h"
+#import "ProfileDetailsViewController.h"
+#import "ContactsDataSource.h"
 
 // Helper objects
 #import "PushTransition.h"
@@ -145,6 +147,7 @@
 #import <Classy/UIColor+CASAdditions.h>
 #import "MessagePresenter.h"
 #import "WireStyleKit+Additions.h"
+#import "UIResponder+FirstResponder.h"
 
 // Camera
 #import "CameraController.h"
