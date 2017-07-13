@@ -19,7 +19,7 @@
 
 #import "VoiceChannelController.h"
 
-#import <PureLayout/PureLayout.h>
+@import PureLayout;
 
 #import "VoiceChannelOverlayController.h"
 #import "PassthroughTouchesView.h"
@@ -48,7 +48,7 @@
 {
     [super viewDidLoad];
     
-    self.voiceChannelObserverToken = [VoiceChannelRouter addStateObserver:self userSession:[ZMUserSession sharedSession]];
+    self.voiceChannelObserverToken = [VoiceChannelV3 addStateObserver:self userSession:[ZMUserSession sharedSession]];
 }
 
 - (void)viewDidAppear:(BOOL)animated

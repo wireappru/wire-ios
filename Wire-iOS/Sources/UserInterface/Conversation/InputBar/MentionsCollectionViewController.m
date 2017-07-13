@@ -24,11 +24,10 @@
 #import "MentionsBubbleView.h"
 #import "MentionsCollectionViewCell.h"
 #import "UIView+Borders.h"
-#import "UIView+MTAnimation.h"
 #import "MentionsCollectionView.h"
 #import "Wire-Swift.h"
 
-#import <PureLayout/PureLayout.h>
+@import PureLayout;
 
 
 
@@ -207,12 +206,10 @@ static NSString * const reuseIdentifier = @"MentionsCell";
     
     self.mentionsBubbleViewHeightConstraint.constant = currentHeight;
 
-    [UIView mt_animateWithViews:@[self.mentionsCollectionView, self.mentionsBubbleView] duration:0.2 delay:0 timingFunction:MTTimingFunctionEaseOutQuart animations:^{
-    
+    [UIView wr_animateWithEasing:RBBEasingFunctionEaseOutQuart duration:0.2 animations:^{
         [self.mentionsBubbleView layoutIfNeeded];
         [self.mentionsCollectionView layoutIfNeeded];
-    
-    } completion:nil];
+    }];
 }
 
 

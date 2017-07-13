@@ -19,7 +19,7 @@
 
 
 @import QuartzCore;
-#import <PureLayout/PureLayout.h>
+@import PureLayout;
 
 #import "ZClientViewController+Internal.h"
 
@@ -53,7 +53,6 @@
 #import "AnalyticsTracker.h"
 #import "Settings.h"
 #import "StopWatch.h"
-#import "UIView+MTAnimation.h"
 
 #import "Wire-Swift.h"
 
@@ -266,7 +265,7 @@
 
 - (void)hideIncomingContactRequestsWithCompletion:(dispatch_block_t)completion
 {
-    NSArray *conversationsList = [ZMConversationList conversationsInUserSession:[ZMUserSession sharedSession] team:[[ZMUser selfUser] activeTeam]];
+    NSArray *conversationsList = [ZMConversationList conversationsInUserSession:[ZMUserSession sharedSession]];
     if (conversationsList.count != 0) {
         [self selectConversation:conversationsList.firstObject];
     }
@@ -453,22 +452,18 @@
             [self.splitViewController.leftViewController.view addSubview:screenshotView];
             [screenshotView addConstraintsForSize:self.view.bounds.size];
             
-            [UIView mt_animateWithViews:@[screenshotView]
-                               duration:0.35f
-                                  delay:0.0f
-                         timingFunction:MTTimingFunctionEaseOutQuad
-                             animations:^{
-                                 screenshotView.alpha = 0.0f;
-                             }
-                             completion:^{
-                                 [screenshotView removeFromSuperview];
-                                 for (UIView *v in fadedViews) {
-                                     v.hidden = NO;
-                                 }
-                                 if (completion) {
-                                     completion();
-                                 }
-                             }];
+            
+            [UIView wr_animateWithEasing:RBBEasingFunctionEaseOutQuad duration:0.35f animations:^{
+                screenshotView.alpha = 0.0f;
+            } completion:^(BOOL finished) {
+                [screenshotView removeFromSuperview];
+                for (UIView *v in fadedViews) {
+                    v.hidden = NO;
+                }
+                if (completion) {
+                    completion();
+                }
+            }];
         }];
     }
     else {
@@ -620,7 +615,7 @@
 {
     // check for conversations and pick the first one.. this can be tricky if there are pending updates and
     // we haven't synced yet, but for now we just pick the current first item
-    NSArray *list = [ZMConversationList conversationsInUserSession:[ZMUserSession sharedSession] team:[[ZMUser selfUser] activeTeam]];
+    NSArray *list = [ZMConversationList conversationsInUserSession:[ZMUserSession sharedSession]];
     
     if (list.count > 0) {
         // select the first conversation and don't focus on it

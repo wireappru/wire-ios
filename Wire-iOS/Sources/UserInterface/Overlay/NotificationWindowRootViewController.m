@@ -18,7 +18,7 @@
 
 #import "UIView+Borders.h"
 
-#import <PureLayout/PureLayout.h>
+@import PureLayout;
 
 #import "NotificationWindowRootViewController.h"
 #import "NetworkStatusViewController.h"
@@ -208,7 +208,7 @@
 - (void)updateAppearanceForNetworkState:(ZMNetworkState)networkState
 {
     [[ZMUserSession sharedSession] checkIfLoggedInWithCallback:^(BOOL isLoggedIn) {
-        if (isLoggedIn && networkState == ZMNetworkStateOnlineSynchronizing && [ZMConversationList conversationsInUserSession:[ZMUserSession sharedSession] team:ZMUser.selfUser.activeTeam].count == 0) {
+        if (isLoggedIn && networkState == ZMNetworkStateOnlineSynchronizing && [ZMConversationList conversationsInUserSession:[ZMUserSession sharedSession]].count == 0) {
             self.networkActivityViewController.view.hidden = YES;
         } else {
             self.networkActivityViewController.view.hidden = NO;

@@ -25,7 +25,7 @@
 
 @import WireExtensionComponents;
 #import <WireExtensionComponents/WireExtensionComponents-Swift.h>
-#import <PureLayout/PureLayout.h>
+@import PureLayout;
 
 #import "WAZUIMagicIOS.h"
 #import "Constants.h"
@@ -149,8 +149,8 @@ typedef NS_ENUM(NSUInteger, ProfileViewControllerTabBarIndex) {
         profileDetailsViewController.title = NSLocalizedString(@"profile.details.title", nil);
         [viewControllers addObject:profileDetailsViewController];
     }
-    
-    if (self.fullUser.isConnected) {
+
+    if (self.fullUser.isConnected || self.fullUser.isTeamMember) {
         ProfileDevicesViewController *profileDevicesViewController = [[ProfileDevicesViewController alloc] initWithUser:self.fullUser];
         profileDevicesViewController.title = NSLocalizedString(@"profile.devices.title", nil);
         profileDevicesViewController.delegate = self;

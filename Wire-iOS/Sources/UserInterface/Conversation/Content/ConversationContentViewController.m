@@ -39,14 +39,13 @@
 
 // ui
 #import "ZClientViewController.h"
-#import "UIView+MTAnimation.h"
 #import "NotificationWindowRootViewController.h"
 
 // helpers
 #import "WAZUIMagicIOS.h"
 #import "Constants.h"
 
-#import <PureLayout.h>
+@import PureLayout;
 #import "UIView+Zeta.h"
 #import "Analytics+iOS.h"
 #import "UIViewController+Orientation.h"

@@ -18,7 +18,7 @@
 
 @import WireSyncEngine;
 
-#import <PureLayout/PureLayout.h>
+@import PureLayout;
 #import <Classy/UIViewController+CASAdditions.h>
 @import WireExtensionComponents;
 
@@ -93,7 +93,7 @@ static NSString * const ContactsViewControllerSectionHeaderID = @"ContactsSectio
     [self setupViews];
     [self setupLayout];
     
-    BOOL shouldSkip = AutomationHelper.sharedHelper.skipFirstLoginAlerts;
+    BOOL shouldSkip = AutomationHelper.sharedHelper.skipFirstLoginAlerts || ZMUser.selfUser.hasTeam;
     if (self.sharingContactsRequired && ! [[AddressBookHelper sharedHelper] isAddressBookAccessGranted] && !shouldSkip) {
         [self presentShareContactsViewController];
     }

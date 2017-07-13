@@ -19,7 +19,7 @@
 
 #import "RegistrationPhoneFlowViewController.h"
 
-#import <PureLayout/PureLayout.h>
+@import PureLayout;
 
 #import "NavigationController.h"
 #import "PhoneNumberStepViewController.h"
@@ -31,7 +31,6 @@
 #import "WireSyncEngine+iOS.h"
 #import "UIFont+MagicAccess.h"
 #import "UIViewController+Errors.h"
-#import "UIView+MTAnimation.h"
 #import <WireExtensionComponents/UIViewController+LoadingView.h>
 #import "ZMUserSession+Additions.h"
 #import "CheckmarkViewController.h"

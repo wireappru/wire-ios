@@ -17,7 +17,7 @@
 // 
 
 
-#import <PureLayout.h>
+@import PureLayout;
 @import MobileCoreServices;
 @import AVFoundation;
 
@@ -310,7 +310,10 @@
     self.inputBar.textView.delegate = self;
     
     [self.view addSubview:self.inputBar];
-    [self.inputBar autoPinEdgesToSuperviewEdges];
+    [self.inputBar autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeBottom];
+    [NSLayoutConstraint autoSetPriority:UILayoutPriorityDefaultLow forConstraints:^{
+        [self.inputBar autoPinEdgeToSuperviewEdge:ALEdgeBottom];
+    }];
     self.inputBar.editingView.delegate = self;
 }
 
@@ -786,6 +789,7 @@
     }
 
     if ([text isEqualToString:@"\n"]) {
+        [self.inputBar.textView autocorrectLastWord];
         [self sendOrEditText:textView.text];
         return NO;
     }
@@ -818,7 +822,7 @@
     if ([self.delegate respondsToSelector:@selector(conversationInputBarViewControllerShouldEndEditing:)]) {
         return [self.delegate conversationInputBarViewControllerShouldEndEditing:self];
     }
-    
+
     return YES;
 }
 
@@ -1001,6 +1005,7 @@
 
 - (void)sendButtonPressed:(id)sender
 {
+    [self.inputBar.textView autocorrectLastWord];
     [self sendOrEditText:self.inputBar.textView.text];
 }
 

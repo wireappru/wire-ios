@@ -128,7 +128,7 @@ public extension ConversationViewController {
     }
     
     var hasUnreadMessagesInOtherConversations: Bool {
-        return ZMConversationList.conversations(inUserSession: ZMUserSession.shared()!, team: ZMUser.selfUser().activeTeam).hasUnreadMessages(excluding: self.conversation)
+        return ZMConversationList.conversations(inUserSession: ZMUserSession.shared()!).hasUnreadMessages(excluding: self.conversation)
     }
     
     public func rightNavigationItems(forConversation conversation: ZMConversation) -> [UIBarButtonItem] {
@@ -150,11 +150,11 @@ public extension ConversationViewController {
             if let connection = conversation.connection,
                 connection.status != .pending && connection.status != .sent {
                 return true
+            } else {
+                return nil != conversation.teamRemoteIdentifier
             }
         default: return false
         }
-        
-        return false
     }
     
     public func leftNavigationItems(forConversation conversation: ZMConversation) -> [UIBarButtonItem] {

@@ -53,7 +53,7 @@ protocol ValidatorType {
 extension ZMUser: ValidatorType {
 }
 
-typealias SettingsSelfUser = ValidatorType & ZMEditableUser
+typealias SettingsSelfUser = ValidatorType & ZMEditableUser & ZMBareUser
 
 enum SettingsPropertyError: Error {
     case WrongValue(String)
@@ -236,17 +236,6 @@ class SettingsPropertyFactory {
                         Settings.shared().disableSendButton = number.boolValue
                     default:
                         throw SettingsPropertyError.WrongValue("Incorrect type \(value) for key \(propertyName)")
-                    }
-            })
-            
-        case .callingProtocolStrategy:
-            return SettingsBlockProperty(
-                propertyName: propertyName,
-                getAction: { _ in return SettingsPropertyValue(Settings.shared().callingProtocolStrategy.rawValue) },
-                setAction: { _, value in
-                    if case .number(let intValue) = value, let callingProtocolStrategy = CallingProtocolStrategy(rawValue: UInt(intValue)) {
-                        Settings.shared().callingProtocolStrategy = callingProtocolStrategy
-                        ZMUserSession.callingProtocolStrategy = callingProtocolStrategy
                     }
             })
         case .lockApp:
