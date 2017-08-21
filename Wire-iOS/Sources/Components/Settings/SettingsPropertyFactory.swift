@@ -92,6 +92,7 @@ class SettingsPropertyFactory {
         SettingsPropertyName.callingProtocolStrategy    : UserDefaultCallingProtocolStrategy,
         SettingsPropertyName.enableBatchCollections     : UserDefaultEnableBatchCollections,
         SettingsPropertyName.callingConstantBitRate     : UserDefaultCallingConstantBitRate,
+        SettingsPropertyName.disableLinkPreviews        : UserDefaultDisableLinkPreviews,
     ]
     
     init(userDefaults: UserDefaults, analytics: AnalyticsInterface?, mediaManager: AVSMediaManagerInterface?, userSession: ZMUserSessionInterface, selfUser: SettingsSelfUser, crashlogManager: CrashlogManager? = .none) {
@@ -297,6 +298,19 @@ class SettingsPropertyFactory {
                     }
             })
             
+        case .disableLinkPreviews:
+            return SettingsBlockProperty(
+                propertyName: propertyName,
+                getAction: { _ in return SettingsPropertyValue(Settings.shared().disableLinkPreviews) },
+                setAction: { _, value in
+                    switch value {
+                    case .number(value: let number):
+                        Settings.shared().disableLinkPreviews = number.boolValue
+                    default:
+                        throw SettingsPropertyError.WrongValue("Incorrect type \(value) for key \(propertyName)")
+                    }
+            })
+            
         default:
             if let userDefaultsKey = type(of: self).userDefaultsPropertiesToKeys[propertyName] {
                 return SettingsUserDefaultsProperty(propertyName: propertyName, userDefaultsKey: userDefaultsKey, userDefaults: self.userDefaults)
@@ -309,7 +323,7 @@ class SettingsPropertyFactory {
 
 extension SettingsPropertyFactory {
     static var shared: SettingsPropertyFactory? {
-        guard let session = ZMUserSession.shared() else {
+        guard let manager = SessionManager.shared, let session = manager.isUserSessionActive ? ZMUserSession.shared() : nil else {
             return .none
         }
         let settingsPropertyFactory = SettingsPropertyFactory(userDefaults: UserDefaults.standard,

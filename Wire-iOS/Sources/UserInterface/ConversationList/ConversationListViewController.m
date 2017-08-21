@@ -115,8 +115,6 @@
 
 @property (nonatomic) CGFloat contentControllerBottomInset;
 
-@property (nonatomic) BOOL initialSyncCompleted;
-
 - (void)setState:(ConversationListState)state animated:(BOOL)animated;
 
 @end
@@ -161,7 +159,6 @@
     [self.contentContainer addSubview:self.conversationListContainer];
 
     [ZMUserSession addInitalSyncCompletionObserver:self];
-    self.initialSyncCompleted = ZMUserSession.sharedSession.initialSyncOnceCompleted.boolValue;
 
     [self createNoConversationLabel];
     [self createListContentController];
@@ -210,7 +207,10 @@
 
 - (void)requestSuggestedHandlesIfNeeded
 {
-    if (nil == ZMUser.selfUser.handle && self.initialSyncCompleted && !ZMUserSession.sharedSession.isPendingHotFixChanges) {
+    if (nil == ZMUser.selfUser.handle &&
+        ZMUserSession.sharedSession.hasCompletedInitialSync &&
+        !ZMUserSession.sharedSession.isPendingHotFixChanges) {
+        
         self.userProfileObserverToken = [self.userProfile addObserver:self];
         [self.userProfile suggestHandles];
     }
@@ -560,7 +560,9 @@
         [self presentViewController:keyboardAvoidingWrapperController animated:YES completion:nil];
     }
     else {
+        @weakify(self);
         settingsViewController.dismissAction = ^(SettingsNavigationController *controller) {
+            @strongify(self);
             [self.parentViewController dismissViewControllerAnimated:YES completion:nil];
         };
         keyboardAvoidingWrapperController.modalPresentationStyle = UIModalPresentationFormSheet;
@@ -761,7 +763,6 @@
 
 - (void)initialSyncCompleted:(NSNotification *)notification
 {
-    self.initialSyncCompleted = YES;
     [self requestSuggestedHandlesIfNeeded];
 }
 

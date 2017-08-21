@@ -203,18 +203,18 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
         footerView = sendConnectionRequestFooterView;
     }
     else {
-        ProfileFooterView *userActionsfooterView = [[ProfileFooterView alloc] init];
-        userActionsfooterView.translatesAutoresizingMaskIntoConstraints = NO;
+        ProfileFooterView *userActionsFooterView = [[ProfileFooterView alloc] init];
+        userActionsFooterView.translatesAutoresizingMaskIntoConstraints = NO;
         [[Analytics shared]tagScreen:@"OTHER_USER_PROFILE"];
         
-        [userActionsfooterView setIconTypeForLeftButton:[self iconTypeForUserAction:[self leftButtonAction]]];
-        [userActionsfooterView setIconTypeForRightButton:[self iconTypeForUserAction:[self rightButtonAction]]];
-        [userActionsfooterView.leftButton setTitle:[[self buttonTextForUserAction:[self leftButtonAction]] uppercasedWithCurrentLocale] forState:UIControlStateNormal];
+        [userActionsFooterView setIconTypeForLeftButton:[self iconTypeForUserAction:[self leftButtonAction]]];
+        [userActionsFooterView setIconTypeForRightButton:[self iconTypeForUserAction:[self rightButtonAction]]];
+        [userActionsFooterView.leftButton setTitle:[[self buttonTextForUserAction:[self leftButtonAction]] uppercasedWithCurrentLocale] forState:UIControlStateNormal];
         
-        [userActionsfooterView.leftButton addTarget:self action:@selector(performLeftButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-        [userActionsfooterView.rightButton addTarget:self action:@selector(performRightButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+        [userActionsFooterView.leftButton addTarget:self action:@selector(performLeftButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+        [userActionsFooterView.rightButton addTarget:self action:@selector(performRightButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         
-        footerView = userActionsfooterView;
+        footerView = userActionsFooterView;
     }
     
     [self.view addSubview:footerView];
@@ -348,6 +348,9 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
         else {
             return ProfileUserActionPresentMenu;
         }
+    }
+    else if (nil != user.team) {
+        return ProfileUserActionPresentMenu;
     }
     else {
         return ProfileUserActionNone;
@@ -552,7 +555,7 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
     ZMConversation __block *conversation = nil;
     
     [[ZMUserSession sharedSession] enqueueChanges:^{
-        conversation = [self.fullUser oneToOneConversationInTeam:ZMUser.selfUser.team];
+        conversation = self.fullUser.oneToOneConversation;
     } completionHandler:^{
         [self.delegate profileDetailsViewController:self didSelectConversation:conversation];
     }];

@@ -21,11 +21,9 @@
 
 #import "WireSyncEngine+iOS.h"
 #import "ZMUserSession+iOS.h"
-#import "ZMUserSession+Additions.h"
 #import <AVFoundation/AVFoundation.h>
 #import "Analytics+iOS.h"
 #import "AnalyticsBase.h"
-#import "UIAlertView+Zeta.h"
 #import "UIAlertController+Wire.h"
 #import "AppDelegate.h"
 #import "VoiceChannelController.h"
@@ -375,7 +373,7 @@
 
 - (BOOL)warnAboutNoInternetConnection
 {
-    if ([[ZMUserSession sharedSession] checkNetworkAndFlashIndicatorIfNecessary]) {
+    if ([AppDelegate checkNetworkAndFlashIndicatorIfNecessary]) {
         UIAlertController *noInternetConnectionAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"voice.network_error.title", "<missing title>")
                                                                                            message:NSLocalizedString(@"voice.network_error.body", "<voice failed because of network>")
                                                                                  cancelButtonTitle:NSLocalizedString(@"general.ok", "ok string")];
