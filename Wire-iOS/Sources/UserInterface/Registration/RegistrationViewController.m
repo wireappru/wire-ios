@@ -110,15 +110,25 @@
 
 - (void)setupNavigationController
 {
+    ZMUserSessionErrorCode userSessionErrorCode = self.signInError.userSessionErrorCode;
+    
+    BOOL addingAdditionalAccount = userSessionErrorCode == ZMUserSessionAddAccountRequested;
+    
+    BOOL needsToReauthenticate = userSessionErrorCode == ZMUserSessionClientDeletedRemotely ||
+                                 userSessionErrorCode == ZMUserSessionAccessTokenExpired ||
+                                 userSessionErrorCode == ZMUserSessionNeedsPasswordToRegisterClient ||
+                                 userSessionErrorCode == ZMUserSessionCanNotRegisterMoreClients;
+    
     RegistrationRootViewController *registrationRootViewController = [[RegistrationRootViewController alloc] initWithUnregisteredUser:self.unregisteredUser];
     registrationRootViewController.formStepDelegate = self;
-    ZMUser *currentUser = [SessionManager shared].currentUser;
-    registrationRootViewController.forceLogin = currentUser.emailAddress.length > 0 || currentUser.phoneNumber.length > 0 || self.signInErrorCode == ZMUserSessionNeedsPasswordToRegisterClient;
+    registrationRootViewController.hasSignInError = self.signInError != nil && !addingAdditionalAccount;
+    registrationRootViewController.showLogin = needsToReauthenticate || addingAdditionalAccount;
+    registrationRootViewController.loginCredentials = [[LoginCredentials alloc] initWithError:self.signInError];
     self.registrationRootViewController = registrationRootViewController;
     
     UIViewController *rootViewController = registrationRootViewController;
 
-    if (self.signInErrorCode == ZMUserSessionNeedsToRegisterEmailToRegisterClient) {
+    if (userSessionErrorCode == ZMUserSessionNeedsToRegisterEmailToRegisterClient) {
         AddEmailPasswordViewController *addEmailPasswordViewController = [[AddEmailPasswordViewController alloc] init];
         addEmailPasswordViewController.analyticsTracker = [AnalyticsTracker analyticsTrackerWithContext:AnalyticsContextPostLogin];
         addEmailPasswordViewController.formStepDelegate = self;

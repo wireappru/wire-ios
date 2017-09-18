@@ -44,7 +44,7 @@ internal class LineView: UIView {
         
         constrain(self, first) { selfView, first in
             first.leading == selfView.leading
-            first.top == selfView.top ~ LayoutPriority(750)
+            first.top == selfView.top
             first.bottom == selfView.bottom ~ LayoutPriority(750)
         }
         
@@ -53,8 +53,8 @@ internal class LineView: UIView {
         self.views.dropFirst().forEach {
             constrain(previous, $0, self) { previous, current, selfView in
                 current.leading == previous.trailing + inset
-                current.top == selfView.top ~ LayoutPriority(750)
-                current.bottom == selfView.bottom ~ LayoutPriority(750)
+                current.top == selfView.top
+                current.bottom == selfView.bottom
             }
             previous = $0
         }
@@ -69,25 +69,35 @@ internal class LineView: UIView {
     }
 }
 
-final internal class TeamSelectorView: UIView {
+final internal class AccountSelectorView: UIView {
     private var selfUserObserverToken: NSObjectProtocol!
     private var applicationDidBecomeActiveToken: NSObjectProtocol!
 
-    fileprivate var team: TeamType? = nil {
+    fileprivate var accounts: [Account]? = nil {
         didSet {
-            if let teamView = team.map(TeamView.init) {
-                teamsViews = [teamView]
-            } else {
-                teamsViews = [personalTeamView]
+            guard let _ = ZMUserSession.shared() else {
+                return
+            }
+            
+            accountViews = accounts?.map({ AccountViewFactory.viewFor(account: $0) }) ?? []
+            
+            accountViews.forEach { (accountView) in
+                accountView.onTap = { account in
+                    if let account = account, account != SessionManager.shared?.accountManager.selectedAccount {
+                        ZClientViewController.shared().conversationListViewController.dismiss(animated: true, completion: {
+                            SessionManager.shared?.select(account)
+                        })
+                    }
+                }
             }
 
-            self.lineView = LineView(views: self.teamsViews)
+            self.lineView = LineView(views: self.accountViews)
             self.topOffsetConstraint.constant = imagesCollapsed ? -20 : 0
-            self.teamsViews.forEach { $0.collapsed = imagesCollapsed }
+            self.accountViews.forEach { $0.collapsed = imagesCollapsed }
         }
     }
 
-    private var teamsViews: [BaseTeamView] = []
+    private var accountViews: [BaseAccountView] = []
     private var lineView: LineView? {
         didSet {
             oldValue?.removeFromSuperview()
@@ -104,12 +114,11 @@ final internal class TeamSelectorView: UIView {
         }
     }
     private var topOffsetConstraint: NSLayoutConstraint!
-    private let personalTeamView = PersonalTeamView()
     public var imagesCollapsed: Bool = false {
         didSet {
             self.topOffsetConstraint.constant = imagesCollapsed ? -20 : 0
             
-            self.teamsViews.forEach { $0.collapsed = imagesCollapsed }
+            self.accountViews.forEach { $0.collapsed = imagesCollapsed }
             
             self.layoutIfNeeded()
         }
@@ -118,30 +127,19 @@ final internal class TeamSelectorView: UIView {
     init() {
         super.init(frame: .zero)
         
-        selfUserObserverToken = UserChangeInfo.add(observer: self, forBareUser: ZMUser.selfUser())
         applicationDidBecomeActiveToken = NotificationCenter.default.addObserver(forName: Notification.Name.UIApplicationDidBecomeActive, object: nil, queue: nil, using: { [weak self] _ in
-            self?.update(with: ZMUser.selfUser()?.team)
+            self?.update(with: SessionManager.shared?.accountManager.accounts)
         })
-
-        self.update(with: ZMUser.selfUser()?.team)
+        
+        self.update(with: SessionManager.shared?.accountManager.accounts)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    fileprivate func update(with team: TeamType?) {
-        self.personalTeamView.selected = false
-        self.team = team
+    fileprivate func update(with accounts: [Account]?) {
+        self.accounts = accounts
     }
 
-}
-
-
-extension TeamSelectorView: ZMUserObserver {
-
-    public func userDidChange(_ changeInfo: UserChangeInfo) {
-        guard changeInfo.teamsChanged else { return }
-        self.update(with: ZMUser.selfUser()?.team)
-    }
 }

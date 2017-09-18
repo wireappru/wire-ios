@@ -27,7 +27,6 @@
 
 #import "AppDelegate.h"
 #import "NotificationWindowRootViewController.h"
-#import "RootViewController.h"
 #import "UIViewController+Orientation.h"
 
 #import "WAZUIMagicIOS.h"
@@ -69,16 +68,23 @@
 
 @end
 
+@interface ZClientViewController (NetworkAvailabilityObserver) <ZMNetworkAvailabilityObserver>
+
+@end
+
 
 @interface ZClientViewController () <ZMUserObserver>
 
 @property (nonatomic, readwrite) SoundEventListener *soundEventListener;
 
+@property (nonatomic, readwrite) MediaPlaybackManager *mediaPlaybackManager;
 @property (nonatomic) ColorSchemeController *colorSchemeController;
 @property (nonatomic) BackgroundViewController *backgroundViewController;
 @property (nonatomic, readwrite) ConversationListViewController *conversationListViewController;
 @property (nonatomic, readwrite) UIViewController *conversationRootViewController;
 @property (nonatomic, readwrite) ZMConversation *currentConversation;
+@property (nonatomic) ShareExtensionAnalyticsPersistence *analyticsEventPersistence;
+@property (nonatomic) LegacyMessageTracker *messageCountTracker;
 
 @property (nonatomic) id incomingApnsObserver;
 
@@ -98,6 +104,8 @@
 
 - (void)dealloc
 {
+    [AVSProvider.shared.mediaManager unregisterMedia:self.mediaPlaybackManager];
+    [ZMNetworkAvailabilityChangeNotification removeNetworkAvailabilityObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -107,11 +115,29 @@
     if (self) {
         self.soundEventListener = [SoundEventListener new];
         self.proximityMonitorManager = [ProximityMonitorManager new];
+        self.mediaPlaybackManager = [[MediaPlaybackManager alloc] initWithName:@"conversationMedia"];
+        self.messageCountTracker = [[LegacyMessageTracker alloc] initWithManagedObjectContext:ZMUserSession.sharedSession.syncManagedObjectContext];
         [[ZMUserSession sharedSession] setRequestToOpenViewDelegate:self];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(contentSizeCategoryDidChange:)
-                                                     name:UIContentSizeCategoryDidChangeNotification
-                                                   object:nil];
+        [AVSProvider.shared.mediaManager registerMedia:self.mediaPlaybackManager withOptions:@{ @"media" : @"external "}];
+        
+        AddressBookHelper.sharedHelper.configuration = AutomationHelper.sharedHelper;
+        
+        NSString *appGroupIdentifier = NSBundle.mainBundle.appGroupIdentifier;
+        NSURL *sharedContainerURL = [NSFileManager sharedContainerDirectoryForAppGroupIdentifier:appGroupIdentifier];        
+        NSURL *accountContainerURL = [[sharedContainerURL URLByAppendingPathComponent:@"AccountData" isDirectory:YES]
+                                      URLByAppendingPathComponent:ZMUser.selfUser.remoteIdentifier.UUIDString isDirectory:YES];
+        self.analyticsEventPersistence = [[ShareExtensionAnalyticsPersistence alloc] initWithAccountContainer:accountContainerURL];
+        [MessageDraftStorage setupSharedStorageAtURL:accountContainerURL error:nil];
+        
+        [ZMNetworkAvailabilityChangeNotification addNetworkAvailabilityObserver:self userSession:[ZMUserSession sharedSession]];
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:ZMUserSessionDidBecomeAvailableNotification object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contentSizeCategoryDidChange:) name:UIContentSizeCategoryDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillResignActive:) name:UIApplicationWillResignActiveNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillEnterForeground:) name:UIApplicationWillEnterForegroundNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
     }
     return self;
 }
@@ -244,12 +270,14 @@
 + (instancetype)sharedZClientViewController
 {
     AppDelegate *appDelegate = [AppDelegate sharedAppDelegate];
-    RootViewController *rootViewController = (RootViewController *) appDelegate.window.rootViewController;
-    if ([rootViewController respondsToSelector:@selector(zClientViewController)]) {
-        return rootViewController.zClientViewController;
-    } else {
-        return nil;
+    
+    for (UIViewController *controller in appDelegate.rootViewController.childViewControllers) {
+        if ([controller isKindOfClass:ZClientViewController.class]) {
+            return (ZClientViewController *)controller;
+        }
     }
+    
+    return nil;
 }
 
 - (void)selectConversation:(ZMConversation *)conversation
@@ -473,6 +501,44 @@
     return [ZMUserSession sharedSession];
 }
 
+#pragma mark - Application State
+
+- (void)applicationDidBecomeActive:(NSNotification *)notification
+{
+    [AppDelegate.sharedAppDelegate.notificationWindowController.appLockViewController applicationDidBecomeActive:notification.object];
+}
+
+- (void)applicationWillResignActive:(NSNotification *)notification
+{
+    [AppDelegate.sharedAppDelegate.notificationWindowController.appLockViewController applicationWillResignActive:notification.object];
+}
+
+- (void)applicationWillEnterForeground:(NSNotification *)notification
+{
+    [self uploadAddressBookIfNeeded];
+    [self trackShareExtensionEventsIfNeeded];
+    [self.messageCountTracker trackLegacyMessageCount];
+}
+
+- (void)applicationDidEnterBackground:(NSNotification *)notification
+{
+    [AppDelegate.sharedAppDelegate.notificationWindowController.appLockViewController applicationDidEnterBackground:notification.object];
+}
+
+#pragma mark - Adressbook Upload
+
+- (void)uploadAddressBookIfNeeded
+{
+    // We should not even try to access address book when in a team
+    if (nil == ZMUser.selfUser || ZMUser.selfUser.hasTeam) {
+        return;
+    }
+    
+    BOOL addressBookDidBecomeGranted = [AddressBookHelper.sharedHelper accessStatusDidChangeToGranted];
+    [AddressBookHelper.sharedHelper startRemoteSearchWithCheckingIfEnoughTimeSinceLast:!addressBookDidBecomeGranted];
+    [AddressBookHelper.sharedHelper persistCurrentAccessStatus];
+}
+
 #pragma mark - ColorSchemeControllerDidApplyChangesNotification
 
 - (void)reloadCurrentConversation
@@ -502,6 +568,18 @@
     [DebugAlert showWithMessage:[NSString stringWithFormat:@"A request loop is going on at %@", path] sendLogs:YES];
 }
 
+#pragma mark -  Share extension analytics
+
+- (void)trackShareExtensionEventsIfNeeded
+{
+    NSArray<StorableTrackingEvent *> *events = self.analyticsEventPersistence.storedTrackingEvents.copy;
+    [self.analyticsEventPersistence clear];
+    
+    for (StorableTrackingEvent *event in events) {
+        [Analytics.shared tagStorableEvent:event];
+    }
+}
+
 @end
 
 
@@ -517,13 +595,16 @@
 {
     BOOL stateRestored = NO;
 
+    Account *currentAccount = SessionManager.shared.accountManager.selectedAccount;
+    
     SettingsLastScreen lastViewedScreen = [Settings sharedSettings].lastViewedScreen;
     switch (lastViewedScreen) {
             
         case SettingsLastScreenList: {
             
             [self transitionToListAnimated:NO completion:nil];
-            ZMConversation *conversation = [Settings sharedSettings].lastViewedConversation;
+            
+            ZMConversation *conversation = [[Settings sharedSettings] lastViewedConversationFor:currentAccount];
             if (conversation != nil) {
                 // Select the last viewed conversation without giving it focus
                 [self selectConversation:conversation];
@@ -542,7 +623,7 @@
         }
         case SettingsLastScreenConversation: {
             
-            ZMConversation *conversation = [Settings sharedSettings].lastViewedConversation;
+            ZMConversation *conversation = [[Settings sharedSettings] lastViewedConversationFor:currentAccount];
             if (conversation != nil) {
                 [self selectConversation:conversation
                              focusOnView:YES 
@@ -612,3 +693,13 @@
 
 @end
 
+@implementation ZClientViewController (NetworkAvailabilityObserver)
+
+- (void)didChangeAvailability:(ZMNetworkAvailabilityChangeNotification *)note
+{
+    if (note.networkState == ZMNetworkStateOnline && [[UIApplication sharedApplication] applicationState] == UIApplicationStateActive) {
+        [self uploadAddressBookIfNeeded];
+    }
+}
+
+@end
