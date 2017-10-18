@@ -168,6 +168,7 @@
     [self createViewConstraints];
     [self.listContentController.collectionView scrollRectToVisible:CGRectMake(0, 0, self.view.bounds.size.width, 1) animated:NO];
     
+    [self hideNoContactLabelAnimated:NO];
     [self updateNoConversationVisibility];
     [self updateArchiveButtonVisibility];
     
@@ -326,7 +327,16 @@
 
     switch (state) {
         case ConversationListStateConversationList: {
-            [self.presentedViewController dismissViewControllerAnimated:YES completion:completion];
+            self.view.alpha = 1;
+            
+            if (self.presentedViewController != nil) {
+                [self.presentedViewController dismissViewControllerAnimated:YES completion:completion];
+            }
+            else {
+                if (completion) {
+                    completion();
+                }
+            }
         }
             break;
         case ConversationListStatePeoplePicker: {
@@ -374,7 +384,7 @@
     
     [self.topBar autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeBottom];
     [self.topBar autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.conversationListContainer];
-    [self.contentContainer autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(20, 0, 0, 0)];
+    [self.contentContainer autoPinEdgesToSuperviewEdgesWithInsets:UIScreen.safeArea];
     
     [self.noConversationLabel autoCenterInSuperview];
     [self.noConversationLabel autoSetDimension:ALDimensionHeight toSize:120.0f];
@@ -552,7 +562,7 @@
     KeyboardAvoidingViewController *keyboardAvoidingWrapperController = [[KeyboardAvoidingViewController alloc] initWithViewController:settingsViewController];
     
     if (self.wr_splitViewController.layoutSize == SplitViewControllerLayoutSizeCompact) {
-        keyboardAvoidingWrapperController.topInset = 20;
+        keyboardAvoidingWrapperController.topInset = UIScreen.safeArea.top;
         @weakify(keyboardAvoidingWrapperController);
         settingsViewController.dismissAction = ^(SettingsNavigationController *controller) {
             @strongify(keyboardAvoidingWrapperController);
@@ -591,9 +601,9 @@
     }
 }
 
-- (void)hideNoContactLabel;
+- (void)hideNoContactLabelAnimated:(BOOL)animated;
 {
-    [UIView animateWithDuration:0.20
+    [UIView animateWithDuration:animated ? 0.20 : 0.0
                      animations:^{
                          self.noConversationLabel.alpha = 0.0f;
                      }];
@@ -604,7 +614,7 @@
     if (!self.hasConversations) {
         [self showNoContactLabel];
     } else {
-        [self hideNoContactLabel];
+        [self hideNoContactLabelAnimated:YES];
     }
 }
 

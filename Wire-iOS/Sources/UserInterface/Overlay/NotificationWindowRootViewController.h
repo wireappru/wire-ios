@@ -19,23 +19,18 @@
 
 @import UIKit;
 
-@class NetworkStatusViewController;
-@class VoiceChannelController;
-@class NetworkActivityViewController;
+@class ActiveVoiceChannelViewController;
 @class BarController;
 @class AppLockViewController;
 @class ChatHeadsViewController;
+@class NetworkStatusViewController;
 
 @interface NotificationWindowRootViewController : UIViewController
 
 @property (nonatomic, readonly, nullable) NetworkStatusViewController *networkStatusViewController;
-@property (nonatomic, readonly, nullable) VoiceChannelController *voiceChannelController;
+@property (nonatomic, readonly, nullable) ActiveVoiceChannelViewController *voiceChannelController;
 @property (nonatomic, readonly, nullable) AppLockViewController *appLockViewController;
 @property (nonatomic, readonly, nullable) ChatHeadsViewController *chatHeadsViewController;
-
-@property (nonatomic) BOOL showLoadMessages;
-
-@property (nonatomic) BOOL hideNetworkActivityView;
 
 - (void)transitionToLoggedInSession;
 - (void)showLocalNotification:(nonnull UILocalNotification *)notification;
