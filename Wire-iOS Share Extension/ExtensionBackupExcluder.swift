@@ -18,7 +18,6 @@
 
 
 import Foundation
-import WireExtensionComponents
 import CocoaLumberjackSwift
 
 
