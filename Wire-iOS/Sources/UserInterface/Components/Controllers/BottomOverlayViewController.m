@@ -22,6 +22,7 @@
 #import "BottomOverlayViewController+Private.h"
 #import "WAZUIMagicIOS.h"
 #import "Wire-Swift.h"
+#import "NSLayoutConstraint+Helpers.h"
 @import WireExtensionComponents;
 
 

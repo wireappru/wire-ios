@@ -25,7 +25,7 @@
 #import "EmailFormViewController.h"
 #import "UIImage+ZetaIconsNeue.h"
 #import "WAZUIMagicIOS.h"
-#import <WireExtensionComponents/ProgressSpinner.h>
+#import "ProgressSpinner.h"
 #import "RegistrationTextField.h"
 #import "GuidanceLabel.h"
 #import "WireSyncEngine+iOS.h"

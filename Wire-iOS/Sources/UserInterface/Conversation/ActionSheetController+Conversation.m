@@ -29,6 +29,7 @@
 #import "UIFont+MagicAccess.h"
 #import "Wire-Swift.h"
 #import "ZClientViewController.h"
+#import "CheckBoxButton.h"
 
 @import WireUtilities;
 

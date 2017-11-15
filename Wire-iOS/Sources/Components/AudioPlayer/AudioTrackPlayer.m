@@ -21,6 +21,7 @@
 #import "AudioTrackPlayer.h"
 #import "AudioTrack.h"
 #import "AudioPlaylist.h"
+#import "weakify.h"
 @import WireExtensionComponents;
 
 static NSString* EmptyStringIfNil(NSString *string) {

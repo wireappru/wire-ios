@@ -17,13 +17,9 @@
 // 
 
 
-#import <WireExtensionComponents/TextView.h>
-
-
+#import "TextView.h"
 
 @class TokenizedTextView;
-
-
 
 @protocol TokenizedTextViewDelegate <UITextViewDelegate>
 

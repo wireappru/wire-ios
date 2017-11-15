@@ -17,7 +17,7 @@
 // 
 
 
-#import <WireExtensionComponents/WireExtensionComponents.h>
+#import "ButtonWithLargerHitArea.h"
 
 @class IconButton;
 

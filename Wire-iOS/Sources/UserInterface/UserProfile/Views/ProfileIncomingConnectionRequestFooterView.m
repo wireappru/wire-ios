@@ -20,6 +20,7 @@
 #import "ProfileIncomingConnectionRequestFooterView.h"
 
 #import "WAZUIMagicIOS.h"
+#import "NSLayoutConstraint+Helpers.h"
 
 #import "Button.h"
 @import WireExtensionComponents;

@@ -26,6 +26,7 @@
 #import "UIImage+ZetaIconsNeue.h"
 #import "WAZUIMagicIOS.h"
 #import "Constants.h"
+#import "IconButton.h"
 
 @interface MediaBar ()
 

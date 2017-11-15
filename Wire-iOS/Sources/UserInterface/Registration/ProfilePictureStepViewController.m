@@ -33,6 +33,7 @@
 #import "UIImagePickerController+GetImage.h"
 #import "RegistrationFormController.h"
 @import WireExtensionComponents;
+#import "NetworkStatus.h"
 
 #import "Wire-Swift.h"
 

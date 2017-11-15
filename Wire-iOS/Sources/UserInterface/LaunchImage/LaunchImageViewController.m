@@ -24,7 +24,7 @@
 @import WireExtensionComponents;
 #import "UIViewController+Orientation.h"
 #import "Settings.h"
-
+#import "ProgressSpinner.h"
 
 @interface LaunchImageViewController ()
 

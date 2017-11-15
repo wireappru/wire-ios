@@ -17,7 +17,7 @@
 // 
 
 @import UIKit;
-@import WireExtensionComponents;
+#import "ColorScheme.h"
 #import "SwipeMenuCollectionCell.h"
 
 @protocol ZMBareUser;

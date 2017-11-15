@@ -29,7 +29,7 @@
 #import "GuidanceLabel.h"
 #import "Guidance.h"
 #import "WebLinkTextView.h"
-#import <WireExtensionComponents/ProgressSpinner.h>
+#import "ProgressSpinner.h"
 #import "UIImage+ImageUtilities.h"
 #import "UIColor+WAZExtensions.h"
 #import "UIColor+MagicAccess.h"

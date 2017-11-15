@@ -28,6 +28,7 @@
 #import "UIImage+ZetaIconsNeue.h"
 @import PureLayout;
 #import "NSLayoutConstraint+Helpers.h"
+#import "ButtonWithLargerHitArea.h"
 
 
 @interface WebViewController () <WKNavigationDelegate>

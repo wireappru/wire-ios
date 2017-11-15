@@ -29,6 +29,7 @@
 #import "Settings.h"
 #import "DeviceOrientationObserver.h"
 #import "WRFunctions.h"
+#import "ButtonWithLargerHitArea.h"
 
 
 

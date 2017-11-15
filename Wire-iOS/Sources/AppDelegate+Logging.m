@@ -22,7 +22,7 @@
 // Logging
 @import CocoaLumberjack;
 @import WireExtensionComponents;
-
+#import "LineNumberLogFormatter.h"
 
 /// Used and created only once, no need to hustle with objc_setAssociatedObject etc.
 static DDFileLogger *VoiceFileLogger = nil;

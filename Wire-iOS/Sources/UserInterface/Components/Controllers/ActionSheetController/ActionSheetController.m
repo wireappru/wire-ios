@@ -29,7 +29,7 @@
 #import "ActionSheetContainerView.h"
 #import "ActionSheetListView.h"
 #import "ActionSheetAlertView.h"
-
+#import "CheckBoxButton.h"
 
 @interface DefaultActionSheetTransitioningDelegate : NSObject<UIViewControllerTransitioningDelegate>
 

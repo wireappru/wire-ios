@@ -21,6 +21,7 @@
 #import <Classy/Classy.h>
 
 #import "BrowserBarView.h"
+#import "IconButton.h"
 @import WireExtensionComponents;
 
 @interface BrowserBarView ()
