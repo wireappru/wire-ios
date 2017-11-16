@@ -905,8 +905,6 @@
 		F148FB121FBCAA7200BD6909 /* UIImage+ZetaIconsNeue.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E5E0CEC1B6B8EDB003B0CAC /* UIImage+ZetaIconsNeue.m */; };
 		F148FB131FBCAA7B00BD6909 /* UIImage+ZetaIconsNeue.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E5E0CEB1B6B8EDB003B0CAC /* UIImage+ZetaIconsNeue.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F148FB141FBCAA8600BD6909 /* ZetaIconTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E5E0CED1B6B8EDB003B0CAC /* ZetaIconTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F148FB171FBCAAA900BD6909 /* weakify.h in Headers */ = {isa = PBXBuildFile; fileRef = F148FAA81FBCAA4200BD6909 /* weakify.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F148FB181FBCAAB100BD6909 /* metamacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F148FAA71FBCAA4200BD6909 /* metamacros.h */; };
 		F148FB191FBCAAC000BD6909 /* WireExtensionComponents.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EE85C541B5F96FC008E084B /* WireExtensionComponents.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F148FB1A1FBCAAF500BD6909 /* WireStyleKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 87E7C9611BF5E422001C5485 /* WireStyleKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F148FB1B1FBCAAFB00BD6909 /* WireStyleKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 87E7C9621BF5E422001C5485 /* WireStyleKit.m */; };
@@ -920,6 +918,7 @@
 		F148FB251FBDA81700BD6909 /* FileMetaDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8E4FA91DF066750009F437 /* FileMetaDataGenerator.swift */; };
 		F148FB311FBDAB7700BD6909 /* AVAsset+VideoConvert.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FB2F1FBDAB7700BD6909 /* AVAsset+VideoConvert.m */; };
 		F148FB321FBDAB7700BD6909 /* AVAsset+VideoConvert.h in Headers */ = {isa = PBXBuildFile; fileRef = F148FB301FBDAB7700BD6909 /* AVAsset+VideoConvert.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F148FB331FBDB33600BD6909 /* weakify.h in Headers */ = {isa = PBXBuildFile; fileRef = 878607181D33E3FF00971A19 /* weakify.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F15E9BFD1E4878AC00EA207F /* UINavigationController+PopToPrevious.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15E9BFC1E4878AC00EA207F /* UINavigationController+PopToPrevious.swift */; };
 		F194AD7A1E3F3BBC00B0049B /* UIApplication+RTL.swift in Sources */ = {isa = PBXBuildFile; fileRef = F194AD791E3F3BBC00B0049B /* UIApplication+RTL.swift */; };
 		F194CA1B1E7179C2004C5E56 /* VoiceChannelOverlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F194CA181E717142004C5E56 /* VoiceChannelOverlayTests.swift */; };
@@ -2374,8 +2373,6 @@
 		F148FAA21FBCAA4200BD6909 /* UIFont+DynamicType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIFont+DynamicType.swift"; sourceTree = "<group>"; };
 		F148FAA31FBCAA4200BD6909 /* UIImage+ImageUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+ImageUtilities.h"; sourceTree = "<group>"; };
 		F148FAA41FBCAA4200BD6909 /* UIImage+ImageUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+ImageUtilities.m"; sourceTree = "<group>"; };
-		F148FAA71FBCAA4200BD6909 /* metamacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metamacros.h; sourceTree = "<group>"; };
-		F148FAA81FBCAA4200BD6909 /* weakify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = weakify.h; sourceTree = "<group>"; };
 		F148FAAA1FBCAA4200BD6909 /* AvatarImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvatarImageView.h; sourceTree = "<group>"; };
 		F148FAAB1FBCAA4200BD6909 /* AvatarImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AvatarImageView.m; sourceTree = "<group>"; };
 		F148FAAD1FBCAA4200BD6909 /* Button.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Button.h; sourceTree = "<group>"; };
@@ -4938,18 +4935,8 @@
 				F148FAA21FBCAA4200BD6909 /* UIFont+DynamicType.swift */,
 				F148FAA31FBCAA4200BD6909 /* UIImage+ImageUtilities.h */,
 				F148FAA41FBCAA4200BD6909 /* UIImage+ImageUtilities.m */,
-				F148FAA61FBCAA4200BD6909 /* weakify */,
 			);
 			path = Utilities;
-			sourceTree = "<group>";
-		};
-		F148FAA61FBCAA4200BD6909 /* weakify */ = {
-			isa = PBXGroup;
-			children = (
-				F148FAA71FBCAA4200BD6909 /* metamacros.h */,
-				F148FAA81FBCAA4200BD6909 /* weakify.h */,
-			);
-			path = weakify;
 			sourceTree = "<group>";
 		};
 		F148FAA91FBCAA4200BD6909 /* Views */ = {
@@ -5053,8 +5040,7 @@
 				F148FB131FBCAA7B00BD6909 /* UIImage+ZetaIconsNeue.h in Headers */,
 				F148FB1A1FBCAAF500BD6909 /* WireStyleKit.h in Headers */,
 				F148FB141FBCAA8600BD6909 /* ZetaIconTypes.h in Headers */,
-				F148FB181FBCAAB100BD6909 /* metamacros.h in Headers */,
-				F148FB171FBCAAA900BD6909 /* weakify.h in Headers */,
+				F148FB331FBDB33600BD6909 /* weakify.h in Headers */,
 				F148FB1C1FBCAB2F00BD6909 /* metamacros.h in Headers */,
 				F148FB321FBDAB7700BD6909 /* AVAsset+VideoConvert.h in Headers */,
 				F148FB191FBCAAC000BD6909 /* WireExtensionComponents.h in Headers */,
