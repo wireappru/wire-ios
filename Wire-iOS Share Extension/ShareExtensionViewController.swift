@@ -22,6 +22,7 @@ import WireShareEngine
 import Cartography
 import MobileCoreServices
 import WireDataModel
+import WireExtensionComponents
 import Classy
 
 /// The delay after which a progess view controller will be displayed if all messages are not yet sent.
