@@ -20,7 +20,6 @@
 @import PureLayout;
 
 @import Classy;
-@import WireExtensionComponents;
 #import "Wire-Swift.h"
 
 

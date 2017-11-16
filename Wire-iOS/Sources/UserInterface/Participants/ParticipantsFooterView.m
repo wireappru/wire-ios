@@ -23,7 +23,6 @@
 #import "WAZUIMagicIOS.h"
 @import PureLayout;
 #import "Wire-Swift.h"
-@import WireExtensionComponents;
 #import "NSLayoutConstraint+Helpers.h"
 
 @interface ParticipantsFooterView ()

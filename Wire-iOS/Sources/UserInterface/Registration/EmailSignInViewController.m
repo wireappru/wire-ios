@@ -20,7 +20,6 @@
 #import "EmailSignInViewController.h"
 
 @import PureLayout;
-@import WireExtensionComponents;
 
 #import "WireSyncEngine+iOS.h"
 @import OnePasswordExtension;

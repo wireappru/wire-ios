@@ -20,7 +20,6 @@
 #import "AddEmailStepViewController.h"
 
 @import PureLayout;
-@import WireExtensionComponents;
 
 #import "EmailFormViewController.h"
 #import "UIImage+ZetaIconsNeue.h"

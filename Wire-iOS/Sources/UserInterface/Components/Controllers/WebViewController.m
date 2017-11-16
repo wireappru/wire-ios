@@ -20,7 +20,6 @@
 #import "WebViewController.h"
 @import WebKit;
 
-@import WireExtensionComponents;
 #import "WAZUIMagicIOS.h"
 #import "UIColor+WAZExtensions.h"
 #import "Constants.h"

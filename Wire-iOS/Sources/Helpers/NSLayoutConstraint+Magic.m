@@ -20,7 +20,6 @@
 #import "NSLayoutConstraint+Magic.h"
 #import "WAZUIMagiciOS.h"
 #import "NSLayoutConstraint+Helpers.h"
-@import WireExtensionComponents;
 
 @implementation UIView (MagicLayoutConstraints)
 

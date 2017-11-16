@@ -20,7 +20,6 @@
 @import PureLayout;
 
 #import "AudioHeaderView.h"
-@import WireExtensionComponents;
 #import "ButtonWithLargerHitArea.h"
 #import "WAZUIMagicIOS.h"
 

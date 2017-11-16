@@ -41,7 +41,6 @@
 #import "AnalyticsTracker+Registration.h"
 #import "Wire-Swift.h"
 
-@import WireExtensionComponents;
 
 @interface RegistrationPhoneFlowViewController () <UINavigationControllerDelegate, FormStepDelegate, PhoneVerificationStepViewControllerDelegate, ZMRegistrationObserver, PreLoginAuthenticationObserver>
 

@@ -19,7 +19,6 @@
 
 import Foundation
 import CocoaLumberjackSwift
-import WireExtensionComponents
 
 class ExtensionBackupExcluder {
 

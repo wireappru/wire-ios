@@ -28,7 +28,6 @@
 #import "Message+Private.h"
 
 // UI
-@import WireExtensionComponents;
 #import "UIColor+WAZExtensions.h"
 #import "ConversationCell.h"
 #import "TextMessageCell.h"

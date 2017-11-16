@@ -22,7 +22,6 @@
 @import PureLayout;
 #import "WireSyncEngine+iOS.h"
 #import "UserImageView+Magic.h"
-@import WireExtensionComponents;
 #import "Button.h"
 #import "NSString+TextTransform.h"
 

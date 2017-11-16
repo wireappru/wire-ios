@@ -22,7 +22,6 @@
 #import "AudioTrack.h"
 #import "AudioPlaylist.h"
 @import WireUtilities;
-@import WireExtensionComponents;
 #import "KeyValueObserver.h"
 #import "NetworkStatus.h"
 

@@ -28,7 +28,6 @@
 #import "VoiceIndicatorLayer.h"
 #import "UserConnectingLayer.h"
 
-@import WireExtensionComponents;
 
 @interface VoiceUserImageView ()
 

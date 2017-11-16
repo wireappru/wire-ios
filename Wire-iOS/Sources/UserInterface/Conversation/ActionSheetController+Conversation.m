@@ -19,7 +19,6 @@
 
 #import <Classy/Classy.h>
 
-@import WireExtensionComponents;
 #import "ActionSheetController+Conversation.h"
 #import "ZMConversation+Actions.h"
 #import "WireSyncEngine+iOS.h"

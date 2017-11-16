@@ -28,7 +28,6 @@
 
 #import "WireSyncEngine+iOS.h"
 
-@import WireExtensionComponents;
 
 
 @interface NameStepViewController () <RegistrationTextFieldDelegate>

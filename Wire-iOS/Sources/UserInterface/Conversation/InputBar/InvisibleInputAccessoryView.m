@@ -20,7 +20,6 @@
 #import "InvisibleInputAccessoryView.h"
 #import "KeyValueObserver.h"
 
-@import WireExtensionComponents;
 
 
 @interface InvisibleInputAccessoryView ()

@@ -21,7 +21,6 @@
 
 #import "AudioTrackCell.h"
 #import "AudioTrackView.h"
-@import WireExtensionComponents;
 #import "AudioTrack.h"
 #import "IconButton.h"
 #import "KeyValueObserver.h"

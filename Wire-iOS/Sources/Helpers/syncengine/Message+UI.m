@@ -23,7 +23,6 @@
 #import "Settings.h"
 #import "NSDate+WRFormat.h"
 
-@import WireExtensionComponents;
 
 
 @implementation Message (UI)

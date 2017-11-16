@@ -22,7 +22,6 @@
 
 #import "BrowserBarView.h"
 #import "IconButton.h"
-@import WireExtensionComponents;
 
 @interface BrowserBarView ()
 

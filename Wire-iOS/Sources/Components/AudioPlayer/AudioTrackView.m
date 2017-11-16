@@ -18,7 +18,6 @@
 
 
 #import "AudioTrackView.h"
-@import WireExtensionComponents;
 #import "AudioErrorView.h"
 #import "IconButton.h"
 
