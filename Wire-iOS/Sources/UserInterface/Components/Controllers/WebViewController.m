@@ -29,7 +29,7 @@
 @import PureLayout;
 #import "NSLayoutConstraint+Helpers.h"
 #import "ButtonWithLargerHitArea.h"
-
+#import "UIViewController+LoadingView.h"
 
 @interface WebViewController () <WKNavigationDelegate>
 

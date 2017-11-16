@@ -22,6 +22,8 @@
 
 @protocol ZMBareUser;
 @protocol ZMSearchableUser;
+@protocol AccentColorProvider;
+
 @class ZMConversation, Team;
 
 @interface SearchResultCell : SwipeMenuCollectionCell

@@ -29,6 +29,7 @@
 #import "RegistrationTextField.h"
 #import "WireSyncEngine+iOS.h"
 #import "CheckmarkViewController.h"
+#import "IconButton.h"
 
 
 

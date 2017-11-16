@@ -21,6 +21,7 @@
 #import "Message+Formatting.h"
 #import "Constants.h"
 #import "Settings.h"
+#import "NSDate+WRFormat.h"
 
 @import WireExtensionComponents;
 

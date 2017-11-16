@@ -30,6 +30,7 @@
 #import "GuidanceLabel.h"
 #import "WireSyncEngine+iOS.h"
 #import "Constants.h"
+#import "IconButton.h"
 
 
 @interface AddEmailStepViewController ()

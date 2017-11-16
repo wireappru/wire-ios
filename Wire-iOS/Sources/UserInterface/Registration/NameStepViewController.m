@@ -24,6 +24,7 @@
 #import "RegistrationTextField.h"
 #import "WAZUIMagicIOS.h"
 #import "Constants.h"
+#import "IconButton.h"
 
 #import "WireSyncEngine+iOS.h"
 

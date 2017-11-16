@@ -31,7 +31,7 @@
 #import "WireSyncEngine+iOS.h"
 #import "UIFont+MagicAccess.h"
 #import "UIViewController+Errors.h"
-#import <WireExtensionComponents/UIViewController+LoadingView.h>
+#import "UIViewController+LoadingView.h"
 #import "CheckmarkViewController.h"
 #import "TermsOfUseStepViewController.h"
 #import "NameStepViewController.h"
