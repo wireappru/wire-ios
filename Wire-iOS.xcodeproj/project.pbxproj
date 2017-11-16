@@ -849,12 +849,6 @@
 		F12CDAE31E4386A100CEFCEB /* ChangeHandleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12CDAE21E4386A100CEFCEB /* ChangeHandleViewController.swift */; };
 		F12CDAE71E43880100CEFCEB /* RegistrationTextViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12CDAE61E43880100CEFCEB /* RegistrationTextViewCell.swift */; };
 		F12CDAEB1E43886A00CEFCEB /* DecriptionHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12CDAEA1E43886A00CEFCEB /* DecriptionHeaderView.swift */; };
-		F148F99C1FBCA52300BD6909 /* ExtensionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB332671E3A2D95003B0CD2 /* ExtensionSettings.swift */; };
-		F148F99D1FBCA53600BD6909 /* FileMetaDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8E4FA91DF066750009F437 /* FileMetaDataGenerator.swift */; };
-		F148F99E1FBCA54A00BD6909 /* FilePreviewGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8E4FAA1DF066750009F437 /* FilePreviewGenerator.swift */; };
-		F148F99F1FBCA55B00BD6909 /* AudioProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8E4FB21DF066EE0009F437 /* AudioProcessing.swift */; };
-		F148F9A01FBCA57700BD6909 /* URL+Backup.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EC9051EB1FC3D009D9A69 /* URL+Backup.swift */; };
-		F148F9A21FBCA5FC00BD6909 /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161541BB1E28FFAE00AC2FFB /* CircularProgressView.swift */; };
 		F148FAD41FBCAA4300BD6909 /* BlurEffectTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA611FBCAA4200BD6909 /* BlurEffectTransition.swift */; };
 		F148FAD51FBCAA4300BD6909 /* ShareDestinationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA621FBCAA4200BD6909 /* ShareDestinationCell.swift */; };
 		F148FAD61FBCAA4300BD6909 /* ShareViewController+Views.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA631FBCAA4200BD6909 /* ShareViewController+Views.swift */; };
@@ -863,16 +857,12 @@
 		F148FADB1FBCAA4300BD6909 /* UserConnectingLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FA711FBCAA4200BD6909 /* UserConnectingLayer.m */; };
 		F148FADC1FBCAA4300BD6909 /* VoiceGainLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FA731FBCAA4200BD6909 /* VoiceGainLayer.m */; };
 		F148FADD1FBCAA4300BD6909 /* VoiceIndicatorLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FA751FBCAA4200BD6909 /* VoiceIndicatorLayer.m */; };
-		F148FADF1FBCAA4300BD6909 /* AudioProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA791FBCAA4200BD6909 /* AudioProcessing.swift */; };
 		F148FAE01FBCAA4300BD6909 /* AutomationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA7A1FBCAA4200BD6909 /* AutomationHelper.swift */; };
 		F148FAE21FBCAA4300BD6909 /* AVAsset+VideoConvert.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA7D1FBCAA4200BD6909 /* AVAsset+VideoConvert.swift */; };
 		F148FAE31FBCAA4300BD6909 /* CGFloat+Hairline.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA7E1FBCAA4200BD6909 /* CGFloat+Hairline.swift */; };
 		F148FAE41FBCAA4300BD6909 /* ColorScheme.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FA801FBCAA4200BD6909 /* ColorScheme.m */; };
 		F148FAE51FBCAA4300BD6909 /* Date+Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA811FBCAA4200BD6909 /* Date+Format.swift */; };
 		F148FAE61FBCAA4300BD6909 /* DeveloperMenuState.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FA831FBCAA4200BD6909 /* DeveloperMenuState.m */; };
-		F148FAE71FBCAA4300BD6909 /* ExtensionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA841FBCAA4200BD6909 /* ExtensionSettings.swift */; };
-		F148FAE81FBCAA4300BD6909 /* FileMetaDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA851FBCAA4200BD6909 /* FileMetaDataGenerator.swift */; };
-		F148FAE91FBCAA4300BD6909 /* FilePreviewGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA861FBCAA4200BD6909 /* FilePreviewGenerator.swift */; };
 		F148FAEA1FBCAA4300BD6909 /* FontScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FA871FBCAA4200BD6909 /* FontScheme.swift */; };
 		F148FAEB1FBCAA4300BD6909 /* Geometry.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FA891FBCAA4200BD6909 /* Geometry.m */; };
 		F148FAEC1FBCAA4300BD6909 /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FA8B1FBCAA4200BD6909 /* ImageCache.m */; };
@@ -890,7 +880,6 @@
 		F148FAF81FBCAA4300BD6909 /* UIControl+Wire.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FAA11FBCAA4200BD6909 /* UIControl+Wire.m */; };
 		F148FAF91FBCAA4300BD6909 /* UIFont+DynamicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FAA21FBCAA4200BD6909 /* UIFont+DynamicType.swift */; };
 		F148FAFA1FBCAA4300BD6909 /* UIImage+ImageUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FAA41FBCAA4200BD6909 /* UIImage+ImageUtilities.m */; };
-		F148FAFB1FBCAA4300BD6909 /* URL+Backup.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FAA51FBCAA4200BD6909 /* URL+Backup.swift */; };
 		F148FAFC1FBCAA4300BD6909 /* AvatarImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FAAB1FBCAA4200BD6909 /* AvatarImageView.m */; };
 		F148FAFD1FBCAA4300BD6909 /* Button.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FAAE1FBCAA4200BD6909 /* Button.m */; };
 		F148FAFE1FBCAA4300BD6909 /* ButtonWithLargerHitArea.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FAB01FBCAA4200BD6909 /* ButtonWithLargerHitArea.m */; };
@@ -899,7 +888,6 @@
 		F148FB011FBCAA4300BD6909 /* IconLabelButton.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FAB61FBCAA4200BD6909 /* IconLabelButton.m */; };
 		F148FB021FBCAA4300BD6909 /* FlexibleNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FAB81FBCAA4200BD6909 /* FlexibleNavigationBar.m */; };
 		F148FB031FBCAA4300BD6909 /* ImageMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FAB91FBCAA4200BD6909 /* ImageMessageView.swift */; };
-		F148FB041FBCAA4300BD6909 /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FABB1FBCAA4200BD6909 /* CircularProgressView.swift */; };
 		F148FB051FBCAA4300BD6909 /* ProgressSpinner.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FABD1FBCAA4200BD6909 /* ProgressSpinner.m */; };
 		F148FB061FBCAA4300BD6909 /* UIViewController+LoadingView.m in Sources */ = {isa = PBXBuildFile; fileRef = F148FABF1FBCAA4200BD6909 /* UIViewController+LoadingView.m */; };
 		F148FB071FBCAA4300BD6909 /* OverflowSeparatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F148FAC01FBCAA4200BD6909 /* OverflowSeparatorView.swift */; };
@@ -924,6 +912,12 @@
 		F148FB1C1FBCAB2F00BD6909 /* metamacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 878607171D33E3FF00971A19 /* metamacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F148FB1D1FBCABEE00BD6909 /* AttributedStringOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 870534001DD6265100A7F822 /* AttributedStringOperators.swift */; };
 		F148FB1E1FBCACB700BD6909 /* AVAsset+VideoConvert.h in Headers */ = {isa = PBXBuildFile; fileRef = CE06C93C1DF5C3D900497685 /* AVAsset+VideoConvert.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F148FB201FBDA7CA00BD6909 /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161541BB1E28FFAE00AC2FFB /* CircularProgressView.swift */; };
+		F148FB211FBDA7DB00BD6909 /* FilePreviewGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8E4FAA1DF066750009F437 /* FilePreviewGenerator.swift */; };
+		F148FB221FBDA7EC00BD6909 /* ExtensionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB332671E3A2D95003B0CD2 /* ExtensionSettings.swift */; };
+		F148FB231FBDA7FF00BD6909 /* AudioProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8E4FB21DF066EE0009F437 /* AudioProcessing.swift */; };
+		F148FB241FBDA80C00BD6909 /* URL+Backup.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EC9051EB1FC3D009D9A69 /* URL+Backup.swift */; };
+		F148FB251FBDA81700BD6909 /* FileMetaDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8E4FA91DF066750009F437 /* FileMetaDataGenerator.swift */; };
 		F15E9BFD1E4878AC00EA207F /* UINavigationController+PopToPrevious.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15E9BFC1E4878AC00EA207F /* UINavigationController+PopToPrevious.swift */; };
 		F194AD7A1E3F3BBC00B0049B /* UIApplication+RTL.swift in Sources */ = {isa = PBXBuildFile; fileRef = F194AD791E3F3BBC00B0049B /* UIApplication+RTL.swift */; };
 		F194CA1B1E7179C2004C5E56 /* VoiceChannelOverlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F194CA181E717142004C5E56 /* VoiceChannelOverlayTests.swift */; };
@@ -2430,7 +2424,6 @@
 		F148FA741FBCAA4200BD6909 /* VoiceIndicatorLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VoiceIndicatorLayer.h; sourceTree = "<group>"; };
 		F148FA751FBCAA4200BD6909 /* VoiceIndicatorLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VoiceIndicatorLayer.m; sourceTree = "<group>"; };
 		F148FA771FBCAA4200BD6909 /* AccentColorProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AccentColorProvider.h; sourceTree = "<group>"; };
-		F148FA791FBCAA4200BD6909 /* AudioProcessing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioProcessing.swift; sourceTree = "<group>"; };
 		F148FA7A1FBCAA4200BD6909 /* AutomationHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutomationHelper.swift; sourceTree = "<group>"; };
 		F148FA7D1FBCAA4200BD6909 /* AVAsset+VideoConvert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAsset+VideoConvert.swift"; sourceTree = "<group>"; };
 		F148FA7E1FBCAA4200BD6909 /* CGFloat+Hairline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGFloat+Hairline.swift"; sourceTree = "<group>"; };
@@ -2439,9 +2432,6 @@
 		F148FA811FBCAA4200BD6909 /* Date+Format.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Date+Format.swift"; sourceTree = "<group>"; };
 		F148FA821FBCAA4200BD6909 /* DeveloperMenuState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeveloperMenuState.h; sourceTree = "<group>"; };
 		F148FA831FBCAA4200BD6909 /* DeveloperMenuState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DeveloperMenuState.m; sourceTree = "<group>"; };
-		F148FA841FBCAA4200BD6909 /* ExtensionSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtensionSettings.swift; sourceTree = "<group>"; };
-		F148FA851FBCAA4200BD6909 /* FileMetaDataGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileMetaDataGenerator.swift; sourceTree = "<group>"; };
-		F148FA861FBCAA4200BD6909 /* FilePreviewGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilePreviewGenerator.swift; sourceTree = "<group>"; };
 		F148FA871FBCAA4200BD6909 /* FontScheme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FontScheme.swift; sourceTree = "<group>"; };
 		F148FA881FBCAA4200BD6909 /* Geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Geometry.h; sourceTree = "<group>"; };
 		F148FA891FBCAA4200BD6909 /* Geometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Geometry.m; sourceTree = "<group>"; };
@@ -2472,7 +2462,6 @@
 		F148FAA21FBCAA4200BD6909 /* UIFont+DynamicType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIFont+DynamicType.swift"; sourceTree = "<group>"; };
 		F148FAA31FBCAA4200BD6909 /* UIImage+ImageUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+ImageUtilities.h"; sourceTree = "<group>"; };
 		F148FAA41FBCAA4200BD6909 /* UIImage+ImageUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+ImageUtilities.m"; sourceTree = "<group>"; };
-		F148FAA51FBCAA4200BD6909 /* URL+Backup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "URL+Backup.swift"; sourceTree = "<group>"; };
 		F148FAA71FBCAA4200BD6909 /* metamacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metamacros.h; sourceTree = "<group>"; };
 		F148FAA81FBCAA4200BD6909 /* weakify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = weakify.h; sourceTree = "<group>"; };
 		F148FAAA1FBCAA4200BD6909 /* AvatarImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvatarImageView.h; sourceTree = "<group>"; };
@@ -2490,7 +2479,6 @@
 		F148FAB71FBCAA4200BD6909 /* FlexibleNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlexibleNavigationBar.h; sourceTree = "<group>"; };
 		F148FAB81FBCAA4200BD6909 /* FlexibleNavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlexibleNavigationBar.m; sourceTree = "<group>"; };
 		F148FAB91FBCAA4200BD6909 /* ImageMessageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageMessageView.swift; sourceTree = "<group>"; };
-		F148FABB1FBCAA4200BD6909 /* CircularProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		F148FABC1FBCAA4200BD6909 /* ProgressSpinner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProgressSpinner.h; sourceTree = "<group>"; };
 		F148FABD1FBCAA4200BD6909 /* ProgressSpinner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProgressSpinner.m; sourceTree = "<group>"; };
 		F148FABE1FBCAA4200BD6909 /* UIViewController+LoadingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController+LoadingView.h"; sourceTree = "<group>"; };
@@ -5126,7 +5114,6 @@
 			isa = PBXGroup;
 			children = (
 				F148FA771FBCAA4200BD6909 /* AccentColorProvider.h */,
-				F148FA791FBCAA4200BD6909 /* AudioProcessing.swift */,
 				F148FA7A1FBCAA4200BD6909 /* AutomationHelper.swift */,
 				F148FA7D1FBCAA4200BD6909 /* AVAsset+VideoConvert.swift */,
 				F148FA7E1FBCAA4200BD6909 /* CGFloat+Hairline.swift */,
@@ -5135,9 +5122,6 @@
 				F148FA811FBCAA4200BD6909 /* Date+Format.swift */,
 				F148FA821FBCAA4200BD6909 /* DeveloperMenuState.h */,
 				F148FA831FBCAA4200BD6909 /* DeveloperMenuState.m */,
-				F148FA841FBCAA4200BD6909 /* ExtensionSettings.swift */,
-				F148FA851FBCAA4200BD6909 /* FileMetaDataGenerator.swift */,
-				F148FA861FBCAA4200BD6909 /* FilePreviewGenerator.swift */,
 				F148FA871FBCAA4200BD6909 /* FontScheme.swift */,
 				F148FA881FBCAA4200BD6909 /* Geometry.h */,
 				F148FA891FBCAA4200BD6909 /* Geometry.m */,
@@ -5168,7 +5152,6 @@
 				F148FAA21FBCAA4200BD6909 /* UIFont+DynamicType.swift */,
 				F148FAA31FBCAA4200BD6909 /* UIImage+ImageUtilities.h */,
 				F148FAA41FBCAA4200BD6909 /* UIImage+ImageUtilities.m */,
-				F148FAA51FBCAA4200BD6909 /* URL+Backup.swift */,
 				F148FAA61FBCAA4200BD6909 /* weakify */,
 			);
 			path = Utilities;
@@ -5227,7 +5210,6 @@
 		F148FABA1FBCAA4200BD6909 /* Loading */ = {
 			isa = PBXGroup;
 			children = (
-				F148FABB1FBCAA4200BD6909 /* CircularProgressView.swift */,
 				F148FABC1FBCAA4200BD6909 /* ProgressSpinner.h */,
 				F148FABD1FBCAA4200BD6909 /* ProgressSpinner.m */,
 				F148FABE1FBCAA4200BD6909 /* UIViewController+LoadingView.h */,
@@ -5882,17 +5864,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F148F99C1FBCA52300BD6909 /* ExtensionSettings.swift in Sources */,
 				BF96A6CA1E2FD3340057974A /* SLComposeServiceViewController+Attachments.swift in Sources */,
 				BF6EC90A1EB1FD0C009D9A69 /* ExtensionBackupExcluder.swift in Sources */,
 				BF96A6C61E2FA1790057974A /* UnsentSendable.swift in Sources */,
-				F148F99E1FBCA54A00BD6909 /* FilePreviewGenerator.swift in Sources */,
 				BF9AEE191E4A0BC00005FBA7 /* PreprocessorHelper.m in Sources */,
-				F148F99F1FBCA55B00BD6909 /* AudioProcessing.swift in Sources */,
-				F148F9A01FBCA57700BD6909 /* URL+Backup.swift in Sources */,
 				BFBE45771E36205F009FBF60 /* Error+Logging.swift in Sources */,
 				165FDC4B1DD5D447009D75A2 /* NSItemProvider+Helper.m in Sources */,
-				F148F9A21FBCA5FC00BD6909 /* CircularProgressView.swift in Sources */,
 				543E0C681E23A7C3000E2161 /* NotSignedInViewController.swift in Sources */,
 				BF96A6CC1E2FD3BA0057974A /* NSItemProvider+Fetching.swift in Sources */,
 				BF9AEE161E4A0BA20005FBA7 /* CrashReporter.swift in Sources */,
@@ -5900,7 +5877,6 @@
 				543E0C661E23A72F000E2161 /* SendingProgressViewController.swift in Sources */,
 				BF2756DB1E38E16D00082786 /* ShareExtensionAnalytics.swift in Sources */,
 				BF96A6C81E2FC7B60057974A /* SendController.swift in Sources */,
-				F148F99D1FBCA53600BD6909 /* FileMetaDataGenerator.swift in Sources */,
 				545BA2191E2D3C4900AA373E /* PostContent.swift in Sources */,
 				543E0C641E2394F4000E2161 /* ConversationSelectionViewController.swift in Sources */,
 			);
@@ -5912,7 +5888,13 @@
 			files = (
 				F148FB1D1FBCABEE00BD6909 /* AttributedStringOperators.swift in Sources */,
 				F148FB1B1FBCAAFB00BD6909 /* WireStyleKit.m in Sources */,
+				F148FB211FBDA7DB00BD6909 /* FilePreviewGenerator.swift in Sources */,
+				F148FB251FBDA81700BD6909 /* FileMetaDataGenerator.swift in Sources */,
+				F148FB231FBDA7FF00BD6909 /* AudioProcessing.swift in Sources */,
+				F148FB201FBDA7CA00BD6909 /* CircularProgressView.swift in Sources */,
+				F148FB221FBDA7EC00BD6909 /* ExtensionSettings.swift in Sources */,
 				F148FB121FBCAA7200BD6909 /* UIImage+ZetaIconsNeue.m in Sources */,
+				F148FB241FBDA80C00BD6909 /* URL+Backup.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5964,7 +5946,6 @@
 				162CFAA71AE500C10078FB87 /* AddPhoneNumberViewController.m in Sources */,
 				F148FADD1FBCAA4300BD6909 /* VoiceIndicatorLayer.m in Sources */,
 				871BC2291D34F8F800DF0793 /* ConfirmAssetViewController.m in Sources */,
-				F148FB041FBCAA4300BD6909 /* CircularProgressView.swift in Sources */,
 				871BC26B1D34F8F800DF0793 /* GapLayer.m in Sources */,
 				163B5EF21B4C209C009B4629 /* MediaBarViewController.m in Sources */,
 				8F41CFC319926B7A00E3B032 /* ZMUser+Additions.m in Sources */,
@@ -6094,7 +6075,6 @@
 				162936BF1F4714D200D4F386 /* AppRootViewController.swift in Sources */,
 				F148FAFD1FBCAA4300BD6909 /* Button.m in Sources */,
 				875A23101ADEA1A200111C88 /* CountryCodeBaseTableViewController.m in Sources */,
-				F148FAFB1FBCAA4300BD6909 /* URL+Backup.swift in Sources */,
 				F12CDADE1E43868200CEFCEB /* ChangeEmailViewController.swift in Sources */,
 				87D679E81EBC8D1E005BEB4C /* ConversationListViewController+CameraPicker.swift in Sources */,
 				8715F22D1F86758E006F3935 /* AnalyticsMixpanelProvider.swift in Sources */,
@@ -6119,7 +6099,6 @@
 				8798C51A1C3ACDF700678AD7 /* NoHistoryViewController.m in Sources */,
 				87934E121C451C1100186A85 /* FingerprintTableViewCell.swift in Sources */,
 				871BC2261D34F8F800DF0793 /* BrowserViewController.m in Sources */,
-				F148FAE91FBCAA4300BD6909 /* FilePreviewGenerator.swift in Sources */,
 				87DCF4E91D34EA4500BB420F /* ProfilePresenter.m in Sources */,
 				87F18BD21E03F13900C69D9B /* ZMLocationMessageData+Coordinates.swift in Sources */,
 				F148FAFF1FBCAA4300BD6909 /* CheckBoxButton.m in Sources */,
@@ -6215,7 +6194,6 @@
 				871BC00D1D34F56300DF0793 /* Analytics+MediaActionEvents.swift in Sources */,
 				87D5E4421C3E79C600EB8289 /* NSData+Fingerprint.swift in Sources */,
 				871BC3511D34F94200DF0793 /* AccentColorChangeHandler.m in Sources */,
-				F148FADF1FBCAA4300BD6909 /* AudioProcessing.swift in Sources */,
 				BF0BDF9A1DAD3806003C61DE /* Analytics+EmojiKeyboard.swift in Sources */,
 				CEEEAF071CB562BF00111759 /* PlaceholderConversationViewController.swift in Sources */,
 				872CB8B519E58816006752B4 /* ProfileIncomingConnectionRequestFooterView.m in Sources */,
@@ -6391,7 +6369,6 @@
 				160C311F1E4C78480012E4BC /* UnknownMessageCell.swift in Sources */,
 				F148FAF71FBCAA4300BD6909 /* UIColor+WR_ColorScheme.m in Sources */,
 				87DCF4921D34E9BA00BB420F /* ContactsViewController+ShareContacts.m in Sources */,
-				F148FAE71FBCAA4300BD6909 /* ExtensionSettings.swift in Sources */,
 				16E2A09E1F6BD551005F4DB1 /* VoiceChannelParticipantCell.swift in Sources */,
 				874A02561D1D329B00D0D74A /* AudioEffectCell.swift in Sources */,
 				DB888FB61ADD18B400CE9A88 /* RegistrationEmailFlowViewController.m in Sources */,
@@ -6565,7 +6542,6 @@
 				BF999B601C0C984C008D5414 /* ProfileDevicesViewController.m in Sources */,
 				87F18BB01E01533F00C69D9B /* CollectionFileCell.swift in Sources */,
 				164C29AB1ED33A5F0026562A /* SearchResultsViewController.swift in Sources */,
-				F148FAE81FBCAA4300BD6909 /* FileMetaDataGenerator.swift in Sources */,
 				873C5FE91C10426A00D5132A /* ClientUnregisterFlowViewController.swift in Sources */,
 				16D68E9B1CEF99C7003AB9E0 /* WaveformProgressView.swift in Sources */,
 				87BEB0441D3E478500DE9575 /* AssetLibrary.swift in Sources */,
