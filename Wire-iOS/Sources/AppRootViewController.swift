@@ -27,6 +27,10 @@ class AppRootViewController : UIViewController {
     public let overlayWindow : UIWindow
     public fileprivate(set) var sessionManager : SessionManager?
     
+    fileprivate var sessionManagerCreatedSessionObserverToken: Any?
+    fileprivate var sessionManagerDestroyedSessionObserverToken: Any?
+    fileprivate var soundEventListeners = [UUID : SoundEventListener]()
+    
     public fileprivate(set) var visibleViewController : UIViewController?
     fileprivate let appStateController : AppStateController
     fileprivate lazy var classyCache : ClassyCache = {
@@ -37,6 +41,9 @@ class AppRootViewController : UIViewController {
     fileprivate var authenticatedBlocks : [() -> Void] = []
     fileprivate let transitionQueue : DispatchQueue = DispatchQueue(label: "transitionQueue")
     fileprivate var isClassyInitialized = false
+    fileprivate let mediaManagerLoader = MediaManagerLoader()
+
+    var flowController: TeamCreationFlowController!
     
     fileprivate weak var requestToOpenViewDelegate: ZMRequestsToOpenViewsDelegate? {
         didSet {
@@ -48,21 +55,23 @@ class AppRootViewController : UIViewController {
     }
     
     fileprivate var performWhenRequestsToOpenViewsDelegateAvailable: ((ZMRequestsToOpenViewsDelegate)->())?
-    
-    
+
+    override public func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        mainWindow.frame.size = size
+        overlayWindow.frame.size = size
+    }
+
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         appStateController = AppStateController()
         fileBackupExcluder = FileBackupExcluder()
         avsLogObserver = AVSLogObserver()
         MagicConfig.shared()
-        
-        mainWindow = UIWindow()
-        mainWindow.frame = UIScreen.main.bounds
+
+        mainWindow = UIWindow(frame: UIScreen.main.bounds)
         mainWindow.accessibilityIdentifier = "ZClientMainWindow"
         
-        overlayWindow = PassthroughWindow()
+        overlayWindow = PassthroughWindow(frame: UIScreen.main.bounds)
         overlayWindow.backgroundColor = .clear
-        overlayWindow.frame = UIScreen.main.bounds
         overlayWindow.windowLevel = UIWindowLevelStatusBar + 1
         overlayWindow.accessibilityIdentifier = "ZClientNotificationWindow"
         overlayWindow.rootViewController = NotificationWindowRootViewController()
@@ -89,6 +98,8 @@ class AppRootViewController : UIViewController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(onContentSizeCategoryChange), name: Notification.Name.UIContentSizeCategoryDidChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(applicationDidEnterBackground), name: Notification.Name.UIApplicationDidEnterBackground, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onUserGrantedAudioPermissions), name: Notification.Name.UserGrantedAudioPermissions, object: nil)
         
         transition(to: .headless)
         
@@ -121,10 +132,12 @@ class AppRootViewController : UIViewController {
             blacklistDownloadInterval: Settings.shared().blacklistDownloadInterval)
         { sessionManager in
             self.sessionManager = sessionManager
+            self.sessionManagerCreatedSessionObserverToken = sessionManager.addSessionManagerCreatedSessionObserver(self)
+            self.sessionManagerDestroyedSessionObserverToken = sessionManager.addSessionManagerDestroyedSessionObserver(self)
             self.sessionManager?.localNotificationResponder = self
             self.sessionManager?.requestToOpenViewDelegate = self
             sessionManager.updateCallNotificationStyleFromSettings()
-            sessionManager.useConstantBitRateAudio = false //  Settings.shared().callingConstantBitRate TODO re-enable
+            sessionManager.useConstantBitRateAudio = Settings.shared().callingConstantBitRate
         }
     }
     
@@ -173,12 +186,43 @@ class AppRootViewController : UIViewController {
             launchImageViewController.showLoadingScreen()
             viewController = launchImageViewController
         case .unauthenticated(error: let error):
-            UIColor.setAccentOverride(ZMUser.pickRandomAccentColor())
+            UIColor.setAccentOverride(ZMUser.pickRandomAcceptableAccentColor())
             mainWindow.tintColor = UIColor.accent()
-            let registrationViewController = RegistrationViewController()
-            registrationViewController.delegate = appStateController
-            registrationViewController.signInError = error
-            viewController = registrationViewController
+            
+            // check if needs to reauthenticate
+            var needsToReauthenticate = false
+            if let error = error {
+                let errorCode = (error as NSError).userSessionErrorCode
+                needsToReauthenticate = [ZMUserSessionErrorCode.clientDeletedRemotely,
+                    .accessTokenExpired,
+                    .needsPasswordToRegisterClient,
+                    .canNotRegisterMoreClients
+                ].contains(errorCode)
+            }
+            
+            if needsToReauthenticate {
+                let registrationViewController = RegistrationViewController()
+                registrationViewController.delegate = appStateController
+                registrationViewController.signInError = error
+                viewController = registrationViewController
+            }
+            else {
+                // When we show the landing controller we want it to be nested in navigation controller
+                let landingViewController = LandingViewController()
+                landingViewController.delegate = self
+                
+                let navigationController = NavigationController(rootViewController: landingViewController)
+                navigationController.backButtonEnabled = false
+                navigationController.logoEnabled = false
+                navigationController.isNavigationBarHidden = true
+                
+                guard let registrationStatus = SessionManager.shared?.unauthenticatedSession?.registrationStatus else { fatal("Could not get registration status") }
+                
+                flowController = TeamCreationFlowController(navigationController: navigationController, registrationStatus: registrationStatus)
+                flowController.registrationDelegate = appStateController
+                viewController = navigationController
+            }
+
         case .authenticated(completedRegistration: let completedRegistration):
             // TODO: CallKit only with 1 account
             sessionManager?.updateCallNotificationStyleFromSettings()
@@ -286,15 +330,8 @@ class AppRootViewController : UIViewController {
         }
     }
     
-    func configureMediaManager() {        
-        guard let mediaManager = AVSMediaManager.sharedInstance() else {
-            return
-        }
-        
-        mediaManager.configureSounds()
-        mediaManager.observeSoundConfigurationChanges()
-        mediaManager.isMicrophoneMuted = false
-        mediaManager.isSpeakerEnabled = false
+    func configureMediaManager() {
+        self.mediaManagerLoader.send(message: .appStart)
     }
     
     func setupClassy(with windows: [UIWindow]) {
@@ -413,5 +450,83 @@ extension AppRootViewController : LocalNotificationResponder {
     @objc fileprivate func applicationDidEnterBackground() {
         let unreadConversations = sessionManager?.accountManager.totalUnreadCount ?? 0
         UIApplication.shared.applicationIconBadgeNumber = unreadConversations
+    }
+
+    @objc fileprivate func applicationDidBecomeActive() {
+        overlayWindow.frame.size = UIScreen.main.bounds.size
+    }
+}
+
+
+// MARK: - Session Manager Observer
+
+extension AppRootViewController : SessionManagerCreatedSessionObserver, SessionManagerDestroyedSessionObserver {
+    
+    func sessionManagerCreated(userSession: ZMUserSession) {
+        for (accountId, session) in sessionManager?.backgroundUserSessions ?? [:] {
+            if session == userSession {
+                soundEventListeners[accountId] = SoundEventListener(userSession: userSession)
+            }
+        }
+    }
+    
+    func sessionManagerDestroyedUserSession(for accountId: UUID) {
+        soundEventListeners[accountId] = nil
+    }
+}
+
+  
+// MARK: - Audio Permissions granted
+
+extension AppRootViewController  {
+    
+    func onUserGrantedAudioPermissions() {
+        sessionManager?.updateCallNotificationStyleFromSettings()
+    }
+}
+
+// MARK: - Transition form LandingViewController to RegistrationViewController
+
+extension AppRootViewController : LandingViewControllerDelegate {
+    func landingViewControllerDidChooseCreateTeam() {
+        flowController.startFlow()
+    }
+
+    func landingViewControllerDidChooseLogin() {
+        if let navigationController = self.visibleViewController as? NavigationController {
+            let loginViewController = RegistrationViewController(authenticationFlow: .onlyLogin)
+            loginViewController.delegate = appStateController
+            loginViewController.shouldHideCancelButton = true
+            navigationController.pushViewController(loginViewController, animated: true)
+        }
+    }
+
+    func landingViewControllerDidChooseCreateAccount() {
+        if let navigationController = self.visibleViewController as? NavigationController {
+            let registrationViewController = RegistrationViewController(authenticationFlow: .onlyRegistration)
+            registrationViewController.delegate = appStateController
+            registrationViewController.shouldHideCancelButton = true
+            navigationController.pushViewController(registrationViewController, animated: true)
+        }
+    }
+}
+
+public extension SessionManager {
+    
+    var firstAuthenticatedAccount: Account? {
+        
+        if let selectedAccount = accountManager.selectedAccount {
+            if selectedAccount.isAuthenticated {
+                return selectedAccount
+            }
+        }
+        
+        for account in accountManager.accounts {
+            if account.isAuthenticated && account != accountManager.selectedAccount {
+                return account
+            }
+        }
+        
+        return nil
     }
 }
