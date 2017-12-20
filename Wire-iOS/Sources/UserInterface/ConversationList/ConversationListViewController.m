@@ -51,7 +51,6 @@
 #import "NotificationWindowRootViewController.h"
 #import "PassthroughTouchesView.h"
 
-#import "UIViewController+Orientation.h"
 
 #import "ActionSheetController.h"
 #import "ActionSheetController+Conversation.h"
@@ -123,7 +122,6 @@
 
 
 @implementation ConversationListViewController
-@synthesize startUISelectedUsers;
 
 - (void)dealloc
 {
