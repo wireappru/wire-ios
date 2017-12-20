@@ -1,4 +1,4 @@
-// 
+ //
 // Wire
 // Copyright (C) 2016 Wire Swiss GmbH
 // 
@@ -46,6 +46,7 @@
 
 static NSString * const CellReuseIdConnectionRequests = @"CellIdConnectionRequests";
 static NSString * const CellReuseIdConversation = @"CellId";
+static NSString * const CellReuseIdHeaderConversation = @"CellIdHeader";
 
 
 
@@ -85,6 +86,7 @@ static NSString * const CellReuseIdConversation = @"CellId";
     flowLayout.minimumLineSpacing = 0;
     flowLayout.minimumInteritemSpacing = 0;
     flowLayout.sectionInset = UIEdgeInsetsMake(0, 0, 0, 0);
+    flowLayout.sectionHeadersPinToVisibleBounds = YES;
     self = [super initWithCollectionViewLayout:flowLayout];
     if (self) {
         StopWatch *stopWatch = [StopWatch stopWatch];
@@ -143,6 +145,7 @@ static NSString * const CellReuseIdConversation = @"CellId";
 {
     [self.collectionView registerClass:[ConnectRequestsCell class] forCellWithReuseIdentifier:CellReuseIdConnectionRequests];
     [self.collectionView registerClass:[ConversationListCell class] forCellWithReuseIdentifier:CellReuseIdConversation];
+    [self.collectionView registerClass:[ConversationListCell class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:CellReuseIdHeaderConversation];
     
     self.collectionView.backgroundColor = [UIColor clearColor];
     self.collectionView.alwaysBounceVertical = YES;
@@ -455,6 +458,18 @@ static NSString * const CellReuseIdConversation = @"CellId";
     return cell;
 }
 
+-(UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
+    if([kind isEqualToString:UICollectionElementKindSectionHeader] && indexPath.section == 1) {
+        ConversationListCell *listCell = [self.collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:CellReuseIdHeaderConversation forIndexPath:indexPath];
+        id item = [self.listViewModel itemForIndexPath:indexPath];
+        listCell.delegate = self;
+        listCell.mutuallyExclusiveSwipeIdentifier = @"ConversationList";
+        listCell.conversation = item;
+        return listCell;
+    } else {
+        return nil;
+    }
+}
 @end
 
 
@@ -501,6 +516,14 @@ static NSString * const CellReuseIdConversation = @"CellId";
     }
     else {
         return UIEdgeInsetsMake(0, 0, 0, 0);
+    }
+}
+
+-(CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    if(section == 1) {
+        return CGSizeMake(collectionView.frame.size.width, 64.0);
+    } else {
+        return CGSizeZero;
     }
 }
 
