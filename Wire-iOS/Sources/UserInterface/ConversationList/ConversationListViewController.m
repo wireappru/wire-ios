@@ -752,7 +752,13 @@
     [self updateNoConversationVisibility];
     [self updateArchiveButtonVisibility];
     
-    [self.topBar pinConversation:changeInfo.conversationList.firstObject];
+    ZMConversation *conv = changeInfo.conversationList.firstObject;
+    int tmp = (arc4random() % 30)+1;
+    if(tmp % 5 == 0) {
+        conv = nil;
+    }
+    
+    [self.topBar pinConversation:conv];
 }
 
 - (void)updateArchiveButtonVisibility

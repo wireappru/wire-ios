@@ -71,12 +71,16 @@ final class ConversationListTopBar: TopBar {
     
     func pinConversation(_ conversation: ZMConversation?) {
         self.conversation = conversation
+        self.pinnedItem.isHidden = false
+        self.pinnedItemHeight?.isActive = true
         self.pinnedItemHeight?.constant = 64.0
         invalidateIntrinsicContentSize()
     }
     
     func unpinCurrentConversation() {
         self.conversation = nil
+        self.pinnedItem.isHidden = true
+        self.pinnedItemHeight?.isActive = false
         self.pinnedItemHeight?.constant = 0.0
         invalidateIntrinsicContentSize()
     }
@@ -113,9 +117,9 @@ open class TopBar: UIView {
             
             containerView.addSubview(new)
             
-            constrain(self, new) { selfView, new in
-                new.leading == selfView.leadingMargin
-                new.centerY == selfView.centerY
+            constrain(containerView, new) { containerView, new in
+                new.leading == containerView.leadingMargin
+                new.centerY == containerView.centerY
             }
         }
     }
@@ -130,9 +134,9 @@ open class TopBar: UIView {
             
             containerView.addSubview(new)
             
-            constrain(self, new) { selfView, new in
-                new.trailing == selfView.trailingMargin
-                new.centerY == selfView.centerY
+            constrain(containerView, new) { containerView, new in
+                new.trailing == containerView.trailingMargin
+                new.centerY == containerView.centerY
             }
         }
     }
