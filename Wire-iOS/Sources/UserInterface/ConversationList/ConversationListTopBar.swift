@@ -20,7 +20,17 @@ import UIKit
 import Cartography
 import WireExtensionComponents
 
+/*
+ [self.topBar autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.pinnedItem];
+ [self.pinnedItem autoPinEdgeToSuperviewEdge:ALEdgeLeft];
+ [self.pinnedItem autoPinEdgeToSuperviewEdge:ALEdgeRight];
+ [self.pinnedItem autoSetDimension:ALDimensionHeight toSize:64.0];
+ [self.pinnedItem autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.listContentController.view];
+ */
+
 final class ConversationListTopBar: TopBar {
+    
+    var pinnedItem = ConversationListPinnedItemView()
    
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -49,6 +59,12 @@ final class ConversationListTopBar: TopBar {
         }
         
         self.splitSeparator = false
+        
+        constrain(self, pinnedItem, middleView) { (selfView, pinnedItem, middleView) in
+                
+        }
+        
+        self.addSubview(pinnedItem)
     }
     
     
