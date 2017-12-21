@@ -23,8 +23,6 @@ import WireExtensionComponents
 
 final class ConversationListPinnedItemView: UIView {
 
-    var conversation: ZMConversation?
-    
     init() {
         super.init(frame: .zero)
         self.backgroundColor = .red
@@ -33,14 +31,4 @@ final class ConversationListPinnedItemView: UIView {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    func pinConversation(_ conversation: ZMConversation?) {
-        self.conversation = conversation
-    }
-    
-    func unpinCurrentConversation() {
-        self.conversation = nil
-    }
-    
-    
 }

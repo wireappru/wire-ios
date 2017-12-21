@@ -751,6 +751,8 @@
 {
     [self updateNoConversationVisibility];
     [self updateArchiveButtonVisibility];
+    
+    [self.topBar pinConversation:changeInfo.conversationList.firstObject];
 }
 
 - (void)updateArchiveButtonVisibility

@@ -20,18 +20,12 @@ import UIKit
 import Cartography
 import WireExtensionComponents
 
-/*
- [self.topBar autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.pinnedItem];
- [self.pinnedItem autoPinEdgeToSuperviewEdge:ALEdgeLeft];
- [self.pinnedItem autoPinEdgeToSuperviewEdge:ALEdgeRight];
- [self.pinnedItem autoSetDimension:ALDimensionHeight toSize:64.0];
- [self.pinnedItem autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.listContentController.view];
- */
-
 final class ConversationListTopBar: TopBar {
     
-    var pinnedItem = ConversationListPinnedItemView()
-   
+    private var pinnedItem = ConversationListPinnedItemView()
+    private var pinnedItemHeight: NSLayoutConstraint?
+    var conversation: ZMConversation?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -60,13 +54,36 @@ final class ConversationListTopBar: TopBar {
         
         self.splitSeparator = false
         
-        constrain(self, pinnedItem, middleView) { (selfView, pinnedItem, middleView) in
-                
+        self.addSubview(pinnedItem)
+        
+        constrain(self, containerView, pinnedItem) { (selfView, containerView, pinnedItem) in
+            containerView.bottom == pinnedItem.top
+            pinnedItem.left == selfView.left
+            pinnedItem.right == selfView.right
+            pinnedItem.bottom == selfView.bottom
+            pinnedItemHeight = pinnedItem.height == 0.0
         }
         
-        self.addSubview(pinnedItem)
+        self.containerViewBottomConstraint.isActive = false
+        
     }
     
+    
+    func pinConversation(_ conversation: ZMConversation?) {
+        self.conversation = conversation
+        self.pinnedItemHeight?.constant = 64.0
+        invalidateIntrinsicContentSize()
+    }
+    
+    func unpinCurrentConversation() {
+        self.conversation = nil
+        self.pinnedItemHeight?.constant = 0.0
+        invalidateIntrinsicContentSize()
+    }
+    
+    override open var intrinsicContentSize: CGSize {
+        return CGSize(width: UIViewNoIntrinsicMetric, height: 44 + ((conversation == nil) ? 0 : 64))
+    }
     
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -83,6 +100,9 @@ extension ConversationListTopBar {
 }
 
 open class TopBar: UIView {
+    
+    internal var containerView = UIView()
+    
     public var leftView: UIView? = .none {
         didSet {
             oldValue?.removeFromSuperview()
@@ -91,7 +111,7 @@ open class TopBar: UIView {
                 return
             }
             
-            self.addSubview(new)
+            containerView.addSubview(new)
             
             constrain(self, new) { selfView, new in
                 new.leading == selfView.leadingMargin
@@ -108,7 +128,7 @@ open class TopBar: UIView {
                 return
             }
             
-            self.addSubview(new)
+            containerView.addSubview(new)
             
             constrain(self, new) { selfView, new in
                 new.trailing == selfView.trailingMargin
@@ -149,27 +169,35 @@ open class TopBar: UIView {
     
     private var leftSeparatorInsetConstraint: NSLayoutConstraint!
     private var rightSeparatorInsetConstraint: NSLayoutConstraint!
+    internal var containerViewBottomConstraint: NSLayoutConstraint!
     
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.layoutMargins = UIEdgeInsetsMake(0, 16, 0, 16)
-        [leftSeparatorLineView, rightSeparatorLineView, middleViewContainer].forEach(self.addSubview)
+        containerView.backgroundColor = .clear
+        self.addSubview(containerView)
+        [leftSeparatorLineView, rightSeparatorLineView, middleViewContainer].forEach(containerView.addSubview)
         
-        constrain(self, self.middleViewContainer, self.leftSeparatorLineView, self.rightSeparatorLineView) {
-            selfView, middleViewContainer, leftSeparatorLineView, rightSeparatorLineView in
+        constrain(self, self.containerView, self.middleViewContainer, self.leftSeparatorLineView, self.rightSeparatorLineView) {
+            selfView, containerView, middleViewContainer, leftSeparatorLineView, rightSeparatorLineView in
             
-            leftSeparatorLineView.leading == selfView.leading
-            leftSeparatorLineView.bottom == selfView.bottom
+            leftSeparatorLineView.leading == containerView.leading
+            leftSeparatorLineView.bottom == containerView.bottom
             
-            rightSeparatorLineView.trailing == selfView.trailing
-            rightSeparatorLineView.bottom == selfView.bottom
+            rightSeparatorLineView.trailing == containerView.trailing
+            rightSeparatorLineView.bottom == containerView.bottom
             
-            middleViewContainer.center == selfView.center
-            leftSeparatorLineView.trailing == selfView.centerX ~ LayoutPriority(750)
-            rightSeparatorLineView.leading == selfView.centerX ~ LayoutPriority(750)
+            middleViewContainer.center == containerView.center
+            leftSeparatorLineView.trailing == containerView.centerX ~ LayoutPriority(750)
+            rightSeparatorLineView.leading == containerView.centerX ~ LayoutPriority(750)
             self.leftSeparatorInsetConstraint = leftSeparatorLineView.trailing == middleViewContainer.leading - 7
             self.rightSeparatorInsetConstraint = rightSeparatorLineView.leading == middleViewContainer.trailing + 7
+            
+            self.containerViewBottomConstraint = containerView.bottom == selfView.bottom
+            containerView.left == selfView.left
+            containerView.right == selfView.right
+            containerView.top == selfView.top
         }
     }
     
