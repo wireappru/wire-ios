@@ -21,14 +21,54 @@ import Cartography
 import WireExtensionComponents
 
 
-final class ConversationListPinnedItemView: UIView {
-
+final class ConversationListPinnedItemView: UIView, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, ConversationListCellDelegate {
+    
+    private var collectionView: UICollectionView?
+    var items: [ZMConversation]? {
+        didSet {
+            collectionView?.reloadData()
+        }
+    }
+    let cellReuseIdConversation = "CellId"
+    let layoutCell = ConversationListCell()
+    
     init() {
         super.init(frame: .zero)
-        self.backgroundColor = .red
+        self.backgroundColor = .clear
+        collectionView = UICollectionView()
+        collectionView?.dataSource = self
+        
+        self.addSubview(collectionView!)
+        
+        constrain(self, collectionView!) { (selfView, collectionView) in
+            collectionView.edges == collectionView.edges
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return items?.count ?? 0
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let item = items?[indexPath.item]
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellReuseIdConversation, for: indexPath) as! ConversationListCell
+        cell.delegate = self
+        cell.mutuallyExclusiveSwipeIdentifier = "ConversationList"
+        cell.conversation = item
+        cell.autoresizingMask = .flexibleWidth
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return layoutCell.size(inCollectionViewSize: collectionView.bounds.size)
+    }
+    
+    func conversationListCellOverscrolled(_ cell: ConversationListCell!) {
+        
+    }
+    
 }
