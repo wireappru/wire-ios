@@ -24,7 +24,7 @@ final class ConversationListTopBar: TopBar {
     
     private var pinnedItem = ConversationListPinnedItemView()
     private var pinnedItemHeight: NSLayoutConstraint?
-    var conversation: ZMConversation?
+    var conversations: [ZMConversation]?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -69,24 +69,27 @@ final class ConversationListTopBar: TopBar {
     }
     
     
-    func pinConversation(_ conversation: ZMConversation?) {
-        self.conversation = conversation
+    func pinConversations(_ conversations: [ZMConversation]?) {
+        guard let conversations = conversations else { unpinConversations(); return }
+        print("pinConversations with \(conversations)")
+        self.conversations = conversations
         self.pinnedItem.isHidden = false
-        self.pinnedItemHeight?.isActive = true
-        self.pinnedItemHeight?.constant = 64.0
+        self.pinnedItemHeight?.constant = CGFloat(conversations.count * 64)
         invalidateIntrinsicContentSize()
     }
     
-    func unpinCurrentConversation() {
-        self.conversation = nil
+    func unpinConversations() {
+        print("unpinConversations with \(String(describing: conversations))")
+        self.conversations = nil
         self.pinnedItem.isHidden = true
-        self.pinnedItemHeight?.isActive = false
         self.pinnedItemHeight?.constant = 0.0
         invalidateIntrinsicContentSize()
     }
     
     override open var intrinsicContentSize: CGSize {
-        return CGSize(width: UIViewNoIntrinsicMetric, height: 44 + ((conversation == nil) ? 0 : 64))
+        let defaultHeight: CGFloat = 44.0
+        guard let conversations = conversations, conversations.count > 0 else { return CGSize(width: UIViewNoIntrinsicMetric, height: defaultHeight) }
+        return CGSize(width: UIViewNoIntrinsicMetric, height: defaultHeight + CGFloat(64 * conversations.count))
     }
     
     required public init?(coder aDecoder: NSCoder) {

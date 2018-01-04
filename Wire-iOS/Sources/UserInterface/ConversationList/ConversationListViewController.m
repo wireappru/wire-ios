@@ -752,13 +752,13 @@
     [self updateNoConversationVisibility];
     [self updateArchiveButtonVisibility];
     
-    ZMConversation *conv = changeInfo.conversationList.firstObject;
-    int tmp = (arc4random() % 30)+1;
-    if(tmp % 5 == 0) {
-        conv = nil;
+    NSArray *calling = [changeInfo.conversationList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"canJoinCall == true"]];
+    if(calling.count > 0) {
+        [[changeInfo.conversationList mutableCopy] removeObjectsInArray:calling];
+        [self.topBar pinConversations:calling];
+    } else {
+        [self.topBar unpinConversations];
     }
-    
-    [self.topBar pinConversation:conv];
 }
 
 - (void)updateArchiveButtonVisibility
