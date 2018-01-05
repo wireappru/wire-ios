@@ -24,7 +24,6 @@ final class ConversationListTopBar: TopBar {
     
     private var pinnedItem = ConversationListPinnedItemView()
     private var pinnedItemHeight: NSLayoutConstraint?
-    var conversations: [ZMConversation]?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -71,16 +70,14 @@ final class ConversationListTopBar: TopBar {
     
     func pinConversations(_ conversations: [ZMConversation]?) {
         guard let conversations = conversations else { unpinConversations(); return }
-        print("pinConversations with \(conversations)")
-        self.conversations = conversations
+        self.pinnedItem.items = conversations
         self.pinnedItem.isHidden = false
         self.pinnedItemHeight?.constant = CGFloat(conversations.count * 64)
         invalidateIntrinsicContentSize()
     }
     
     func unpinConversations() {
-        print("unpinConversations with \(String(describing: conversations))")
-        self.conversations = nil
+        self.pinnedItem.items = nil
         self.pinnedItem.isHidden = true
         self.pinnedItemHeight?.constant = 0.0
         invalidateIntrinsicContentSize()
@@ -88,7 +85,7 @@ final class ConversationListTopBar: TopBar {
     
     override open var intrinsicContentSize: CGSize {
         let defaultHeight: CGFloat = 44.0
-        guard let conversations = conversations, conversations.count > 0 else { return CGSize(width: UIViewNoIntrinsicMetric, height: defaultHeight) }
+        guard let conversations = self.pinnedItem.items, conversations.count > 0 else { return CGSize(width: UIViewNoIntrinsicMetric, height: defaultHeight) }
         return CGSize(width: UIViewNoIntrinsicMetric, height: defaultHeight + CGFloat(64 * conversations.count))
     }
     
@@ -190,10 +187,10 @@ open class TopBar: UIView {
             selfView, containerView, middleViewContainer, leftSeparatorLineView, rightSeparatorLineView in
             
             leftSeparatorLineView.leading == containerView.leading
-            leftSeparatorLineView.bottom == containerView.bottom
+            leftSeparatorLineView.bottom == selfView.bottom
             
             rightSeparatorLineView.trailing == containerView.trailing
-            rightSeparatorLineView.bottom == containerView.bottom
+            rightSeparatorLineView.bottom == selfView.bottom
             
             middleViewContainer.center == containerView.center
             leftSeparatorLineView.trailing == containerView.centerX ~ LayoutPriority(750)
