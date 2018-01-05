@@ -72,7 +72,7 @@ final class ConversationListTopBar: TopBar {
         guard let conversations = conversations else { unpinConversations(); return }
         self.pinnedItem.items = conversations
         self.pinnedItem.isHidden = false
-        self.pinnedItemHeight?.constant = CGFloat(conversations.count * 64)
+        self.pinnedItemHeight?.constant = heightForPinnedItems(count: conversations.count)
         invalidateIntrinsicContentSize()
     }
     
@@ -86,7 +86,11 @@ final class ConversationListTopBar: TopBar {
     override open var intrinsicContentSize: CGSize {
         let defaultHeight: CGFloat = 44.0
         guard let conversations = self.pinnedItem.items, conversations.count > 0 else { return CGSize(width: UIViewNoIntrinsicMetric, height: defaultHeight) }
-        return CGSize(width: UIViewNoIntrinsicMetric, height: defaultHeight + CGFloat(64 * conversations.count))
+        return CGSize(width: UIViewNoIntrinsicMetric, height: defaultHeight + heightForPinnedItems(count: conversations.count))
+    }
+    
+    private func heightForPinnedItems(count: Int) -> CGFloat {
+        return ConversationListItemViewCellHeight * CGFloat(count)
     }
     
     required public init?(coder aDecoder: NSCoder) {
