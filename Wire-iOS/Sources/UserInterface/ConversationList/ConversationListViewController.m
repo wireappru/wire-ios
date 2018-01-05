@@ -754,7 +754,6 @@
     
     NSArray *calling = [changeInfo.conversationList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"canJoinCall == true"]];
     if(calling.count > 0) {
-        [[changeInfo.conversationList mutableCopy] removeObjectsInArray:calling];
         [self.topBar pinConversations:calling];
     } else {
         [self.topBar unpinConversations];

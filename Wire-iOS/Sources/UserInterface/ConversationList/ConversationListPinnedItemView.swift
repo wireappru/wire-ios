@@ -1,6 +1,6 @@
 //
 // Wire
-// Copyright (C) 2017 Wire Swiss GmbH
+// Copyright (C) 2018 Wire Swiss GmbH
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ final class ConversationListPinnedItemView: UIView {
     private var collectionView: UICollectionView?
     var items: [ZMConversation]? {
         didSet {
-            reload()
+            collectionView?.reloadData()
         }
     }
     let cellReuseIdConversation = "CellId"
@@ -48,19 +48,10 @@ final class ConversationListPinnedItemView: UIView {
         }
     }
     
-    func reload() {
-        collectionView?.reloadData()
-    }
-    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
  
-}
-
-extension ConversationListPinnedItemView: UICollectionViewDelegate {
-    
 }
 
 extension ConversationListPinnedItemView: UICollectionViewDataSource {
@@ -72,7 +63,6 @@ extension ConversationListPinnedItemView: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let item = items?[indexPath.item]
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellReuseIdConversation, for: indexPath) as! ConversationListCell
-        cell.delegate = self
         cell.mutuallyExclusiveSwipeIdentifier = "ConversationList"
         cell.conversation = item
         cell.autoresizingMask = .flexibleWidth
@@ -99,11 +89,4 @@ extension ConversationListPinnedItemView: UICollectionViewDelegateFlowLayout {
         return 0.0
     }
     
-}
-
-extension ConversationListPinnedItemView: ConversationListCellDelegate {
-    
-    func conversationListCellOverscrolled(_ cell: ConversationListCell!) {
-        
-    }
 }
