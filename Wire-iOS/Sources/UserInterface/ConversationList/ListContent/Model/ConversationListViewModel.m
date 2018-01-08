@@ -243,7 +243,7 @@ void debugLogUpdate (ConversationListChangeInfo *note);
 
 - (NSArray *)newConversationList
 {
-    return [[[ZMConversationList conversationsInUserSession:[ZMUserSession sharedSession]] copy] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"canJoinCall == false"]];
+    return [[[ZMConversationList conversationsInUserSession:[ZMUserSession sharedSession]] listWithIncomingCalls:NO] copy];
 }
 
 - (void)updateConversationListAnimated
