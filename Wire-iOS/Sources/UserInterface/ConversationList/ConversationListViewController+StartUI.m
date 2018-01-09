@@ -43,7 +43,6 @@ typedef void (^ConversationCreatedBlock)(ZMConversation *);
             
             ZMUser *user = users.anyObject;
             if ([user respondsToSelector:@selector(oneToOneConversation)]) {
-
                 ZMConversation __block *oneToOneConversation = nil;
                 [[ZMUserSession sharedSession] enqueueChanges:^{
                     oneToOneConversation = user.oneToOneConversation;
