@@ -66,7 +66,7 @@ public class SearchHeaderViewController : UIViewController {
     }
     
     public override func viewDidLoad() {
-        searchIcon.image = UIImage(for: .search, iconSize: .tiny, color: UIColor.wr_color(fromColorScheme: ColorSchemeColorTokenFieldTextPlaceHolder, variant: colorSchemeVariant))
+        searchIcon.image = UIImage(for: .search, iconSize: .tiny, color: UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: colorSchemeVariant))
         
         clearButton.accessibilityLabel = "clear"
         clearButton.setIcon(.clearInput, with: .tiny, for: .normal)
@@ -78,19 +78,19 @@ public class SearchHeaderViewController : UIViewController {
         titleLabel.textAlignment = .center
         titleLabel.textColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: colorSchemeVariant)
         
-        tokenField.cas_styleClass = "search"
-        tokenField.textColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: colorSchemeVariant)
         tokenField.layer.cornerRadius = 4
+        tokenField.textColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: colorSchemeVariant)
+        tokenField.tokenTitleColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: colorSchemeVariant)
+        tokenField.tokenSelectedTitleColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: colorSchemeVariant)
         tokenField.clipsToBounds = true
         tokenField.textView.placeholderTextColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTokenFieldTextPlaceHolder, variant: colorSchemeVariant)
-        tokenField.textView.placeholderTextAlignment = .center
         tokenField.textView.backgroundColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTokenFieldBackground, variant: colorSchemeVariant)
         tokenField.textView.accessibilityLabel = "textViewSearch"
         tokenField.textView.placeholder = "peoplepicker.search_placeholder".localized.uppercased()
         tokenField.textView.keyboardAppearance = ColorScheme.keyboardAppearance(for: colorSchemeVariant)
         tokenField.textView.returnKeyType = .done
         tokenField.textView.autocorrectionType = .no
-        tokenField.textView.textContainerInset = UIEdgeInsets(top: 6, left: 32, bottom: 6, right: 32)
+        tokenField.textView.textContainerInset = UIEdgeInsets(top: 9, left: 40, bottom: 11, right: 32)
         tokenField.delegate = self
         
         closeButton.accessibilityLabel = "close"
@@ -126,7 +126,7 @@ public class SearchHeaderViewController : UIViewController {
             clearButton.centerY == tokenField.centerY
             clearButton.trailing == tokenField.trailing
             
-            tokenField.height >= 32
+            tokenField.height >= 40
             tokenField.top >= container.top + 8
             tokenField.bottom <= container.bottom - 8
             tokenField.leading == container.leading + 8
@@ -145,7 +145,7 @@ public class SearchHeaderViewController : UIViewController {
             tokenFieldContainer.bottom == view.bottom
             tokenFieldContainer.leading == view.leading
             tokenFieldContainer.trailing == view.trailing
-            tokenFieldContainer.height == 48
+            tokenFieldContainer.height == 56
             
             separatorView.leading == view.leading
             separatorView.trailing == view.trailing
