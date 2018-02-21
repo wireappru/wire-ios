@@ -47,7 +47,7 @@ extension ShareViewController {
         self.tokenField.tokenSelectedTitleColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: .dark)
         self.tokenField.tokenTitleVerticalAdjustment = 1
         self.tokenField.textView.placeholderTextAlignment = .natural
-        self.tokenField.textView.accessibilityLabel = "textViewSearch"
+        self.tokenField.textView.accessibilityIdentifier = "textViewSearch"
         self.tokenField.textView.placeholder = "content.message.forward.to".localized.uppercased()
         self.tokenField.textView.keyboardAppearance = .dark
         self.tokenField.textView.returnKeyType = .done
@@ -56,13 +56,11 @@ extension ShareViewController {
         self.tokenField.textView.backgroundColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTokenFieldBackground, variant: .dark)
         self.tokenField.delegate = self
 
-        self.searchIcon.image = UIImage(for: .search, iconSize: .tiny, color: .white)
-
         self.destinationsTableView.backgroundColor = .clear
         self.destinationsTableView.register(ShareDestinationCell<D>.self, forCellReuseIdentifier: ShareDestinationCell<D>.reuseIdentifier)
         self.destinationsTableView.separatorStyle = .none
         self.destinationsTableView.allowsSelection = true
-        self.destinationsTableView.allowsMultipleSelection = true
+        self.destinationsTableView.allowsMultipleSelection = self.allowsMultipleSelection
         self.destinationsTableView.keyboardDismissMode = .interactive
         self.destinationsTableView.delegate = self
         self.destinationsTableView.dataSource = self
@@ -83,6 +81,16 @@ extension ShareViewController {
 
         self.bottomSeparatorLine.cas_styleClass = "separator"
         
+        if self.allowsMultipleSelection {
+            self.searchIcon.image = UIImage(for: .search, iconSize: .tiny, color: .white)
+        }
+        else {
+            self.searchIcon.isHidden = true
+            self.sendButton.isHidden = true
+            self.closeButton.isHidden = true
+            self.bottomSeparatorLine.isHidden = true
+        }
+
         [self.blurView, self.containerView].forEach(self.view.addSubview)
         [self.tokenField, self.destinationsTableView, self.closeButton, self.sendButton, self.bottomSeparatorLine, self.topSeparatorView, self.searchIcon].forEach(self.containerView.addSubview)
         
@@ -95,23 +103,18 @@ extension ShareViewController {
         constrain(self.view, self.blurView, self.containerView) { view, blurView, containerView in
             blurView.edges == view.edges
             containerView.top == view.top + safeArea.top
-            containerView.bottom == view.bottom - safeArea.bottom
+            self.bottomConstraint = containerView.bottom == view.bottom - safeArea.bottom
             containerView.leading == view.leading
             containerView.trailing == view.trailing
         }
         
         if self.showPreview {
-            
-            let height = self.shareable.height(for: self.shareablePreviewView!)
-            
             constrain(self.containerView, self.shareablePreviewWrapper!, self.shareablePreviewView!, self.tokenField) { view, shareablePreviewWrapper, shareablePreviewView, tokenField in
                 
-                shareablePreviewWrapper.top == view.top + 28
+                shareablePreviewWrapper.top == view.topMargin + 28
                 shareablePreviewWrapper.left == view.left + 16
                 shareablePreviewWrapper.right == -16 + view.right
                 
-                shareablePreviewView.height == height
-                shareablePreviewWrapper.height == height
                 shareablePreviewView.edges == shareablePreviewWrapper.edges
                 
                 tokenField.top == shareablePreviewWrapper.bottom + 16
@@ -127,6 +130,9 @@ extension ShareViewController {
         constrain(self.tokenField, self.searchIcon) { tokenField, searchIcon in
             searchIcon.centerY == tokenField.centerY
             searchIcon.left == tokenField.left + 8 // the search icon glyph has whitespaces
+            if !self.allowsMultipleSelection {
+                tokenField.height == 0
+            }
         }
         
         constrain(self.view, self.destinationsTableView, self.topSeparatorView) { view, destinationsTableView, topSeparatorView in
@@ -153,18 +159,25 @@ extension ShareViewController {
             bottomSeparatorLine.height == .hairline
         }
         
-        constrain(self.containerView, self.closeButton, self.sendButton, self.bottomSeparatorLine) { view, closeButton, sendButton, bottomSeparatorLine in
-            
-            closeButton.leading == view.leading
-            closeButton.centerY == sendButton.centerY
-            closeButton.width == 44
-            closeButton.height == closeButton.width
-            
-            sendButton.top == bottomSeparatorLine.bottom + 12
-            sendButton.height == 32
-            sendButton.width == sendButton.height
-            sendButton.trailing == view.trailing - 16
-            sendButton.bottom == -12 + view.bottom
+        if self.allowsMultipleSelection {
+            constrain(self.containerView, self.closeButton, self.sendButton, self.bottomSeparatorLine) { view, closeButton, sendButton, bottomSeparatorLine in
+                
+                closeButton.leading == view.leading
+                closeButton.centerY == sendButton.centerY
+                closeButton.width == 44
+                closeButton.height == closeButton.width
+                
+                sendButton.top == bottomSeparatorLine.bottom + 12
+                sendButton.height == 32
+                sendButton.width == sendButton.height
+                sendButton.trailing == view.trailing - 16
+                sendButton.bottom == -12 + view.bottom
+            }
+        }
+        else {
+            constrain(self.containerView, self.bottomSeparatorLine) { containerView, bottomSeparatorLine in
+                bottomSeparatorLine.bottom == containerView.bottom
+            }
         }
     }
     

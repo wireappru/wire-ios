@@ -25,7 +25,7 @@ import WireDataModel
 
 @objc public class AvailabilityTitleView: TitleView {
     
-    private var user: ZMUser?
+    fileprivate var user: ZMUser?
     fileprivate var style: AvailabilityTitleViewStyle
     private var observerToken: Any?
     
@@ -58,6 +58,8 @@ import WireDataModel
             self.observerToken = UserChangeInfo.add(observer: self, for: user, userSession: sharedSession)
         }
         
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
+        
         configure(user: user)
     }
     
@@ -86,7 +88,7 @@ import WireDataModel
     
     override func updateAccessibilityLabel() {
         guard let user = user else { return }
-        self.accessibilityLabel = "\(user.name)_is_\(user.availability.localizedName)".localized
+        self.accessibilityLabel = "\(user.name!)_is_\(user.availability.localizedName)".localized
     }
     
     func provideHapticFeedback() {
@@ -96,6 +98,17 @@ import WireDataModel
         
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
+}
+
+extension AvailabilityTitleView {
+    
+    @objc
+    fileprivate func applicationDidBecomeActive() {
+        guard let user = self.user else { return }
+        
+        configure(user: user)
+    }
+    
 }
 
 extension AvailabilityTitleView: ZMUserObserver {

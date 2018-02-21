@@ -39,7 +39,7 @@ class ShareExtensionViewController: SLComposeServiceViewController {
     
     lazy var accountItem : SLComposeSheetConfigurationItem = { [weak self] in
         let item = SLComposeSheetConfigurationItem()!
-        let accountName = self?.currentAccount?.userName
+        let accountName = self?.currentAccount?.shareExtensionDisplayName
         
         item.title = "share_extension.conversation_selection.account".localized
         item.value = accountName ?? "share_extension.conversation_selection.empty.value".localized
@@ -90,7 +90,7 @@ class ShareExtensionViewController: SLComposeServiceViewController {
         ExtensionBackupExcluder.exclude()
         CrashReporter.setupHockeyIfNeeded()
         navigationController?.view.backgroundColor = .white
-        recreateSharingSession()
+        try? recreateSharingSession(account: currentAccount)
         let activity = ExtensionActivity(attachments: allAttachments)
         sharingSession?.analyticsEventPersistence.add(activity.openedEvent())
         extensionActivity = activity
@@ -137,17 +137,17 @@ class ShareExtensionViewController: SLComposeServiceViewController {
         return Bundle.main.infoDictionary?["HostBundleIdentifier"] as? String
     }
     
-    private func recreateSharingSession() {
+    private func recreateSharingSession(account: Account?) throws {
         guard let applicationGroupIdentifier = applicationGroupIdentifier,
             let hostBundleIdentifier = hostBundleIdentifier,
-            let accountIdentifier = currentAccount?.userIdentifier
+            let accountIdentifier = account?.userIdentifier
         else { return }
         
-        sharingSession = try? SharingSession(
-            applicationGroupIdentifier: applicationGroupIdentifier,
-            accountIdentifier: accountIdentifier,
-            hostBundleIdentifier: hostBundleIdentifier
-        )
+        sharingSession = try SharingSession(
+                applicationGroupIdentifier: applicationGroupIdentifier,
+                accountIdentifier: accountIdentifier,
+                hostBundleIdentifier: hostBundleIdentifier
+            )
     }
     
     private var accountManager: AccountManager? {
@@ -158,7 +158,7 @@ class ShareExtensionViewController: SLComposeServiceViewController {
 
     override func isContentValid() -> Bool {
         // Do validation of contentText and/or NSExtensionContext attachments here
-        let textLength = self.contentText.trimmingCharacters(in: .whitespaces).characters.count
+        let textLength = self.contentText.trimmingCharacters(in: .whitespaces).count
         let remaining = SharedConstants.maximumMessageLength - textLength
         let remainingCharactersThreshold = 30
         
@@ -306,13 +306,25 @@ class ShareExtensionViewController: SLComposeServiceViewController {
     
     func updateAccount(_ account: Account?) {
         guard let account = account, account != currentAccount else { return }
+
+        do {
+            try recreateSharingSession(account: account)
+        } catch let error as SharingSession.InitializationError {
+            guard error == .loggedOut else { return }
+            let alert = UIAlertController(title: "share_extension.logged_out.title".localized,
+                                          message: "share_extension.logged_out.message".localized, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "share_extension.general.ok".localized, style: .default, handler: nil))
+            self.present(alert, animated: true)
+            return
+        } catch { //any other error
+            return
+        }
         
         currentAccount = account
-        accountItem.value = account.userName
+        accountItem.value = account.shareExtensionDisplayName
         conversationItem.value = "share_extension.conversation_selection.empty.value".localized
         postContent?.target = nil
         extensionActivity?.conversation = nil
-        recreateSharingSession()
     }
     
     private func presentChooseAccount() {

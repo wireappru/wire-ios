@@ -18,6 +18,7 @@
 
 
 "general.ok" = "OK";
+"general.next" = "Próximo";
 "general.cancel" = "Cancelar";
 "general.open_settings" = "Abrir Ajustes do Wire";
 
@@ -35,10 +36,19 @@
 "peoplepicker.header.contacts_personal" = "Contatos pessoais";
 "peoplepicker.header.directory" = "Conectar";
 
+"peoplepicker.group.title.singular" = "Adicionar Pessoas";
+"peoplepicker.group.title.plural" = "Adicionar pessoas (%d)";
+"peoplepicker.group.skip" = "Pular";
+"peoplepicker.group.done" = "Pronto";
+"peoplepicker.group.create" = "Criar";
+
 "peoplepicker.header.people" = "Pessoas";
 "peoplepicker.header.services" = "Serviços";
 "peoplepicker.services.create_conversation.item" = "Criar uma nova conversa";
 "peoplepicker.services.add_service.button" = "Adicionar serviço";
+"peoplepicker.services.add_service.error.title" = "O serviço não pode ser adicionado";
+"peoplepicker.services.add_service.error.default" = "O serviço está indisponível no momento";
+"peoplepicker.services.add_service.error.full" = "A conversa está cheia";
 
 "peoplepicker.title.create_conversation" = "Criar grupo";
 "peoplepicker.title.add_to_conversation" = "Adicionar pessoas";
@@ -225,6 +235,10 @@
 "conversation.input_bar.message_too_long.title" = "Mensagem muito longa";
 "conversation.input_bar.message_too_long.message" = "Você pode enviar mensagens até %d caracteres.";
 
+"conversation.create.group_name.placeholder" = "Nome do grupo";
+"conversation.create.guidance.empty" = "Pelo menos 1 caractere";
+"conversation.create.guidance.toolong" = "Muitos caracteres";
+
 // Image confirmation dialogue
 "image_confirmer.confirm" = "OK";
 "image_confirmer.cancel" = "Cancelar";
@@ -321,6 +335,10 @@
 "content.system.renamed_conv.title" = "%@ renomeou a conversa";
 "content.system.renamed_conv.title-you" = "%@ renomeou a conversa";
 "content.system.renamed_conv.title.you" = "Você";
+
+"content.system.conversation.with_name.title" = "%@ iniciou a conversa";
+
+"content.system.conversation.with_name.participants" = "com %@";
 
 "content.system.reactivated_device" = "Você começou a usar o %@ novamente. Mensagens enviadas entretanto não aparecerão aqui.";
 
@@ -431,7 +449,7 @@
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Profile and Participants
 
-"participants.add_people_button_title" = "Adicionar pessoas";
+"participants.add_people_button_title" = "Adicionar";
 "participants.avatar.guest.title" = "Convidado";
 
 // Meta Menu
@@ -536,6 +554,8 @@
 // General strings
 "general.confirm" = "OK";
 
+// Bot
+"participants.services.remove_integration.button" = "remover integração";
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Self profile
@@ -932,8 +952,8 @@
 "registration.signin.email_button.title" = "E-mail";
 "registration.signin.phone_button.title" = "Telefone";
 
-"registration.signin.alert.password_needed.title" = "Password needed";
-"registration.signin.alert.password_needed.message" = "Please enter your Password in order to log in.";
+"registration.signin.alert.password_needed.title" = "Senha necessária";
+"registration.signin.alert.password_needed.message" = "Por favor, digite sua senha para entrar.";
 
 "registration.devices.title" = "Dispositivos";
 "registration.devices.active_list_header" = "Ativo";

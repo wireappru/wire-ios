@@ -18,6 +18,7 @@
 
 
 "general.ok" = "OK";
+"general.next" = "Next";
 "general.cancel" = "Annulla";
 "general.open_settings" = "Apri le impostazioni di Wire";
 
@@ -35,10 +36,19 @@
 "peoplepicker.header.contacts_personal" = "Contatti personali";
 "peoplepicker.header.directory" = "Connetti";
 
+"peoplepicker.group.title.singular" = "Aggiungi persone";
+"peoplepicker.group.title.plural" = "Add People (%d)";
+"peoplepicker.group.skip" = "Salta";
+"peoplepicker.group.done" = "Fatto";
+"peoplepicker.group.create" = "Create";
+
 "peoplepicker.header.people" = "Persone";
 "peoplepicker.header.services" = "Servizi";
 "peoplepicker.services.create_conversation.item" = "Crea una nuova conversazione";
 "peoplepicker.services.add_service.button" = "Aggiungi servizio";
+"peoplepicker.services.add_service.error.title" = "The service can't be added";
+"peoplepicker.services.add_service.error.default" = "The service is unavailable at the moment";
+"peoplepicker.services.add_service.error.full" = "The conversation is full";
 
 "peoplepicker.title.create_conversation" = "Crea gruppo";
 "peoplepicker.title.add_to_conversation" = "Aggiungi persone";
@@ -225,6 +235,10 @@
 "conversation.input_bar.message_too_long.title" = "Il messaggio è troppo lungo";
 "conversation.input_bar.message_too_long.message" = "Puoi inviare messaggi lunghi al massimo %d caratteri.";
 
+"conversation.create.group_name.placeholder" = "Group name";
+"conversation.create.guidance.empty" = "At least 1 character";
+"conversation.create.guidance.toolong" = "Troppi caratteri";
+
 // Image confirmation dialogue
 "image_confirmer.confirm" = "OK";
 "image_confirmer.cancel" = "Annulla";
@@ -321,6 +335,10 @@
 "content.system.renamed_conv.title" = "%@ ha rinominato la conversazione";
 "content.system.renamed_conv.title-you" = "%@ ha rinominato la conversazione";
 "content.system.renamed_conv.title.you" = "Tu";
+
+"content.system.conversation.with_name.title" = "%@ started the conversation";
+
+"content.system.conversation.with_name.participants" = "with %@";
 
 "content.system.reactivated_device" = "Hai iniziato a utilizzare %@ nuovamente. I messaggi inviati nel frattempo non verranno visualizzato qui.";
 
@@ -431,7 +449,7 @@
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Profile and Participants
 
-"participants.add_people_button_title" = "Aggiungi persone";
+"participants.add_people_button_title" = "Add";
 "participants.avatar.guest.title" = "Ospite";
 
 // Meta Menu
@@ -536,6 +554,8 @@
 // General strings
 "general.confirm" = "OK";
 
+// Bot
+"participants.services.remove_integration.button" = "remove integration";
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Self profile

@@ -1,4 +1,4 @@
-// 
+//
 // Wire
 // Copyright (C) 2016 Wire Swiss GmbH
 // 
@@ -208,6 +208,8 @@
         [Settings sharedSettings].lastViewedScreen = SettingsLastScreenList;
     }
     
+    _state = ConversationListStateConversationList;
+    
     [self updateBottomBarSeparatorVisibilityWithContentController:self.listContentController];
     [self closePushPermissionDialogIfNotNeeded];
 }
@@ -226,6 +228,16 @@
 - (BOOL)prefersStatusBarHidden
 {
     return YES;
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    if (self.presentedViewController != nil) {
+        return self.presentedViewController.preferredStatusBarStyle;
+    }
+    else {
+        return UIStatusBarStyleLightContent;
+    }
 }
 
 - (void)createNoConversationLabel;
@@ -278,7 +290,7 @@
 
 - (StartUIViewController *)createPeoplePickerController
 {
-    StartUIViewController *startUIViewController = [StartUIViewController new];
+    StartUIViewController *startUIViewController = [[StartUIViewController alloc] init];
     startUIViewController.delegate = self;
     return startUIViewController;
 }
@@ -333,7 +345,9 @@
             break;
         case ConversationListStatePeoplePicker: {
             StartUIViewController *startUIViewController = self.createPeoplePickerController;
-            [self showViewController:startUIViewController animated:YES completion:^{
+            UINavigationController *navigationWrapper = [startUIViewController wrapInNavigationController:[ClearBackgroundNavigationController class]];
+            
+            [self showViewController:navigationWrapper animated:YES completion:^{
                 [startUIViewController showKeyboardIfNeeded];
                 if (completion) {
                     completion();

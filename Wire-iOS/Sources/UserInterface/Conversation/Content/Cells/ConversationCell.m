@@ -18,6 +18,7 @@
 
 
 #import "ConversationCell.h"
+#import "ConversationCell+Private.h"
 
 @import PureLayout;
 
@@ -89,10 +90,6 @@ static const CGFloat BurstContainerExpandedHeight = 40;
 @end
 
 @interface ConversationCell (MessageToolboxViewDelegate) <MessageToolboxViewDelegate>
-
-@end
-
-@interface ConversationCell (PreviewProvider) <PreviewProvider>
 
 @end
 
@@ -403,13 +400,6 @@ static const CGFloat BurstContainerExpandedHeight = 40;
     }
 }
 
-- (void)updateSenderAndSenderImage:(id<ZMConversationMessage>)message
-{
-    self.authorLabel.text = [message.sender displayNameInConversation:message.conversation];
-    self.authorLabel.textColor = [[ColorScheme defaultColorScheme] nameAccentForColor:message.sender.accentColorValue
-                                                                              variant:[ColorScheme defaultColorScheme].variant];
-    self.authorImageView.user = message.sender;
-}
 
 - (void)setCountdownContainerViewHidden:(BOOL)countdownContainerViewHidden
 {
@@ -422,6 +412,7 @@ static const CGFloat BurstContainerExpandedHeight = 40;
     if (nil == self.countdownView) {
         if (!countdownContainerViewHidden) {
             self.countdownView = [[DestructionCountdownView alloc] init];
+            self.countdownView.accessibilityLabel = @"EphemeralMessageCountdownView";
             [self.countdownContainerView addSubview:self.countdownView];
             [self.countdownView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(2, 2, 2, 2)];
             self.countdownContainerView.layer.cornerRadius = CGRectGetWidth(self.countdownContainerView.bounds) / 2;
@@ -440,10 +431,12 @@ static const CGFloat BurstContainerExpandedHeight = 40;
 
  @param previousTraitCollection previousTraitCollection
  */
-- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection
+{
     [super traitCollectionDidChange:previousTraitCollection];
-
-    self.contentLayoutMargins = self.class.layoutDirectionAwareLayoutMargins;
+    if (!self.showsPreview) {
+        self.contentLayoutMargins = self.class.layoutDirectionAwareLayoutMargins;
+    }
 }
 
 #pragma mark - Long press management
@@ -642,18 +635,6 @@ static const CGFloat BurstContainerExpandedHeight = 40;
     if ([self.delegate respondsToSelector:@selector(conversationCell:userTapped:inView:)]) {
         [self.delegate conversationCell:self userTapped:BareUserToUser(userImageView.user) inView:userImageView];
     }
-}
-
-#pragma mark - Preview Provider delegate
-
--(void)preparePreview
-{
-    self.contentLayoutMargins = UIEdgeInsetsZero;
-}
-
--(CGFloat)getPreviewContentHeight
-{
-    return [CellSizesProvider compressedSizeForView: self.messageContentView];
 }
 
 #pragma mark - Message observation

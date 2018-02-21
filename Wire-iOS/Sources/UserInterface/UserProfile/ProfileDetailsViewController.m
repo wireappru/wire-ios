@@ -381,7 +381,7 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
             break;
             
         case ProfileUserActionRemovePeople:
-            [self presentRemoveFromConversationDialogue];
+            [self presentRemoveFromConversationDialogueWithUser:[self fullUser] conversation:self.conversation viewControllerDismissable:self.viewControllerDismissable];
             break;
             
         case ProfileUserActionAcceptConnectionRequest:
@@ -408,38 +408,41 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
 
 - (void)presentAddParticipantsViewController
 {
-    AddParticipantsViewController *addParticipantsViewController = [[AddParticipantsViewController alloc] initWithConversation:self.conversation];
+    NSSet *selectedUsers = nil;
+    if (nil != self.conversation.connectedUser) {
+        selectedUsers = [NSSet setWithObject:self.conversation.connectedUser];
+    } else {
+        selectedUsers = [NSSet set];
+    }
     
-    addParticipantsViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
-    addParticipantsViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+    ConversationCreationController *conversationCreationController = [[ConversationCreationController alloc] initWithPreSelectedParticipants:selectedUsers];
     
-    [self presentViewController:addParticipantsViewController animated:YES completion:^{
-        [Analytics.shared tagOpenedPeoplePickerGroupAction];
-    }];
-    
-    [self.delegate profileDetailsViewController:self didPresentAddParticipantsViewController:addParticipantsViewController];
-}
-
-- (void)presentRemoveFromConversationDialogue
-{
-    __block ActionSheetController *actionSheetController =
-    [ActionSheetController dialogForRemovingUser:[self fullUser] fromConversation:self.conversation style:[ActionSheetController defaultStyle] completion:^(BOOL canceled) {
+    if ([[[UIScreen mainScreen] traitCollection] horizontalSizeClass] == UIUserInterfaceSizeClassRegular) {
         [self dismissViewControllerAnimated:YES completion:^{
-            if (canceled) {
-                return;
-            }
+            UINavigationController *presentedViewController = [conversationCreationController wrapInNavigationController:AddParticipantsNavigationController.class];
             
-            [[ZMUserSession sharedSession] enqueueChanges:^{
-                [self.conversation removeParticipant:[self fullUser]];
-            } completionHandler:^{
-                [self.delegate profileDetailsViewController:self wantsToBeDismissedWithCompletion:nil];
-            }];
+            presentedViewController.modalPresentationStyle = UIModalPresentationFormSheet;
+            
+            [[ZClientViewController sharedZClientViewController] presentViewController:presentedViewController
+                                                                              animated:YES
+                                                                            completion:nil];
         }];
-    }];
-    
-    [self presentViewController:actionSheetController animated:YES completion:nil];
-    
-    MediaManagerPlayAlert();
+    }
+    else {
+        KeyboardAvoidingViewController *avoiding = [[KeyboardAvoidingViewController alloc] initWithViewController:conversationCreationController];
+        UINavigationController *presentedViewController = [avoiding wrapInNavigationController:AddParticipantsNavigationController.class];
+        
+        presentedViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+        presentedViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+        
+        [self presentViewController:presentedViewController
+                           animated:YES
+                         completion:^{
+            [Analytics.shared tagOpenedPeoplePickerGroupAction];
+            [UIApplication.sharedApplication wr_updateStatusBarForCurrentControllerAnimated:YES];
+        }];
+    }
+    [self.delegate profileDetailsViewController:self didPresentConversationCreationController:conversationCreationController];
 }
 
 - (void)bringUpConnectionRequestSheet

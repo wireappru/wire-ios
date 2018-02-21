@@ -22,6 +22,8 @@ import MessageUI
 /// Presents debug alerts
 @objc public class DebugAlert: NSObject {
     
+    private static var isShown = false
+    
     /// Presents an alert, if in developer mode, otherwise do nothing
     static func showGeneric(message: String) {
         self.show(message: message)
@@ -29,35 +31,44 @@ import MessageUI
     
     /// Presents an alert to send logs, if in developer mode, otherwise do nothing
     static func showSendLogsMessage(message: String) {
-        self.show(message: message,
-                  OKText: "Send",
-                  OKAction: { _ in DebugLogSender.sendLogsByEmail(message: message) },
-                  OKType: .destructive,
-                  title: "Send debug logs"
+        self.show(
+            message: message,
+            okText: "Send",
+            okAction: { DebugLogSender.sendLogsByEmail(message: message) },
+            okType: .destructive,
+            title: "Send debug logs"
         )
     }
     
     /// Presents a debug alert with configurable messages and events.
     /// If not in developer mode, does nothing.
-    private static func show(message: String,
-                             OKText: String = "OK",
-                             OKAction: ((Any) -> ())? = nil,
-                             OKType: UIAlertActionStyle = .default,
-                             title: String = "DEBUG MESSAGE",
-                             cancelText: String? = "Cancel")
-    {
+    private static func show(
+        message: String,
+        okText: String = "OK",
+        okAction: (() -> Void)? = nil,
+        okType: UIAlertActionStyle = .default,
+        title: String = "DEBUG MESSAGE",
+        cancelText: String? = "Cancel"
+        ) {
+
         guard DeveloperMenuState.developerMenuEnabled() else { return }
-        guard let controller = UIApplication.shared.wr_topmostController(onlyFullScreen: false) else { return }
-        let alert = UIAlertController(title: title,
-                                      message: message,
-                                      preferredStyle: .alert)
-        let okAlertAction = UIAlertAction(title: OKText,
-                                     style: OKType,
-                                     handler: OKAction)
-        alert.addAction(okAlertAction)
-        if let cancelText = cancelText {
-            alert.addAction(UIAlertAction(title: cancelText, style: .cancel, handler: nil))
+        guard let controller = UIApplication.shared.wr_topmostController(onlyFullScreen: false), !isShown else { return }
+        isShown = true
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAlertAction = UIAlertAction(title: okText, style: okType) { _ in
+            isShown = false
+            okAction?()
         }
+        alert.addAction(okAlertAction)
+
+        if let cancelText = cancelText {
+            let cancelAction = UIAlertAction(title: cancelText, style: .cancel) { _ in
+                isShown = false
+            }
+            alert.addAction(cancelAction)
+        }
+
         controller.present(alert, animated: true, completion: nil)
     }
 }
@@ -86,16 +97,16 @@ import MessageUI
         }
         
         // Prepare subject & body
-        let user = ZMUser.selfUser()!
-        let userID = user.remoteIdentifier?.transportString() ?? ""
+        let user = ZMUser.selfUser()
+        let userID = user?.remoteIdentifier?.transportString() ?? ""
         let device = UIDevice.current.name
         let now = Date()
-        let userDescription = "\(user.name ?? "") [user: \(userID)] [device: \(device)]"
+        let userDescription = "\(user?.name ?? "") [user: \(userID)] [device: \(device)]"
         let message = "Logs for: \(message)\n\n"
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         let timeStr = formatter.string(from: now)
-        let fileName = "logs_\(user.name ?? userID)_T\(timeStr).txt"
+        let fileName = "logs_\(user?.name ?? userID)_T\(timeStr).txt"
         
         // compose
         let mailVC = MFMailComposeViewController()

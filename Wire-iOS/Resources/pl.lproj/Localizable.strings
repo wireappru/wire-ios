@@ -18,6 +18,7 @@
 
 
 "general.ok" = "OK";
+"general.next" = "Next";
 "general.cancel" = "Anuluj";
 "general.open_settings" = "Otwórz ustawienia Wire";
 
@@ -35,10 +36,19 @@
 "peoplepicker.header.contacts_personal" = "Kontakty osobiste";
 "peoplepicker.header.directory" = "Połącz";
 
+"peoplepicker.group.title.singular" = "Dodaj znajomych";
+"peoplepicker.group.title.plural" = "Add People (%d)";
+"peoplepicker.group.skip" = "Skip";
+"peoplepicker.group.done" = "Done";
+"peoplepicker.group.create" = "Create";
+
 "peoplepicker.header.people" = "People";
 "peoplepicker.header.services" = "Services";
 "peoplepicker.services.create_conversation.item" = "Create a new conversation";
 "peoplepicker.services.add_service.button" = "Add service";
+"peoplepicker.services.add_service.error.title" = "The service can't be added";
+"peoplepicker.services.add_service.error.default" = "The service is unavailable at the moment";
+"peoplepicker.services.add_service.error.full" = "The conversation is full";
 
 "peoplepicker.title.create_conversation" = "Załóż grupę";
 "peoplepicker.title.add_to_conversation" = "Dodaj osoby";
@@ -225,6 +235,10 @@
 "conversation.input_bar.message_too_long.title" = "Message too long";
 "conversation.input_bar.message_too_long.message" = "You can send messages up to %d characters long.";
 
+"conversation.create.group_name.placeholder" = "Group name";
+"conversation.create.guidance.empty" = "At least 1 character";
+"conversation.create.guidance.toolong" = "Zbyt wiele znaków";
+
 // Image confirmation dialogue
 "image_confirmer.confirm" = "OK";
 "image_confirmer.cancel" = "Anuluj";
@@ -321,6 +335,10 @@
 "content.system.renamed_conv.title" = "%@ zmienił nazwę konwersacji";
 "content.system.renamed_conv.title-you" = "%@ zmienił nazwę konwersacji";
 "content.system.renamed_conv.title.you" = "Ty";
+
+"content.system.conversation.with_name.title" = "%@ started the conversation";
+
+"content.system.conversation.with_name.participants" = "with %@";
 
 "content.system.reactivated_device" = "Ponownie zacząłeś używać %@. Wiadomości które zostały wysłane wcześniej nie będą pokazane.";
 
@@ -431,7 +449,7 @@
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Profile and Participants
 
-"participants.add_people_button_title" = "Dodaj osoby";
+"participants.add_people_button_title" = "Add";
 "participants.avatar.guest.title" = "Gość";
 
 // Meta Menu
@@ -536,6 +554,8 @@
 // General strings
 "general.confirm" = "OK";
 
+// Bot
+"participants.services.remove_integration.button" = "remove integration";
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Self profile

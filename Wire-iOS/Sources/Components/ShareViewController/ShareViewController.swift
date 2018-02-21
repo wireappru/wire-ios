@@ -28,11 +28,9 @@ public protocol Shareable {
     associatedtype I: ShareDestination
     func share<I>(to: [I])
     func previewView() -> UIView?
-    func height(for previewView: UIView?) -> CGFloat
-    
 }
 
-final public class ShareViewController<D: ShareDestination, S: Shareable>: UIViewController, UITableViewDelegate, UITableViewDataSource, TokenFieldDelegate, UIViewControllerTransitioningDelegate {
+public class ShareViewController<D: ShareDestination, S: Shareable>: UIViewController, UITableViewDelegate, UITableViewDataSource, TokenFieldDelegate, UIViewControllerTransitioningDelegate {
     public let destinations: [D]
     public let shareable: S
     private(set) var selectedDestinations: Set<D> = Set() {
@@ -42,15 +40,23 @@ final public class ShareViewController<D: ShareDestination, S: Shareable>: UIVie
     }
     
     public let showPreview: Bool
+    public let allowsMultipleSelection: Bool
     public var onDismiss: ((ShareViewController, Bool)->())?
+    internal var bottomConstraint: NSLayoutConstraint?
     
-    public init(shareable: S, destinations: [D], showPreview: Bool = true) {
+    public init(shareable: S, destinations: [D], showPreview: Bool = true, allowsMultipleSelection: Bool = true) {
         self.destinations = destinations
         self.filteredDestinations = destinations
         self.shareable = shareable
         self.showPreview = showPreview
+        self.allowsMultipleSelection = allowsMultipleSelection
         super.init(nibName: nil, bundle: nil)
         self.transitioningDelegate = self
+        
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardFrameWillChange(notification:)),
+                                               name: NSNotification.Name.UIKeyboardWillChangeFrame,
+                                               object: nil)
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -127,6 +133,7 @@ final public class ShareViewController<D: ShareDestination, S: Shareable>: UIVie
         
         let destination = self.filteredDestinations[indexPath.row]
         cell.destination = destination
+        cell.allowsMultipleSelection = self.allowsMultipleSelection
         cell.isSelected = self.selectedDestinations.contains(destination)
         if cell.isSelected {
             tableView.selectRow(at: indexPath, animated: false, scrollPosition: .none)
@@ -136,10 +143,14 @@ final public class ShareViewController<D: ShareDestination, S: Shareable>: UIVie
     
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let destination = self.filteredDestinations[indexPath.row]
-
+        
         self.tokenField.addToken(forTitle: destination.displayName, representedObject: destination)
         
         self.selectedDestinations.insert(destination)
+        
+        if !self.allowsMultipleSelection {
+            self.onSendButtonPressed(sender: nil)
+        }
     }
     
     public func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
@@ -178,4 +189,14 @@ final public class ShareViewController<D: ShareDestination, S: Shareable>: UIVie
         return BlurEffectTransition(visualEffectView: blurView, crossfadingViews: [containerView], reverse: true)
     }
     
+    func keyboardFrameWillChange(notification: Notification) {
+        let firstResponder = UIResponder.wr_currentFirst()
+        let inputAccessoryHeight = firstResponder?.inputAccessoryView?.bounds.size.height ?? 0
+        
+        UIView.animate(withKeyboardNotification: notification, in: self.view, animations: { (keyboardFrameInView) in
+            let keyboardHeight = keyboardFrameInView.size.height - inputAccessoryHeight
+            self.bottomConstraint?.constant = keyboardHeight == 0 ? -self.safeArea.bottom : CGFloat(0)
+            self.view.layoutIfNeeded()
+        }, completion: nil)
+    }
 }
