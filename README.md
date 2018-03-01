@@ -42,12 +42,12 @@ These differences are:
 
 ### Prerequisites
 In order to build Wire for iOS locally, it is necessary to install the following tools on the local machine:
-- OS X 10.11 or newer
+- macOS 10.12.6 or newer
 - Xcode 9.0.1 (https://itunes.apple.com/en/app/xcode/id497799835?mt=12).
 - Bundler (http://bundler.io)
-- Carthage 0.17.2 or newer (https://github.com/Carthage/Carthage)
+- Carthage 0.28.0 or newer (https://github.com/Carthage/Carthage)
 - CocoaPods 1.3.1 or newer (https://cocoapods.org/)
-- Ruby 2.2.5
+- Ruby 2.3.3 (we suggest using `rbenv` to install the correct version https://github.com/rbenv/rbenv/)
 - Python 2.7
 
 The setup script will automatically check for you that you satisfy these requirements
