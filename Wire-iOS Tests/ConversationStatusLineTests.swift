@@ -68,7 +68,7 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
     func testStatusMissedCall() {
         // GIVEN
         let sut = self.otherUserConversation!
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.sender = self.otherUser
         otherMessage.systemMessageType = .missedCall
         sut.sortedAppendMessage(otherMessage)
@@ -115,7 +115,7 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
         for index in 1...5 {
             (sut.appendMessage(withText: "test \(index)") as! ZMMessage).sender = self.otherUser
         }
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.sender = self.otherUser
         otherMessage.systemMessageType = .conversationNameChanged
         sut.sortedAppendMessage(otherMessage)
@@ -160,7 +160,7 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
     func testStatusForSystemMessageIWasAdded() {
         // GIVEN
         let sut = createGroupConversation()
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.systemMessageType = .participantsAdded
         otherMessage.sender = self.otherUser
         otherMessage.users = Set([self.selfUser])
@@ -177,7 +177,7 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
     func testNoStatusForSystemMessageIAddedSomeone() {
         // GIVEN
         let sut = createGroupConversation()
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.systemMessageType = .participantsAdded
         otherMessage.sender = self.selfUser
         otherMessage.users = Set([self.otherUser])
@@ -195,7 +195,7 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
         // GIVEN
         let sut = createGroupConversation()
         sut.internalAddParticipants([createUser(name: "Vanessa")], isAuthoritative: true)
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.systemMessageType = .participantsRemoved
         otherMessage.sender = self.selfUser
         otherMessage.users = Set([self.otherUser])
@@ -214,7 +214,7 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
         let sut = ZMConversation.insertNewObject(in: uiMOC)
         sut.conversationType = .group
 
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.systemMessageType = .participantsRemoved
         otherMessage.sender = selfUser
         otherMessage.users = [otherUser]
@@ -232,7 +232,26 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
     func testStatusForSystemMessageSomeoneWasAdded() {
         // GIVEN
         let sut = createGroupConversation()
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
+        otherMessage.systemMessageType = .participantsAdded
+        let anotherUser = ZMUser.insertNewObject(in: uiMOC)
+        anotherUser.name = "Marie"
+        otherMessage.sender = self.otherUser
+        otherMessage.users = [anotherUser]
+        otherMessage.addedUsers = [anotherUser]
+        sut.sortedAppendMessage(otherMessage)
+        sut.lastReadServerTimeStamp = Date.distantPast
+        
+        // WHEN
+        let status = sut.status.description(for: sut)
+        // THEN
+        XCTAssertEqual(status.string, "\(self.otherUser.displayName!) added \(anotherUser.displayName!)")
+    }
+    
+    func testStatusForSystemMessageSomeoneJoined() {
+        // GIVEN
+        let sut = createGroupConversation()
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.systemMessageType = .participantsAdded
         otherMessage.sender = self.otherUser
         otherMessage.users = Set([self.otherUser])
@@ -243,13 +262,13 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
         // WHEN
         let status = sut.status.description(for: sut)
         // THEN
-        XCTAssertEqual(status.string, "\(self.otherUser.displayName!) added \(self.otherUser.displayName!)")
+        XCTAssertEqual(status.string, "\(self.otherUser.displayName!) joined")
     }
     
     func testStatusForSystemMessageIWasRemoved() {
         // GIVEN
         let sut = createGroupConversation()
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.systemMessageType = .participantsRemoved
         otherMessage.sender = self.otherUser
         otherMessage.users = Set([self.selfUser])
@@ -268,7 +287,7 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
         // GIVEN
         let sut = createGroupConversation()
         sut.internalAddParticipants([createUser(name: "Lilly")], isAuthoritative: true)
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.systemMessageType = .participantsRemoved
         otherMessage.sender = self.otherUser
         otherMessage.users = Set([self.otherUser])
@@ -285,7 +304,7 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
     func testStatusForConversationStarted() {
         // GIVEN
         let sut = self.createGroupConversation()
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.systemMessageType = .newConversation
         otherMessage.sender = self.otherUser
         otherMessage.users = Set([self.otherUser, self.selfUser])
@@ -301,7 +320,7 @@ class ConversationStatusLineTests: CoreDataSnapshotTestCase {
     func testNoStatusForSelfConversationStarted() {
         // GIVEN
         let sut = self.createGroupConversation()
-        let otherMessage = ZMSystemMessage.insertNewObject(in: uiMOC)
+        let otherMessage = ZMSystemMessage(nonce: UUID(), managedObjectContext: uiMOC)
         otherMessage.systemMessageType = .newConversation
         otherMessage.sender = self.selfUser
         otherMessage.users = Set([self.otherUser, self.selfUser])
