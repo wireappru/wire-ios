@@ -29,7 +29,6 @@
 @import WireDataModel;
 
 #import "IconButton.h"
-#import "WAZUIMagicIOS.h"
 #import "Constants.h"
 #import "UIColor+WAZExtensions.h"
 #import "UserImageView.h"
@@ -49,7 +48,6 @@
 #import "ProfileSendConnectionRequestFooterView.h"
 #import "ProfileIncomingConnectionRequestFooterView.h"
 #import "ProfileUnblockFooterView.h"
-#import "ActionSheetController+Conversation.h"
 
 
 typedef NS_ENUM(NSUInteger, ProfileViewContentMode) {
@@ -79,11 +77,13 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
 @property (nonatomic) ProfileViewControllerContext context;
 @property (nonatomic) id<ZMBareUser, ZMSearchableUser, AccentColorProvider> bareUser;
 @property (nonatomic) ZMConversation *conversation;
+@property (nonatomic) ConversationActionController *actionsController;
 
 @property (nonatomic) UserImageView *userImageView;
 @property (nonatomic) UIView *footerView;
 @property (nonatomic) UIView *stackViewContainer;
 @property (nonatomic) GuestLabelIndicator *teamsGuestIndicator;
+@property (nonatomic) UILabel *remainingTimeLabel;
 @property (nonatomic) BOOL showGuestLabel;
 @property (nonatomic) AvailabilityTitleView *availabilityView;
 @property (nonatomic) UICustomSpacingStackView *stackView;
@@ -123,21 +123,40 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
     [self.view addSubview:self.stackViewContainer];
     self.teamsGuestIndicator.hidden = !self.showGuestLabel;
     self.availabilityView.hidden = !ZMUser.selfUser.isTeamMember || self.fullUser.availability == AvailabilityNone;
+    self.remainingTimeLabel = [[UILabel alloc] initForAutoLayout];
+    NSString *remainingTimeString = self.fullUser.expirationDisplayString;
+    self.remainingTimeLabel.text = remainingTimeString;
+    self.remainingTimeLabel.hidden = nil == remainingTimeString;
 
-    self.stackView = [[UICustomSpacingStackView alloc] initWithCustomSpacedArrangedSubviews:@[self.userImageView, self.teamsGuestIndicator, self.availabilityView]];
+    self.stackView = [[UICustomSpacingStackView alloc] initWithCustomSpacedArrangedSubviews:@[self.userImageView, self.teamsGuestIndicator, self.remainingTimeLabel, self.availabilityView]];
     self.stackView.axis = UILayoutConstraintAxisVertical;
     self.stackView.spacing = 0;
     self.stackView.alignment = UIStackViewAlignmentCenter;
     [self.stackViewContainer addSubview:self.stackView];
     
-    [self.stackView wr_addCustomSpacing:(self.teamsGuestIndicator.isHidden ? 32 : 32) after:self.userImageView];
-    [self.stackView wr_addCustomSpacing:(self.availabilityView.isHidden ? 40 : 32) after:self.teamsGuestIndicator];
+    [self.stackView wr_addCustomSpacing:32 after:self.userImageView];
+
+    if (self.remainingTimeLabel.isHidden) {
+        [self.stackView wr_addCustomSpacing:(self.availabilityView.isHidden ? 40 : 32) after:self.teamsGuestIndicator];
+    } else {
+        [self.stackView wr_addCustomSpacing:8 after:self.teamsGuestIndicator];
+        [self.stackView wr_addCustomSpacing:(self.availabilityView.isHidden ? 40 : 32) after:self.remainingTimeLabel];
+    }
+    
     [self.stackView wr_addCustomSpacing:32 after:self.availabilityView];
 }
 
 - (void)setupConstraints
 {
     [self.stackView autoCenterInSuperview];
+    
+    const CGFloat offset = 40;
+    [NSLayoutConstraint autoSetPriority:UILayoutPriorityRequired forConstraints:^{
+        [self.stackView autoPinEdge:ALEdgeLeading toEdge:ALEdgeLeading ofView:self.stackViewContainer withOffset:offset relation:NSLayoutRelationGreaterThanOrEqual];
+        [self.stackView autoPinEdge:ALEdgeTop toEdge:ALEdgeTop ofView:self.stackViewContainer withOffset:offset relation:NSLayoutRelationGreaterThanOrEqual];
+        [self.stackView autoPinEdge:ALEdgeTrailing toEdge:ALEdgeTrailing ofView:self.stackViewContainer withOffset:-offset relation:NSLayoutRelationLessThanOrEqual];
+        [self.stackView autoPinEdge:ALEdgeBottom toEdge:ALEdgeBottom ofView:self.stackViewContainer withOffset:-offset relation:NSLayoutRelationLessThanOrEqual];
+    }];
     
     [self.stackViewContainer autoPinEdgeToSuperviewEdge:ALEdgeTop];
     [self.stackViewContainer autoPinEdgeToSuperviewEdge:ALEdgeLeading];
@@ -152,7 +171,8 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
 
 - (void)createUserImageView
 {
-    self.userImageView = [[UserImageView alloc] initWithMagicPrefix:@"profile.user_image"];
+    self.userImageView = [[UserImageView alloc] init];
+    self.userImageView.initials.font = [UIFont systemFontOfSize:80 weight:UIFontWeightThin];
     self.userImageView.userSession = [ZMUserSession sharedSession];
     self.userImageView.translatesAutoresizingMaskIntoConstraints = NO;
     self.userImageView.size = UserImageViewSizeBig;
@@ -311,9 +331,13 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
     else if (user.isPendingApprovalByOtherUser) {
         return ProfileUserActionCancelConnectionRequest;
     }
-    else if (! user.isConnected && ! user.isPendingApprovalByOtherUser) {
+    else if (user.canBeConnected) {
         return ProfileUserActionSendConnectionRequest;
-    } else {
+    }
+    else if (user.isWirelessUser) {
+        return ProfileUserActionNone;
+    }
+    else {
         return ProfileUserActionOpenConversation;
     }
 }
@@ -397,8 +421,8 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
 
 - (void)presentMenuSheetController
 {
-    ActionSheetController *actionSheetController = [ActionSheetController dialogForConversationDetails:self.conversation style:ActionSheetController.defaultStyle];
-    [self presentViewController:actionSheetController animated:YES completion:nil];
+    self.actionsController = [[ConversationActionController alloc] initWithConversation:self.conversation target:self];
+    [self.actionsController presentMenuFromSourceView:self.footerView];
 }
 
 - (void)presentAddParticipantsViewController
@@ -442,26 +466,28 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
 
 - (void)bringUpConnectionRequestSheet
 {
-    [self presentViewController:[ActionSheetController dialogForAcceptingConnectionRequestWithUser:[self fullUser] style:[ActionSheetController defaultStyle] completion:^(BOOL ignored) {
-        [self dismissViewControllerAnimated:YES completion:^{
-            if (ignored) {
-                [self cancelConnectionRequest];
-            } else {
-                [self acceptConnectionRequest];
-            }
-        }];
-    }] animated:YES completion:nil];
+    UIAlertController *controller = [UIAlertController controllerForAcceptingConnectionRequestForUser:self.fullUser completion:^(BOOL accept){
+        if (accept) {
+            [self acceptConnectionRequest];
+        } else {
+            [self cancelConnectionRequest];
+        }
+    }];
+    
+    controller.popoverPresentationController.sourceView = self.view;
+    controller.popoverPresentationController.sourceRect = [self.view convertRect:self.footerView.frame fromView:self.footerView.superview];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)bringUpCancelConnectionRequestSheet
 {
-    [self presentViewController:[ActionSheetController dialogForCancelingConnectionRequestWithUser:[self fullUser] style:[ActionSheetController defaultStyle] completion:^(BOOL canceled) {
-        [self dismissViewControllerAnimated:YES completion:^{
-            if (! canceled) {
-                [self cancelConnectionRequest];
-            }
-        }];
-    }] animated:YES completion:nil];
+    UIAlertController *controller = [UIAlertController cancelConnectionRequestControllerForUser:self.fullUser completion:^(BOOL canceled) {
+        if (!canceled) {
+            [self cancelConnectionRequest];
+        }
+    }];
+
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)unblockUser

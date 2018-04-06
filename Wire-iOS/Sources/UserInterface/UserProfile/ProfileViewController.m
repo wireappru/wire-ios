@@ -28,7 +28,6 @@
 #import <WireExtensionComponents/WireExtensionComponents-Swift.h>
 @import PureLayout;
 
-#import "WAZUIMagicIOS.h"
 #import "Constants.h"
 #import "UIColor+WAZExtensions.h"
 #import "UIColor+WR_ColorScheme.h"
@@ -105,6 +104,11 @@ typedef NS_ENUM(NSUInteger, ProfileViewControllerTabBarIndex) {
     return self;
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    return [[ColorScheme defaultColorScheme] statusBarStyle];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -158,7 +162,7 @@ typedef NS_ENUM(NSUInteger, ProfileViewControllerTabBarIndex) {
         [viewControllers addObject:profileDetailsViewController];
     }
 
-    if (self.fullUser.isConnected || self.fullUser.isTeamMember) {
+    if (self.fullUser.isConnected || self.fullUser.isTeamMember || self.fullUser.isWirelessUser) {
         ProfileDevicesViewController *profileDevicesViewController = [[ProfileDevicesViewController alloc] initWithUser:self.fullUser];
         profileDevicesViewController.title = NSLocalizedString(@"profile.devices.title", nil);
         profileDevicesViewController.delegate = self;
@@ -222,6 +226,9 @@ typedef NS_ENUM(NSUInteger, ProfileViewControllerTabBarIndex) {
                         self.tabsController.selectedIndex != ProfileViewControllerTabBarIndexDevices;
 
         self.profileTitleView.showVerifiedShield = showShield;
+    }
+    else {
+        self.profileTitleView.showVerifiedShield = NO;
     }
 }
 

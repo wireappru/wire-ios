@@ -133,13 +133,11 @@
         
         [self.analyticsTracker tagEnteredEmailAndPassword];
 
-        // Dismiss keyboard and delay presentation for a smoother transition
-        [[UIApplication sharedApplication] sendAction:@selector(resignFirstResponder) to:nil from:nil forEvent:nil];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            TermsOfUseStepViewController *tosController = [[TermsOfUseStepViewController alloc] initWithUnregisteredUser:self.unregisteredUser];
-            tosController.formStepDelegate = self;
-            [self.navigationController pushViewController:tosController.registrationFormViewController animated:YES];
-        });
+        self.navigationController.showLoadingView = YES;
+        
+        ZMCompleteRegistrationUser *completeUser = [self.unregisteredUser completeRegistrationUser];
+        [[UnauthenticatedSession sharedSession] registerUser:completeUser];
+        
     }
     else if ([viewController isKindOfClass:[TermsOfUseStepViewController class]] ||
              ([viewController isKindOfClass:[EmailStepViewController class]] && [self hasUserAcceptedTOS]))
@@ -148,9 +146,6 @@
         [[UIApplication sharedApplication] registerForRemoteNotifications];
         
         self.hasUserAcceptedTOS = YES;
-        
-        ZMCompleteRegistrationUser *completeUser = [self.unregisteredUser completeRegistrationUser];
-        [[UnauthenticatedSession sharedSession] registerUser:completeUser];
         
         EmailVerificationStepViewController *emailVerificationStepViewController = [[EmailVerificationStepViewController alloc] initWithEmailAddress:self.unregisteredUser.emailAddress];
         emailVerificationStepViewController.formStepDelegate = self;
@@ -183,19 +178,43 @@
 
 - (void)registrationDidFail:(NSError *)error
 {
+    self.navigationController.showLoadingView = NO;
+    
     [self.navigationController popToRootViewControllerAnimated:YES];
     [self showAlertForError:error];
+    
+    if(error.code == ZMUserSessionEmailIsAlreadyRegistered){
+        LoginCredentials *credentials = [[LoginCredentials alloc]
+                                         initWithEmailAddress:self.unregisteredUser.emailAddress
+                                         phoneNumber:nil
+                                         password:self.unregisteredUser.password];
+        
+        [self.emailStepViewController reset];
+        [self.registrationDelegate registrationFlowViewController:self needsToSignInWith:credentials];
+    }
+    
 }
 
 - (void)emailVerificationDidFail:(NSError *)error
 {
+    self.navigationController.showLoadingView = NO;
     [self.analyticsTracker tagResentEmailVerificationFailedWithError:error];
+    
     [self showAlertForError:error];
 }
 
 - (void)emailVerificationDidSucceed
 {
-    // nop
+    self.navigationController.showLoadingView = NO;
+    
+    // Dismiss keyboard and delay presentation for a smoother transition
+    [[UIApplication sharedApplication] sendAction:@selector(resignFirstResponder) to:nil from:nil forEvent:nil];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        TermsOfUseStepViewController *tosController = [[TermsOfUseStepViewController alloc] initWithUnregisteredUser:self.unregisteredUser];
+        tosController.formStepDelegate = self;
+        [self.navigationController pushViewController:tosController.registrationFormViewController animated:YES];
+    });
+    
 }
 
 #pragma mark - ZMAuthenticationObserver

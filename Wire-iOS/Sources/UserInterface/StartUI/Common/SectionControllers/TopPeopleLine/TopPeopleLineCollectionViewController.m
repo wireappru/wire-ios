@@ -20,12 +20,8 @@
 #import "TopPeopleLineCollectionViewController.h"
 #import "TopPeopleCell.h"
 #import "WireSyncEngine+iOS.h"
-#import "TopPeopleLineSection.h"
 #import "UIView+Borders.h"
-#import "WAZUIMagicIOS.h"
 #import "Wire-Swift.h"
-
-NSString *const CellReuseIdentifier = @"CellReuseIdentifier";
 
 @implementation TopPeopleLineCollectionViewController
 
@@ -36,21 +32,13 @@ NSString *const CellReuseIdentifier = @"CellReuseIdentifier";
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    UICollectionViewCell *genericCell = [collectionView dequeueReusableCellWithReuseIdentifier:CellReuseIdentifier
+    UICollectionViewCell *genericCell = [collectionView dequeueReusableCellWithReuseIdentifier:TopPeopleCell.zm_reuseIdentifier
                                                                                   forIndexPath:indexPath];
     
     // Resolve the model object based on the current UI state
     ZMConversation *modelObject = self.topPeople[indexPath.item % self.topPeople.count];
     
-    TopPeopleCell *particularCell = (TopPeopleCell *)genericCell;
-    @weakify(self, modelObject);
-    particularCell.doubleTapAction = ^(TopPeopleCell *cell) {
-        @strongify(self, modelObject);
-        if ([self.delegate respondsToSelector:@selector(collectionViewSectionController:didDoubleTapItem:atIndexPath:)]) {        
-            [self.delegate collectionViewSectionController:self.sectionController didDoubleTapItem:modelObject atIndexPath:indexPath];
-        }
-    };
-    
+    TopPeopleCell *particularCell = (TopPeopleCell *)genericCell;    
     BOOL selected = [self.userSelection.users containsObject:modelObject.connectedUser];
     particularCell.conversation = modelObject;
     particularCell.selected = selected;
@@ -68,8 +56,8 @@ NSString *const CellReuseIdentifier = @"CellReuseIdentifier";
     
     [self.userSelection add:modelObject.connectedUser];
     
-    if ([self.delegate respondsToSelector:@selector(collectionViewSectionController:didSelectItem:atIndexPath:)]) {
-        [self.delegate collectionViewSectionController:self.sectionController didSelectItem:modelObject atIndexPath:indexPath];
+    if ([self.delegate respondsToSelector:@selector(topPeopleLineCollectionViewControllerDidSelectConversation:)]) {
+        [self.delegate topPeopleLineCollectionViewControllerDidSelectConversation:modelObject];
     }
 }
 
@@ -78,10 +66,6 @@ NSString *const CellReuseIdentifier = @"CellReuseIdentifier";
     ZMConversation *modelObject = self.topPeople[indexPath.item % self.topPeople.count];
     
     [self.userSelection remove:modelObject.connectedUser];
-    
-    if ([self.delegate respondsToSelector:@selector(collectionViewSectionController:didDeselectItem:atIndexPath:)]) {
-        [self.delegate collectionViewSectionController:self.sectionController didDeselectItem:modelObject atIndexPath:indexPath];
-    }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section
@@ -91,7 +75,7 @@ NSString *const CellReuseIdentifier = @"CellReuseIdentifier";
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    return CGSizeMake([WAZUIMagic floatForIdentifier:@"people_picker.top_conversations_mode.tile_width"], [WAZUIMagic floatForIdentifier:@"people_picker.top_conversations_mode.tile_height"]);
+    return CGSizeMake(56, 78);
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {    

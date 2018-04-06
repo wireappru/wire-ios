@@ -18,10 +18,9 @@
 
 
 #import "SignInViewController.h"
+#import "SignInViewController+internal.h"
 
 @import PureLayout;
-
-#import "WAZUIMagicIOS.h"
 
 #import "Constants.h"
 #import "PhoneSignInViewController.h"
@@ -36,11 +35,7 @@
 
 @interface SignInViewController () <PhoneSignInViewControllerDelegate>
 
-@property (nonatomic) PhoneSignInViewController *phoneSignInViewController;
 @property (nonatomic) EmailSignInViewController *emailSignInViewController;
-@property (nonatomic) UIViewController *presentedSignInViewController;
-@property (nonatomic) UIViewController *emailSignInViewControllerContainer;
-@property (nonatomic) UIViewController *phoneSignInViewControllerContainer;
 @property (nonatomic) UIView *viewControllerContainer;
 @property (nonatomic) UIView *buttonContainer;
 @property (nonatomic) Button *emailSignInButton;
@@ -75,7 +70,7 @@
     
     self.emailSignInButton = [[Button alloc] initForAutoLayout];
     self.emailSignInButton.contentEdgeInsets = UIEdgeInsetsMake(4, 16, 4, 16);
-    self.emailSignInButton.titleLabel.font = [UIFont fontWithMagicIdentifier:@"style.text.small.font_spec_light"];
+    self.emailSignInButton.titleLabel.font = UIFont.smallLightFont;
     [self.emailSignInButton setBorderColor:UIColor.whiteColor forState:UIControlStateNormal];
     [self.emailSignInButton setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
     self.emailSignInButton.circular = YES;
@@ -85,7 +80,7 @@
     
     self.phoneSignInButton = [[Button alloc] initForAutoLayout];
     self.phoneSignInButton.contentEdgeInsets = UIEdgeInsetsMake(4, 16, 4, 16);
-    self.phoneSignInButton.titleLabel.font = [UIFont fontWithMagicIdentifier:@"style.text.small.font_spec_light"];
+    self.phoneSignInButton.titleLabel.font = UIFont.smallLightFont;
     [self.phoneSignInButton setBorderColor:UIColor.whiteColor forState:UIControlStateNormal];
     [self.phoneSignInButton setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
     self.phoneSignInButton.circular = YES;
@@ -102,7 +97,7 @@
     if (hasAddedEmailAddress || ! hasAddedPhoneNumber) {
         [self presentSignInViewController:self.emailSignInViewControllerContainer];
     } else {
-        [self presentSignInViewController:self.phoneSignInViewController];
+        [self presentSignInViewController:self.phoneSignInViewControllerContainer];
     }
     
     self.view.opaque = NO;
@@ -189,11 +184,11 @@
     
     [fromViewController willMoveToParentViewController:nil];
     [self addChildViewController:toViewController];
-    
+
     toViewController.view.translatesAutoresizingMaskIntoConstraints = YES;
     toViewController.view.frame = fromViewController.view.frame;
     [toViewController.view layoutIfNeeded];
-    
+
     [self transitionFromViewController:fromViewController
                       toViewController:toViewController
                               duration:0.35 options:UIViewAnimationOptionTransitionCrossDissolve
@@ -248,22 +243,42 @@
     selectedButton.alpha = 1;
 }
 
+- (void)presentSignInViewControllerWithCredentials:(LoginCredentials*)credentials
+{
+    self.loginCredentials = credentials;
+    
+    if(credentials.emailAddress != nil) {
+        [self presentEmailSignInViewControllerToEnterPassword];
+        if(credentials.password == nil) {
+            UIAlertController *controller = [UIAlertController passwordVerificationNeededControllerWithCompletion:nil];
+            [self.navigationController presentViewController:controller animated:YES completion:nil];
+        }
+    } else if (credentials.phoneNumber != nil) {
+        [self presentPhoneSignInViewControllerToEnterPassword];
+    }
+}
+
 - (void)presentEmailSignInViewControllerToEnterPassword
 {
-    self.buttonContainer.hidden = YES;
-    self.wr_tabBarController.enabled = NO;
+    self.buttonContainer.hidden = NO;
+    self.wr_tabBarController.enabled = YES;
     [self setupEmailSignInViewController];
     [self presentSignInViewController:self.emailSignInViewControllerContainer];
+}
+
+- (void)presentPhoneSignInViewControllerToEnterPassword
+{
+    self.buttonContainer.hidden = NO;
+    self.wr_tabBarController.enabled = YES;
+    [self setupPhoneFlowViewController];
+    [self presentSignInViewController:self.phoneSignInViewControllerContainer];
 }
 
 #pragma mark - PhoneSignInViewControllerDelegate
 
 - (void)phoneSignInViewControllerNeedsPasswordFor:(LoginCredentials *)loginCredentials
 {
-    self.loginCredentials = loginCredentials;
-    [self presentEmailSignInViewControllerToEnterPassword];
-    UIAlertController *controller = [UIAlertController passwordVerificationNeededControllerWithCompletion:nil];
-    [self presentViewController:controller animated:YES completion:nil];
+    [self presentSignInViewControllerWithCredentials:loginCredentials];
 }
 
 @end

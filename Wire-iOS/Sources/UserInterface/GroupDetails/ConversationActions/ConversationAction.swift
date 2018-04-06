@@ -20,19 +20,20 @@ import Foundation
 
 extension ZMConversation {
     enum Action {
-        case rename
         case delete
         case leave
         case silence(isSilenced: Bool)
         case archive(isArchived: Bool)
         case cancelRequest
         case block(isBlocked: Bool)
+        case markRead
+        case markUnread
         case remove
     }
     
     var actions: [Action] {
         switch conversationType {
-        case .connection: return availableOneToOneActions()
+        case .connection: return availablePendingActions()
         case .oneOnOne: return availableOneToOneActions()
         default: return availableGroupActions()
         }
@@ -55,11 +56,7 @@ extension ZMConversation {
     }
     
     private func availableGroupActions() -> [Action] {
-        var actions = [Action]()
-        if isSelfAnActiveMember {
-            actions.append(.rename)
-        }
-        actions += availableStandardActions()
+        var actions = availableStandardActions()
         actions.append(.delete)
 
         if activeParticipants.contains(ZMUser.selfUser()) {
@@ -70,9 +67,16 @@ extension ZMConversation {
     
     private func availableStandardActions() -> [Action] {
         var actions = [Action]()
+        if DeveloperMenuState.developerMenuEnabled() && unreadMessages.count > 0 {
+            actions.append(.markRead)
+        } else if DeveloperMenuState.developerMenuEnabled() && unreadMessages.count == 0 && canMarkAsUnread() {
+            actions.append(.markUnread)
+        }
+        
         if !isReadOnly {
             actions.append(.silence(isSilenced: isSilenced))
         }
+
         actions.append(.archive(isArchived: isArchived))
         return actions
     }
@@ -94,9 +98,10 @@ extension ZMConversation.Action {
     private var localizationKey: String {
         switch self {
         case .remove: return "profile.remove_dialog_button_remove"
-        case .rename: return "meta.menu.rename"
         case .delete: return "meta.menu.delete"
         case .leave: return "meta.menu.leave"
+        case .markRead: return "meta.menu.mark_read"
+        case .markUnread: return "meta.menu.mark_unread"
         case .silence(isSilenced: let muted): return "meta.menu.silence.\(muted ? "unmute" : "mute")"
         case .archive(isArchived: let archived): return "meta.menu.\(archived ? "unarchive" : "archive")"
         case .cancelRequest: return "meta.menu.cancel_connection_request"

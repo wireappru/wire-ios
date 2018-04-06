@@ -22,7 +22,6 @@
 @import PureLayout;
 
 #import "RegistrationTextField.h"
-#import "WAZUIMagicIOS.h"
 #import "UIView+Borders.h"
 #import "UIImage+ZetaIconsNeue.h"
 #import "Constants.h"
@@ -59,12 +58,12 @@
     return self;
 }
 
-- (instancetype)initWithUneditablePhoneNumber:(NSString *)phoneNumber
+- (instancetype)initWithPhoneNumber:(NSString *)phoneNumber isEditable:(BOOL)isEditable
 {
     self = [super init];
     
     if (self) {
-        _phoneNumberIsEditable = NO;
+        _phoneNumberIsEditable = isEditable;
         self.phoneNumber = phoneNumber;
     }
     
@@ -106,7 +105,7 @@
 - (void)createHeroLabel
 {
     self.heroLabel = [[UILabel alloc] initForAutoLayout];
-    self.heroLabel.textColor = [UIColor colorWithMagicIdentifier:@"style.color.static_foreground.normal"];
+    self.heroLabel.textColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark];
     self.heroLabel.numberOfLines = 0;
     
     [self.view addSubview:self.heroLabel];
@@ -122,11 +121,7 @@
     self.phoneNumberViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
     [self.phoneNumberViewController.phoneNumberField.confirmButton addTarget:self action:@selector(validatePhoneNumber:) forControlEvents:UIControlEventTouchUpInside];
     
-    if (self.phoneNumber.length > 0) {
-        self.phoneNumberViewController.phoneNumberField.text = self.phoneNumber;
-        self.phoneNumberViewController.phoneNumberField.rightAccessoryView = RegistrationTextFieldRightAccessoryViewConfirmButton;
-        self.phoneNumberViewController.phoneNumberField.leftAccessoryView = RegistrationTextFieldLeftAccessoryViewNone;
-    }
+    self.phoneNumberViewController.phoneNumber = self.phoneNumber;
     
     self.phoneNumberViewController.editable = self.phoneNumberIsEditable;
 }
@@ -153,6 +148,11 @@
 - (void)takeFirstResponder
 {
     [self.phoneNumberViewController.phoneNumberField becomeFirstResponder];
+}
+
+-(void)reset
+{
+    self.phoneNumberViewController.phoneNumber = nil;
 }
 
 #pragma mark - Actions

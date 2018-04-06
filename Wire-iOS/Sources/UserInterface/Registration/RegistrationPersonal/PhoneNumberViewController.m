@@ -26,7 +26,6 @@
 #import "CountryCodeTableViewController.h"
 #import "Country.h"
 #import "Constants.h"
-#import "WAZUIMagicIOS.h"
 #import "UIImage+ZetaIconsNeue.h"
 #import "WireSyncEngine+iOS.h"
 #import "Wire-Swift.h"
@@ -81,9 +80,9 @@ static CGFloat PhoneNumberFieldTopMargin = 16;
     self.selectCountryButton = [UIButton buttonWithType:UIButtonTypeCustom];
     self.selectCountryButton.contentHorizontalAlignment = [UIApplication isLeftToRightLayout] ? UIControlContentHorizontalAlignmentLeft : UIControlContentHorizontalAlignmentRight;
     
-    self.selectCountryButton.titleLabel.font = [UIFont fontWithMagicIdentifier:@"style.text.normal.font_spec"];
-    [self.selectCountryButton setTitleColor:[UIColor colorWithMagicIdentifier:@"style.color.static_foreground.normal"] forState:UIControlStateNormal];
-    [self.selectCountryButton setTitleColor:[UIColor colorWithMagicIdentifier:@"style.color.static_foreground.faded"] forState:UIControlStateHighlighted];
+    self.selectCountryButton.titleLabel.font = UIFont.normalLightFont;
+    [self.selectCountryButton setTitleColor:[UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark] forState:UIControlStateNormal];
+    [self.selectCountryButton setTitleColor:[UIColor wr_colorFromColorScheme:ColorSchemeColorButtonFaded variant:ColorSchemeVariantDark] forState:UIControlStateHighlighted];
     
     ZetaIconType iconType = [UIApplication isLeftToRightLayout] ? ZetaIconTypeChevronRight : ZetaIconTypeChevronLeft;
     UIImage *icon = [UIImage imageForIcon:iconType iconSize:ZetaIconSizeSmall color:UIColor.whiteColor];
@@ -119,7 +118,7 @@ static CGFloat PhoneNumberFieldTopMargin = 16;
 
 #if WIRESTAN
     NSString *backendEnvironment = [[NSUserDefaults standardUserDefaults] stringForKey:@"ZMBackendEnvironmentType"];
-    if ([backendEnvironment isEqualToString:@"edge"]) {
+    if ([backendEnvironment isEqualToString:@"staging"]) {
             initialCountry = [Country countryWirestan];
     }
     
@@ -183,7 +182,55 @@ static CGFloat PhoneNumberFieldTopMargin = 16;
     self.selectCountryButtonIcon.hidden = ! editable;
     self.selectCountryButtonHeightConstraint.constant = editable ? SelectCountryButtonHeight : 0;
     self.phoneNumberFieldTopMarginConstraint.constant = editable ? PhoneNumberFieldTopMargin : 0;
-    self.phoneNumberField.textColor = editable ? [UIColor colorWithMagicIdentifier:@"style.color.static_foreground.normal"] : [UIColor colorWithMagicIdentifier:@"style.color.static_foreground.faded"];
+    self.phoneNumberField.textColor = editable ? [UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark] : [UIColor wr_colorFromColorScheme:ColorSchemeColorButtonFaded variant:ColorSchemeVariantDark];
+}
+
+-(void)setPhoneNumber:(NSString *)phoneNumber
+{
+    _phoneNumber = [phoneNumber copy];
+    
+    if(phoneNumber == nil) {
+        [self selectInitialCountry];
+        self.phoneNumberField.text = nil;
+    } else {
+        [self pastePhoneNumber:phoneNumber];
+    }
+}
+
+-(BOOL)pastePhoneNumber:(NSString*)phoneNumber {
+    
+    // Auto detect country for phone numbers beginning with "+"
+    
+    // When pastedString is copied from phone app (self phone number section), it contains right/left handling symbols: \u202A\u202B\u202C\u202D
+    // @"\U0000202d+380 (00) 123 45 67\U0000202c"
+    NSMutableCharacterSet *illegalCharacters = [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
+    [illegalCharacters formUnionWithCharacterSet:[NSCharacterSet decimalDigitCharacterSet]];
+    [illegalCharacters formUnionWithCharacterSet:[NSCharacterSet characterSetWithCharactersInString:@"+-()"]];
+    [illegalCharacters invert];
+    
+    phoneNumber = [phoneNumber stringByTrimmingCharactersInSet:illegalCharacters];
+    
+    if ([[phoneNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] hasPrefix:@"+"]) {
+        Country *country = [Country detectCountryForPhoneNumber:phoneNumber];
+        if (country) {
+            self.country = country;
+            
+            NSString *phoneNumberWithoutCountryCode = [phoneNumber stringByReplacingOccurrencesOfString:self.country.e164PrefixString
+                                                                                             withString:@""];
+            
+            self.phoneNumberField.text = phoneNumberWithoutCountryCode;
+            [self updateRightAccessoryForPhoneNumber:phoneNumber];
+            return NO;
+        }
+    }
+    
+    // Just paste (if valid) for phone numbers not beginning with "+", or phones where country is not detected.
+    phoneNumber = [NSString phoneNumberStringWithE164:self.country.e164 number:phoneNumber];
+    if ([ZMUser validatePhoneNumber:&phoneNumber error:NULL]) {
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 #pragma mark - Field Validation
@@ -202,8 +249,7 @@ static CGFloat PhoneNumberFieldTopMargin = 16;
     NSError *error = nil;
     [ZMUser validatePhoneNumber:&phoneNumber error:&error];
     
-    if (error.code == ZMObjectValidationErrorCodeStringTooLong ||
-        error.code == ZMObjectValidationErrorCodePhoneNumberContainsInvalidCharacters) {
+    if (error != nil && error.code != ZMObjectValidationErrorCodeStringTooShort) {
         return NO;
     }
     
@@ -214,39 +260,7 @@ static CGFloat PhoneNumberFieldTopMargin = 16;
 - (BOOL)textField:(UITextField *)textField shouldPasteCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
     NSString *phoneNumber = [textField.text stringByReplacingCharactersInRange:range withString:string];
-    
-    // Auto detect country for phone numbers beginning with "+"
-    
-    // When pastedString is copied from phone app (self phone number section), it contains right/left handling symbols: \u202A\u202B\u202C\u202D
-    // @"\U0000202d+380 (00) 123 45 67\U0000202c"
-    NSMutableCharacterSet *illegalCharacters = [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
-    [illegalCharacters formUnionWithCharacterSet:[NSCharacterSet decimalDigitCharacterSet]];
-    [illegalCharacters formUnionWithCharacterSet:[NSCharacterSet characterSetWithCharactersInString:@"+-()"]];
-    [illegalCharacters invert];
-    
-    phoneNumber = [phoneNumber stringByTrimmingCharactersInSet:illegalCharacters];
-    
-    if ([[phoneNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] hasPrefix:@"+"]) {
-        Country *country = [Country detectCountryForPhoneNumber:phoneNumber];
-        if (country) {
-            self.country = country;
-        
-            NSString *phoneNumberWithoutCountryCode = [phoneNumber stringByReplacingOccurrencesOfString:self.country.e164PrefixString
-                                                                                             withString:@""];
-            
-            self.phoneNumberField.text = phoneNumberWithoutCountryCode;
-            [self updateRightAccessoryForPhoneNumber:phoneNumber];
-            return NO;
-        }
-    }
-    
-    // Just paste (if valid) for phone numbers not beginning with "+", or phones where country is not detected.
-    phoneNumber = [NSString phoneNumberStringWithE164:self.country.e164 number:phoneNumber];
-    if ([ZMUser validatePhoneNumber:&phoneNumber error:NULL]) {
-        return YES;
-    } else {
-        return NO;
-    }
+    return [self pastePhoneNumber:phoneNumber];
 }
 
 #pragma mark - Actions

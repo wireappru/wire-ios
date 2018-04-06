@@ -261,7 +261,6 @@ extension VoiceChannelOverlay {
     fileprivate func updateStatusLabelText() {
         if let statusText = attributedStatus {
             topStatusLabel.attributedText = statusText
-            CASStyler.default().styleItem(topStatusLabel)
         }
     }
     
@@ -273,14 +272,14 @@ extension VoiceChannelOverlay {
     }
     
     private var nameAttributes: [String : Any] {
-        let font = UIFont(magicIdentifier: "style.text.normal.font_spec_bold")!
+        let font = FontSpec(.normal, .medium).font!
         var attributes = baseAttributes
         attributes[NSFontAttributeName] = font
         return attributes
     }
     
     private var messageAttributes: [String : Any] {
-        let font = UIFont(magicIdentifier: "style.text.normal.font_spec")!
+        let font = FontSpec(.normal, .light).font!
         var attributes = baseAttributes
         attributes[NSFontAttributeName] = font
         return attributes
@@ -326,7 +325,7 @@ extension VoiceChannelOverlay {
         attributedString.addAttributes(nameAttributes, range: nameRange)
         let cbrRange = (string as NSString).range(of: "voice.status.cbr".localized.uppercasedWithCurrentLocale)
         if cbrRange.location != NSNotFound {
-            let font = UIFont(magicIdentifier: "style.text.small.font_spec")!
+            let font = FontSpec(.small, .light).font!
             attributedString.addAttributes([NSFontAttributeName: font], range: cbrRange)
         }
         
@@ -487,10 +486,24 @@ extension VoiceChannelOverlay {
         addSubview(participantsCollectionView)
         
         
-        [acceptButton, acceptDegradedButton, acceptVideoButton, ignoreButton, leaveButton, muteButton, muteButton, videoButton, speakerButton, cancelButton, makeDegradedCallButton].forEach {
+        [acceptButton, acceptDegradedButton, acceptVideoButton, ignoreButton, leaveButton, muteButton, videoButton, speakerButton, cancelButton, makeDegradedCallButton].forEach {
             contentContainer.addSubview($0)
+            $0.titleLabel?.font = FontSpec(.small, .light).font!
             $0.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
         }
+        
+        [acceptButton, acceptDegradedButton, acceptVideoButton, makeDegradedCallButton].forEach { button in
+            button.iconButton.setBackgroundImageColor(ZMAccentColor.strongLimeGreen.color, for: .normal)
+            button.iconButton.setIconColor(UIColor.white, for: .normal)
+            button.iconButton.borderWidth = 0
+        }
+        
+        [leaveButton, ignoreButton].forEach { button in
+            button.iconButton.setBackgroundImageColor(ZMAccentColor.vividRed.color, for: .normal)
+            button.iconButton.setIconColor(UIColor.white, for: .normal)
+            button.iconButton.borderWidth = 0
+        }
+                
         cameraPreviewView.switchCameraButton.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
         
         createLabels()
@@ -501,13 +514,22 @@ extension VoiceChannelOverlay {
     
     private func createLabels() {
         topStatusLabel.accessibilityIdentifier = "CallStatusLabel"
+        topStatusLabel.textColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: .dark)
+        
         degradationTopLabel.accessibilityIdentifier = "CallDegradationTopLabel"
+        degradationTopLabel.textColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: .dark)
+        degradationTopLabel.font = FontSpec(.normal, .light).font!
+        
         degradationBottomLabel.accessibilityIdentifier = "CallDegradationBottomLabel"
-
+        degradationBottomLabel.textColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: .dark)
+        degradationBottomLabel.font = FontSpec(.normal, .light).font!
+        
         centerStatusLabel.accessibilityIdentifier = "CenterStatusLabel"
         centerStatusLabel.textAlignment = .center
         centerStatusLabel.numberOfLines = 2
         centerStatusLabel.text = "voice.status.video_not_available".localized.uppercasedWithCurrentLocale
+        centerStatusLabel.textColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground, variant: .dark)
+        centerStatusLabel.font = FontSpec(.small, .light).font!
         
         [topStatusLabel, centerStatusLabel, degradationTopLabel, degradationBottomLabel].forEach(contentContainer.addSubview)
     }

@@ -35,7 +35,6 @@
 #import "NavigationController.h"
 #import "SignInViewController.h"
 #import "Constants.h"
-#import "WAZUIMagicIOS.h"
 
 #import "UIColor+WAZExtensions.h"
 #import "UIViewController+Errors.h"
@@ -132,9 +131,8 @@
     
     BOOL needsToReauthenticate = userSessionErrorCode == ZMUserSessionClientDeletedRemotely ||
                                  userSessionErrorCode == ZMUserSessionAccessTokenExpired ||
-                                 userSessionErrorCode == ZMUserSessionNeedsPasswordToRegisterClient ||
-                                 userSessionErrorCode == ZMUserSessionCanNotRegisterMoreClients;
-    
+                                userSessionErrorCode == ZMUserSessionNeedsPasswordToRegisterClient;
+
     RegistrationRootViewController *registrationRootViewController = [[RegistrationRootViewController alloc] initWithUnregisteredUser:self.unregisteredUser authenticationFlow:self.flowType];
     registrationRootViewController.formStepDelegate = self;
     registrationRootViewController.hasSignInError = self.signInError != nil && !addingAdditionalAccount;
@@ -165,6 +163,11 @@
     [self addChildViewController:self.keyboardAvoidingViewController];
     [self.view addSubview:self.keyboardAvoidingViewController.view];
     [self.keyboardAvoidingViewController didMoveToParentViewController:self];
+    
+    if (userSessionErrorCode == ZMUserSessionNeedsPasswordToRegisterClient) {
+        UIViewController *alertController = [UIAlertController passwordVerificationNeededControllerWithCompletion:nil];
+        [self presentViewController:alertController animated:YES completion:nil];
+    }
 }
 
 - (void)updateViewConstraints

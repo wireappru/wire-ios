@@ -22,7 +22,6 @@
 @import PureLayout;
 
 #import "RegistrationTextField.h"
-#import "WAZUIMagicIOS.h"
 #import "UIView+Borders.h"
 #import "UIImage+ZetaIconsNeue.h"
 #import "UIColor+WR_ColorScheme.h"
@@ -111,8 +110,8 @@ const NSTimeInterval PhoneVerificationResendInterval = 30.0f;
 - (void)createInstructionLabel
 {
     self.instructionLabel = [[UILabel alloc] init];
-    self.instructionLabel.font = [UIFont fontWithMagicIdentifier:@"style.text.large.font_spec_thin"];
-    self.instructionLabel.textColor = [UIColor colorWithMagicIdentifier:@"style.color.static_foreground.normal"];
+    self.instructionLabel.font = UIFont.largeThinFont;
+    self.instructionLabel.textColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark];
     self.instructionLabel.text = [NSString stringWithFormat:NSLocalizedString(@"registration.verify_phone_number.instructions", nil), self.phoneNumber];
     self.instructionLabel.numberOfLines = 0;
     
@@ -123,7 +122,7 @@ const NSTimeInterval PhoneVerificationResendInterval = 30.0f;
 {
     self.resendLabel = [[UILabel alloc] initForAutoLayout];
     self.resendLabel.backgroundColor = [UIColor clearColor];
-    self.resendLabel.font = [UIFont fontWithMagicIdentifier:@"style.text.small.font_spec_light"];
+    self.resendLabel.font = UIFont.smallLightFont;
     self.resendLabel.textColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark];
     self.resendLabel.numberOfLines = 0;
     [self.view addSubview:self.resendLabel];
@@ -132,7 +131,7 @@ const NSTimeInterval PhoneVerificationResendInterval = 30.0f;
 - (void)createResendButton
 {
     self.resendButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.resendButton.titleLabel.font = [UIFont fontWithMagicIdentifier:@"style.text.small.font_spec_light"];
+    self.resendButton.titleLabel.font = UIFont.smallLightFont;
     [self.resendButton setTitleColor:[UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark] forState:UIControlStateNormal];
     [self.resendButton setTitleColor:[UIColor wr_colorFromColorScheme:ColorSchemeColorTextDimmed variant:ColorSchemeVariantDark] forState:UIControlStateHighlighted];
     [self.resendButton setTitle:[NSLocalizedString(@"registration.verify_phone_number.resend", nil) uppercasedWithCurrentLocale] forState:UIControlStateNormal];
@@ -162,19 +161,26 @@ const NSTimeInterval PhoneVerificationResendInterval = 30.0f;
     if (! self.initialConstraintsCreated) {
         self.initialConstraintsCreated = YES;
         
-        [self.instructionLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:28];
-        [self.instructionLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:28];
+        CGFloat inset = 28.0;
+        [self.instructionLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:inset];
+        [self.instructionLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:inset];
         
         [self.phoneVerificationField autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.instructionLabel withOffset:24];
-        [self.phoneVerificationField autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:28];
-        [self.phoneVerificationField autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:28];
+        [self.phoneVerificationField autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:inset];
+        [self.phoneVerificationField autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:inset];
         [self.phoneVerificationField autoSetDimension:ALDimensionHeight toSize:40];
         
         [self.resendButton autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.phoneVerificationField withOffset:24];
-        [self.resendButton autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 28, 24, 28) excludingEdge:ALEdgeTop];
+        [self.resendButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:inset];
+        [self.resendButton autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:inset];
+        [[self.resendButton.bottomAnchor constraintEqualToAnchor:self.safeBottomAnchor constant:-24] setActive:YES];
+        
         
         [self.resendLabel autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.phoneVerificationField withOffset:24];
-        [self.resendLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 28, 24, 28) excludingEdge:ALEdgeTop];
+        [self.resendLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:inset];
+        [self.resendLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:inset];
+        [[self.resendLabel.bottomAnchor constraintEqualToAnchor:self.safeBottomAnchor constant:-24] setActive:YES];
+        
     }
 }
 

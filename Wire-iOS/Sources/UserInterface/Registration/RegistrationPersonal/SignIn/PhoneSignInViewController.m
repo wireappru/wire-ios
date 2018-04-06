@@ -30,7 +30,6 @@
 #import "FormStepDelegate.h"
 #import "WireSyncEngine+iOS.h"
 #import "UIViewController+Errors.h"
-#import "UIFont+MagicAccess.h"
 #import <WireExtensionComponents/UIViewController+LoadingView.h>
 #import "CheckmarkViewController.h"
 #import "StopWatch.h"
@@ -87,17 +86,7 @@
 
 - (void)createPhoneNumberStepViewController
 {
-    PhoneNumberStepViewController *phoneNumberStepViewController = [[PhoneNumberStepViewController alloc] init];
-    
-    if (self.loginCredentials.phoneNumber.length > 0) {
-        // TODO
-        // User was previously signed in so we prefill the credentials.
-        //
-        // NOTE: would need to extract country code in a reliable way
-        //       in order to do this. Until then we don't prefill
-        //       phone numbers.
-    }
-    
+    PhoneNumberStepViewController *phoneNumberStepViewController = [[PhoneNumberStepViewController alloc] initWithPhoneNumber:self.loginCredentials.phoneNumber isEditable:YES];
     phoneNumberStepViewController.formStepDelegate = self;
     phoneNumberStepViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
     self.phoneNumberStepViewController = phoneNumberStepViewController;

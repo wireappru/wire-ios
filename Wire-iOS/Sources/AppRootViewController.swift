@@ -26,7 +26,8 @@ class AppRootViewController: UIViewController {
     public let mainWindow: UIWindow
     public let overlayWindow: UIWindow
     public fileprivate(set) var sessionManager: SessionManager?
-
+    public fileprivate(set) var quickActionsManager: QuickActionsManager?
+    
     fileprivate var sessionManagerCreatedSessionObserverToken: Any?
     fileprivate var sessionManagerDestroyedSessionObserverToken: Any?
     fileprivate var soundEventListeners = [UUID : SoundEventListener]()
@@ -74,7 +75,6 @@ class AppRootViewController: UIViewController {
         appStateController = AppStateController()
         fileBackupExcluder = FileBackupExcluder()
         avsLogObserver = AVSLogObserver()
-        MagicConfig.shared()
 
         mainWindow = UIWindow(frame: UIScreen.main.bounds)
         mainWindow.accessibilityIdentifier = "ZClientMainWindow"
@@ -98,6 +98,7 @@ class AppRootViewController: UIViewController {
         overlayWindow.makeKeyAndVisible()
         mainWindow.makeKey()
 
+        type(of: self).configureAppearance()
         configureMediaManager()
 
         if let appGroupIdentifier = Bundle.main.appGroupIdentifier {
@@ -133,13 +134,9 @@ class AppRootViewController: UIViewController {
         let analytics = Analytics.shared()
         let sessionManagerAnalytics: AnalyticsType
         
-        if DeveloperMenuState.developerMenuEnabled(){
-            CallQualityScoreProvider.shared.nextProvider = analytics
-            sessionManagerAnalytics = CallQualityScoreProvider.shared
-        }
-        else {
-            sessionManagerAnalytics = analytics
-        }
+        CallQualityScoreProvider.shared.nextProvider = analytics
+        sessionManagerAnalytics = CallQualityScoreProvider.shared
+
         SessionManager.create(
             appVersion: appVersion!,
             mediaManager: mediaManager!,
@@ -155,6 +152,9 @@ class AppRootViewController: UIViewController {
             self.sessionManager?.requestToOpenViewDelegate = self
             sessionManager.updateCallNotificationStyleFromSettings()
             sessionManager.useConstantBitRateAudio = Settings.shared().callingConstantBitRate
+                
+            self.quickActionsManager = QuickActionsManager(sessionManager: sessionManager,
+                                                           application: UIApplication.shared)
         }
     }
 
@@ -207,13 +207,18 @@ class AppRootViewController: UIViewController {
             
             // check if needs to reauthenticate
             var needsToReauthenticate = false
+            var addingNewAccount = true
             if let error = error {
                 let errorCode = (error as NSError).userSessionErrorCode
                 needsToReauthenticate = [ZMUserSessionErrorCode.clientDeletedRemotely,
                     .accessTokenExpired,
                     .needsPasswordToRegisterClient,
-                    .canNotRegisterMoreClients
+                    .needsToRegisterEmailToRegisterClient,
                 ].contains(errorCode)
+
+                addingNewAccount = [
+                    ZMUserSessionErrorCode.addAccountRequested
+                    ].contains(errorCode)
             }
             
             if needsToReauthenticate {
@@ -222,7 +227,7 @@ class AppRootViewController: UIViewController {
                 registrationViewController.signInError = error
                 viewController = registrationViewController
             }
-            else {
+            else if (addingNewAccount) {
                 // When we show the landing controller we want it to be nested in navigation controller
                 let landingViewController = LandingViewController()
                 landingViewController.delegate = self
@@ -361,7 +366,6 @@ class AppRootViewController: UIViewController {
 
     func onContentSizeCategoryChange() {
         Message.invalidateMarkdownStyle()
-        UIFont.wr_flushFontCache()
         NSAttributedString.wr_flushCellParagraphStyleCache()
         ConversationListCell.invalidateCachedCellSize()
         let fontScheme = FontScheme(contentSizeCategory: UIApplication.shared.preferredContentSizeCategory)

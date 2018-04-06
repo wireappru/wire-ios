@@ -41,6 +41,11 @@
     return YES;
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.wr_playerController tearDown];
+}
+
 @end
 
 
@@ -172,7 +177,22 @@
         return nil;
     }
     
-    return [self imagesViewControllerFor:message actionResponder:delegate];
+    return [self imagesViewControllerFor:message actionResponder:delegate isPreviewing: NO];
+}
+
+- (nullable UIViewController *)viewControllerForImageMessagePreview:(id<ZMConversationMessage>)message
+                                                    actionResponder:(nullable id<MessageActionResponder>)delegate
+
+{
+    if (! [Message isImageMessage:message]) {
+        return nil;
+    }
+
+    if (message.imageMessageData == nil) {
+        return nil;
+    }
+
+    return [self imagesViewControllerFor:message actionResponder:delegate isPreviewing: YES];
 }
 
 - (void)openImageMessage:(id<ZMConversationMessage>)message actionResponder:(nullable id<MessageActionResponder>)delegate

@@ -24,12 +24,12 @@
 
 #import "EmailFormViewController.h"
 #import "UIImage+ZetaIconsNeue.h"
-#import "WAZUIMagicIOS.h"
 #import <WireExtensionComponents/ProgressSpinner.h>
 #import "RegistrationTextField.h"
 #import "GuidanceLabel.h"
 #import "WireSyncEngine+iOS.h"
 #import "Constants.h"
+#import "Wire-Swift.h"
 
 
 @interface AddEmailStepViewController ()
@@ -67,8 +67,8 @@
 - (void)createHeroLabel
 {
     self.heroLabel = [[UILabel alloc] initForAutoLayout];
-    self.heroLabel.textColor = [UIColor colorWithMagicIdentifier:@"style.color.static_foreground.normal"];
-    self.heroLabel.font = [UIFont fontWithMagicIdentifier:@"style.text.large.font_spec_medium"];
+    self.heroLabel.textColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark];
+    self.heroLabel.font = UIFont.largeSemiboldFont;
     self.heroLabel.numberOfLines = 0;
     self.heroLabel.attributedText = [self attributedHeroText];
     
@@ -90,8 +90,8 @@
     paragraphStyle.paragraphSpacing = 10;
     
     NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:text attributes:@{ NSParagraphStyleAttributeName : paragraphStyle }];
-    [attributedText addAttributes:@{ NSForegroundColorAttributeName : [UIColor colorWithMagicIdentifier:@"style.color.static_foreground.normal"],
-                                     NSFontAttributeName : [UIFont fontWithMagicIdentifier:@"style.text.large.font_spec_light"] }
+    [attributedText addAttributes:@{ NSForegroundColorAttributeName : [UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark],
+                                     NSFontAttributeName : UIFont.largeLightFont }
                             range:[text rangeOfString:paragraph]];
     
     return attributedText;
@@ -110,15 +110,17 @@
 - (void)updateViewConstraints
 {
     [super updateViewConstraints];
-    
     if (! self.initialConstraintsCreated) {
         self.initialConstraintsCreated = YES;
 
-        [self.heroLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:28];
-        [self.heroLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:28];
+        CGFloat inset = 28.0;
+        [self.heroLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:inset];
+        [self.heroLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:inset];
         
         [self.emailFormViewController.view autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.heroLabel withOffset:24];
-        [self.emailFormViewController.view autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 28, 10, 28) excludingEdge:ALEdgeTop];
+        [self.emailFormViewController.view autoPinEdgeToSuperviewEdge:ALEdgeLeading withInset:inset];
+        [self.emailFormViewController.view autoPinEdgeToSuperviewEdge:ALEdgeTrailing withInset:inset];
+        [[self.emailFormViewController.view.bottomAnchor constraintEqualToAnchor:self.safeBottomAnchor constant:-10] setActive:YES];
     }
 }
 

@@ -16,8 +16,6 @@
 // along with this program. If not, see http://www.gnu.org/licenses/.
 // 
 
-
-
 @import QuartzCore;
 @import PureLayout;
 
@@ -27,8 +25,6 @@
 
 #import "AppDelegate.h"
 #import "NotificationWindowRootViewController.h"
-
-#import "WAZUIMagicIOS.h"
 
 #import "ConversationListViewController.h"
 #import "ConversationViewController.h"
@@ -128,6 +124,12 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillEnterForeground:) name:UIApplicationWillEnterForegroundNotification object:nil];
                 
         [[GuestIndicator appearanceWhenContainedInInstancesOfClasses:@[StartUIView.class]] setColorSchemeVariant:ColorSchemeVariantDark];
+        [[UserCell appearanceWhenContainedInInstancesOfClasses:@[StartUIView.class]] setColorSchemeVariant:ColorSchemeVariantDark];
+        [[UserCell appearanceWhenContainedInInstancesOfClasses:@[StartUIView.class]] setContentBackgroundColor:UIColor.clearColor];
+        [[SectionHeader appearanceWhenContainedInInstancesOfClasses:@[StartUIView.class]] setColorSchemeVariant:ColorSchemeVariantDark];
+        [[GroupConversationCell appearanceWhenContainedInInstancesOfClasses:@[StartUIView.class]] setColorSchemeVariant:ColorSchemeVariantDark];
+        [[GroupConversationCell appearanceWhenContainedInInstancesOfClasses:@[StartUIView.class]] setContentBackgroundColor:UIColor.clearColor];
+        [[UIView appearanceWhenContainedInInstancesOfClasses:@[UIAlertController.class]] setTintColor:[ColorScheme.defaultColorScheme colorWithName:ColorSchemeColorTextForeground variant:ColorSchemeVariantLight]];
     }
     return self;
 }
@@ -137,8 +139,6 @@
     [super viewDidLoad];
     
     self.colorSchemeController = [[ColorSchemeController alloc] init];
-    
-    [[UIView appearanceWhenContainedInInstancesOfClasses:@[UIAlertController.class]] setTintColor:[ColorScheme.defaultColorScheme colorWithName:ColorSchemeColorTextForeground variant:ColorSchemeVariantLight]];
     self.pendingInitialStateRestore = YES;
     
     self.view.backgroundColor = [UIColor blackColor];

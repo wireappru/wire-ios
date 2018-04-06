@@ -29,7 +29,6 @@
 #import "NotificationWindowRootViewController.h"
 
 // helpers
-#import "WAZUIMagicIOS.h"
 #import "Analytics.h"
 
 
@@ -48,8 +47,6 @@
 #import "MediaBar.h"
 #import "MediaPlayer.h"
 #import "MediaBarViewController.h"
-#import "TitleBar.h"
-#import "TitleBarViewController.h"
 #import "UIView+Borders.h"
 #import "InvisibleInputAccessoryView.h"
 #import "UIView+Zeta.h"
@@ -65,7 +62,6 @@
 #import "UIViewController+Errors.h"
 #import "SplitViewController.h"
 #import "UIColor+WR_ColorScheme.h"
-#import "ActionSheetController+Conversation.h"
 #import "UIResponder+FirstResponder.h"
 
 #import "Wire-Swift.h"
@@ -361,6 +357,8 @@
     }
 
     self.contentViewController.searchQueries = self.collectionController.currentTextSearchQuery;
+
+    [[ZMUserSession sharedSession] didOpenWithConversation:self.conversation];
     
     self.isAppearing = NO;
 }
@@ -369,6 +367,7 @@
 {
     [super viewWillDisappear:animated];
     [self updateLeftNavigationBarItems];
+    [[ZMUserSession sharedSession] didCloseWithConversation:self.conversation];
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -452,14 +451,7 @@
     ZM_WEAK(self);
     self.titleView.tapHandler = ^(UIButton * _Nonnull button) {
         ZM_STRONG(self);
-        [ConversationInputBarViewController endEditingMessage];
-        [self.inputBarController.inputBar.textView resignFirstResponder];
-        
-        UIViewController *participantsController = [self participantsController];
-        participantsController.transitioningDelegate = self.conversationDetailsTransitioningDelegate;
-        [self createAndPresentParticipantsPopoverControllerWithRect:self.titleView.superview.bounds
-                                                           fromView:self.titleView.superview
-                                              contentViewController:participantsController];
+        [self presentParticipantsViewController:self.participantsController fromView:self.titleView.superview];
     };
     [self.titleView configure];
     
@@ -467,6 +459,17 @@
     self.navigationItem.leftItemsSupplementBackButton = NO;
 
     [self updateRightNavigationItemsButtons];
+}
+    
+- (void)presentParticipantsViewController:(UIViewController *)viewController fromView:(UIView *)sourceView
+{
+    [ConversationInputBarViewController endEditingMessage];
+    [self.inputBarController.inputBar.textView resignFirstResponder];
+    
+    viewController.transitioningDelegate = self.conversationDetailsTransitioningDelegate;
+    [self createAndPresentParticipantsPopoverControllerWithRect:sourceView.bounds
+                                                       fromView:sourceView
+                                          contentViewController:viewController];
 }
 
 - (void)updateInputBarVisibility
@@ -674,6 +677,18 @@
 {
     [self openConversationList];
 }
+    
+- (void)conversationContentViewController:(ConversationContentViewController *)controller presentGuestOptionsFromView:(UIView *)sourceView
+{
+    if (self.conversation.conversationType != ZMConversationTypeGroup) {
+        DDLogError(@"Illegal Operation: Trying to show guest options for non-group conversation");
+        return;
+    }
+    GroupDetailsViewController *groupDetailsViewController = [[GroupDetailsViewController alloc] initWithConversation:self.conversation];
+    UINavigationController *navigationController = groupDetailsViewController.wrapInNavigationController;
+    [groupDetailsViewController presentGuestOptionsAnimated:NO];
+    [self presentParticipantsViewController:navigationController fromView:sourceView];
+}
 
 @end
 
@@ -859,57 +874,47 @@
 
 - (void)presentConversationDegradedActionSheetControllerForUsers:(NSSet<ZMUser *> *)users
 {
-    NavigationController *navigationController = [[NavigationController alloc] init];
+    UIAlertController *controller = [UIAlertController controllerForUnknownClientsForUsers:users completion:^(ConversationDegradedResult result) {
+        switch (result) {
+            case ConversationDegradedResultCancel:
+                [self.conversation doNotResendMessagesThatCausedDegradation];
+                break;
+            case ConversationDegradedResultSendAnyway:
+                [self.conversation resendMessagesThatCausedConversationSecurityDegradation];
+                break;
+            case ConversationDegradedResultShowDetails:
+                [self.conversation doNotResendMessagesThatCausedDegradation];
+                if (self.conversation.conversationType == ZMConversationTypeOneOnOne) {
+                    ZMUser *user = self.conversation.connectedUser;
+                    if (user.clients.count == 1) {
+                        ProfileClientViewController *userClientController = [[ProfileClientViewController alloc] initWithClient:user.clients.anyObject fromConversation:YES];
+                        userClientController.showBackButton = NO;
+                        UINavigationController *navigationController = userClientController.wrapInNavigationController;
+                        navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
+                        userClientController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithIcon:ZetaIconTypeX style:UIBarButtonItemStylePlain target:self action:@selector(dismissProfileClientViewController:)];
+                        [self presentViewController:navigationController animated:YES completion:nil];
+                    } else {
+                        ProfileViewController *profileViewController = [[ProfileViewController alloc] initWithUser:user context:ProfileViewControllerContextDeviceList];
+                        profileViewController.delegate = self;
+                        profileViewController.viewControllerDismissable = self;
+                        UINavigationController *navigationController = profileViewController.wrapInNavigationController;
+                        navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
+                        [self presentViewController:navigationController animated:YES completion:nil];
+                    }
+                } else if (self.conversation.conversationType == ZMConversationTypeGroup) {
+                    UIViewController *participantsController = [self participantsController];
+                    participantsController.transitioningDelegate = self.conversationDetailsTransitioningDelegate;
+                    [self presentViewController:participantsController animated:YES completion:nil];
+                }
+                break;
+        }
+    }];
 
-    ActionSheetController *actionSheetController =
-    [ActionSheetController dialogForUnknownClientsForUsers:users
-                                                   style:[ActionSheetController defaultStyle]
-                                              completion:^(BOOL sendAnywayPressed, BOOL showDetailsPressed) {
-                                                  if (sendAnywayPressed) {
-                                                      [self.conversation resendMessagesThatCausedConversationSecurityDegradation];
-                                                      [self dismissViewControllerAnimated:YES completion:nil];
-                                                  } else if (showDetailsPressed) {
-                                                      [self.conversation doNotResendMessagesThatCausedDegradation];
-                                                      if (self.conversation.conversationType == ZMConversationTypeOneOnOne) {
-                                                          ZMUser *user = self.conversation.connectedUser;
-                                                          if (user.clients.count == 1) {
-                                                              ProfileClientViewController *userClientController = [[ProfileClientViewController alloc] initWithClient:user.clients.anyObject fromConversation:YES];
-                                                              userClientController.showBackButton = NO;
-                                                              [navigationController pushViewController:userClientController animated:YES];
-                                                          } else {
-                                                              [self dismissViewControllerAnimated:YES completion:^{
-                                                                  ProfileViewController *profileViewController = [[ProfileViewController alloc] initWithUser:user context:ProfileViewControllerContextDeviceList];
-                                                                  profileViewController.delegate = self;
-                                                                  profileViewController.viewControllerDismissable = self;
-                                                                  [self presentViewController:profileViewController animated:YES completion:nil];
-                                                              }];
-                                                          }
-                                                      } else if (self.conversation.conversationType == ZMConversationTypeGroup) {
-                                                          [self dismissViewControllerAnimated:YES completion:^{
-                                                              UIViewController *participantsController = [self participantsController];
-                                                              participantsController.transitioningDelegate = self.conversationDetailsTransitioningDelegate;
-                                                              [self presentViewController:participantsController animated:YES completion:nil];
-                                                          }];
-                                                      }
-                                                  }
-                                              }];
-
-    [navigationController setViewControllers:@[actionSheetController] animated:NO];
-    navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
-    navigationController.backButton.cas_styleClass = @"circular";
-    navigationController.rightButtonEnabled = YES;
-    [navigationController updateRightButtonWithIconType:ZetaIconTypeX
-                                               iconSize:ZetaIconSizeTiny
-                                                 target:self
-                                                 action:@selector(degradedConversationDismissed:)
-                                               animated:NO];
-    navigationController.view.backgroundColor = [UIColor whiteColor];
-    [self presentViewController:navigationController animated:YES completion:nil];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
-- (void)degradedConversationDismissed:(id)sender
+- (void)dismissProfileClientViewController:(UIBarButtonItem *)sender
 {
-    [self.conversation doNotResendMessagesThatCausedDegradation];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

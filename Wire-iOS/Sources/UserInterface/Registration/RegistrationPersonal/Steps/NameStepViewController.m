@@ -22,9 +22,8 @@
 @import PureLayout;
 
 #import "RegistrationTextField.h"
-#import "WAZUIMagicIOS.h"
 #import "Constants.h"
-
+#import "Wire-Swift.h"
 #import "WireSyncEngine+iOS.h"
 
 @import WireExtensionComponents;
@@ -78,8 +77,8 @@
 - (void)createHeroLabel
 {
     self.heroLabel = [[UILabel alloc] initForAutoLayout];
-    self.heroLabel.font = [UIFont fontWithMagicIdentifier:@"style.text.large.font_spec_light"];
-    self.heroLabel.textColor = [UIColor colorWithMagicIdentifier:@"style.color.static_foreground.normal"];
+    self.heroLabel.font = UIFont.largeLightFont;
+    self.heroLabel.textColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark];
     self.heroLabel.numberOfLines = 0;
     self.heroLabel.text = NSLocalizedString(@"registration.enter_name.hero", nil);
     
@@ -105,11 +104,14 @@
     if (! self.initialConstraintsCreated) {
         self.initialConstraintsCreated = YES;
         
-        [self.heroLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:28];
-        [self.heroLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:28];
+        CGFloat inset = 28.0;
+        [self.heroLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:inset];
+        [self.heroLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:inset];
         
         [self.nameField autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.heroLabel withOffset:24];
-        [self.nameField autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 28, 28, 28) excludingEdge:ALEdgeTop];
+        [self.nameField autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:inset];
+        [self.nameField autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:inset];
+        [[self.nameField.bottomAnchor constraintEqualToAnchor:self.safeBottomAnchor constant:-inset] setActive:YES];
         [self.nameField autoSetDimension:ALDimensionHeight toSize:40];
     }
 }

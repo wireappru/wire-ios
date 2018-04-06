@@ -27,7 +27,6 @@
 
 #import "ConversationListViewModel.h"
 
-#import "WAZUIMagicIOS.h"
 #import "UIColor+WAZExtensions.h"
 #import "UIView+Borders.h"
 
@@ -529,8 +528,8 @@ static NSString * const CellReuseIdConversation = @"CellId";
         return;
     }
     
-    if ([self.contentDelegate respondsToSelector:@selector(conversationListContentController:wantsActionMenuForConversation:)]) {
-        [self.contentDelegate conversationListContentController:self wantsActionMenuForConversation:conversation];
+    if ([self.contentDelegate respondsToSelector:@selector(conversationListContentController:wantsActionMenuForConversation:fromSourceView:)]) {
+        [self.contentDelegate conversationListContentController:self wantsActionMenuForConversation:conversation fromSourceView:cell];
     }
 }
 

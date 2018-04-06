@@ -41,7 +41,7 @@ class AppStateController : NSObject {
     fileprivate var isMigrating = false
     fileprivate var hasCompletedRegistration = false
     fileprivate var loadingAccount : Account?
-    fileprivate var authenticationError : Error?
+    fileprivate var authenticationError : NSError?
     fileprivate let isRunningTests = ProcessInfo.processInfo.isRunningTests
     
     override init() {
@@ -91,7 +91,11 @@ class AppStateController : NSObject {
     func updateAppState(completion: (() -> Void)? = nil) {
         let newAppState = calculateAppState()
         
-        if newAppState != .unauthenticated(error: nil) {
+        switch newAppState {
+        case .unauthenticated:
+            break;
+        default:
+            // only clear the error when transitioning out of the unauthenticated state
             authenticationError = nil
         }
         
@@ -111,7 +115,7 @@ class AppStateController : NSObject {
 extension AppStateController : SessionManagerDelegate {
     
     func sessionManagerWillLogout(error: Error?, userSessionCanBeTornDown: @escaping () -> Void) {
-        authenticationError = error
+        authenticationError = error as NSError?
         isLoggedIn = false
         isLoggedOut = true
         updateAppState {
@@ -122,7 +126,7 @@ extension AppStateController : SessionManagerDelegate {
     func sessionManagerDidFailToLogin(account: Account?, error: Error) {
         loadingAccount = nil
         // We only care about the error if it concerns the selected account.
-        authenticationError = SessionManager.shared?.accountManager.selectedAccount == account ? error : nil
+        authenticationError = SessionManager.shared?.accountManager.selectedAccount == account ? error as NSError : nil
         isLoggedIn = false
         isLoggedOut = true
         updateAppState()

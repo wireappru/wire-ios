@@ -24,7 +24,6 @@
 
 #import "EmailFormViewController.h"
 #import "UIImage+ZetaIconsNeue.h"
-#import "WAZUIMagicIOS.h"
 #import <WireExtensionComponents/ProgressSpinner.h>
 #import "RegistrationTextField.h"
 #import "WireSyncEngine+iOS.h"
@@ -94,6 +93,11 @@
 {
     [self.emailFormViewController.view autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(32, 28, 0, 28) excludingEdge:ALEdgeBottom];
     [self.emailFormViewController.view autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:10];
+}
+
+-(void)reset
+{
+    [self.emailFormViewController resetTextFields];
 }
 
 #pragma mark - Actions

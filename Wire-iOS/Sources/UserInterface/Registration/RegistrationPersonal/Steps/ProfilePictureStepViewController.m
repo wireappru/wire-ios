@@ -21,7 +21,6 @@
 
 @import PureLayout;
 
-#import "WAZUIMagicIOS.h"
 #import "UIColor+WAZExtensions.h"
 #import "WireSyncEngine+iOS.h"
 #import "CameraViewController.h"
@@ -119,8 +118,8 @@ NSString * const UnsplashRandomImageLowQualityURL = @"https://source.unsplash.co
 - (void)createSubtitleLabel
 {
     self.subtitleLabel = [[UILabel alloc] initForAutoLayout];
-    self.subtitleLabel.font = [UIFont fontWithMagicIdentifier:@"style.text.large.font_spec_light"];
-    self.subtitleLabel.textColor = [UIColor colorWithMagicIdentifier:@"style.color.static_foreground.normal"];
+    self.subtitleLabel.font = UIFont.largeLightFont;
+    self.subtitleLabel.textColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark];
     self.subtitleLabel.numberOfLines = 0;
     self.subtitleLabel.text = [NSString stringWithFormat:NSLocalizedString(@"registration.select_picture.subtitle", nil), self.unregisteredUser.name];
 
@@ -151,18 +150,17 @@ NSString * const UnsplashRandomImageLowQualityURL = @"https://source.unsplash.co
 
 - (void)createConstraints
 {
-    [self.subtitleLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:28];
-    [self.subtitleLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:28];
+    CGFloat inset = 28.0;
+    [self.subtitleLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:inset];
+    [self.subtitleLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:inset];
     
     [self.selectOwnPictureButton autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.subtitleLabel withOffset:24];
-    [self.selectOwnPictureButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:28];
-    [self.selectOwnPictureButton autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:28];
+    [self.selectOwnPictureButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:inset];
+    [self.selectOwnPictureButton autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:inset];
     [self.selectOwnPictureButton autoSetDimension:ALDimensionHeight toSize:40];
     
     [self.keepDefaultPictureButton autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.selectOwnPictureButton withOffset:8];
-    [self.keepDefaultPictureButton autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:28];
-    [self.keepDefaultPictureButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:28];
-    [self.keepDefaultPictureButton autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:28];
+    [self.keepDefaultPictureButton autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, inset, inset, inset) excludingEdge:ALEdgeTop];
     [self.keepDefaultPictureButton autoSetDimension:ALDimensionHeight toSize:40];
     
     [self.profilePictureImageView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
@@ -173,7 +171,11 @@ NSString * const UnsplashRandomImageLowQualityURL = @"https://source.unsplash.co
         [self.contentView autoSetDimension:ALDimensionHeight toSize:self.parentViewController.maximumFormSize.height];
         [self.contentView autoCenterInSuperview];
     } else {
-        [self.contentView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
+        
+        [[self.contentView.bottomAnchor constraintEqualToAnchor:self.safeBottomAnchor] setActive:YES];
+        [[self.contentView.topAnchor constraintEqualToAnchor:self.safeTopAnchor] setActive:YES];
+        [self.contentView autoPinEdgeToSuperviewEdge:ALEdgeLeft];
+        [self.contentView autoPinEdgeToSuperviewEdge:ALEdgeRight];
     }
 }
 

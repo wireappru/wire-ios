@@ -93,9 +93,15 @@ struct ParticipantsCellViewModel {
         guard case let .started(withName: conversationName?) = message.actionType else { return nil }
         
         let senderName = sender.isSelfUser ? "content.system.you_nominative".localized.capitalized : name(for: sender)
-        let text = "content.system.conversation.with_name.title".localized(args: senderName) && font && textColor
+        let text = "content.system.conversation.with_name.title".localized(pov: sender.pov, args: senderName) && font && textColor
         let title = conversationName.attributedString && largeFont && textColor
-        return [text, title].joined(separator: "\n".attributedString) && .lineHeight(4)
+        return [text, title].joined(separator: "\n".attributedString) && .lineSpacing(4)
+    }
+    
+    var showInviteButton: Bool {
+        guard case .started = message.actionType,
+                let conversation = message.conversation else { return false }
+        return conversation.canManageAccess && conversation.allowGuests
     }
 
     func attributedTitle() -> NSAttributedString? {

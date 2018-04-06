@@ -32,8 +32,6 @@
 #import <WireExtensionComponents/ProgressSpinner.h>
 #import "UIImage+ImageUtilities.h"
 #import "UIColor+WAZExtensions.h"
-#import "UIColor+MagicAccess.h"
-#import "UIFont+MagicAccess.h"
 #import "UIViewController+Errors.h"
 #import "Constants.h"
 #import "NSURL+WireLocale.h"
@@ -155,6 +153,12 @@
     [self.passwordField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
     [self.passwordField.confirmButton addTarget:self action:@selector(signIn:) forControlEvents:UIControlEventTouchUpInside];
     
+    if (self.loginCredentials.password != nil) {
+        // User was previously signed in so we prefill the credentials
+        self.passwordField.text = self.loginCredentials.password;
+        [self checkPasswordFieldAccessoryView];
+    }
+    
     if ([[OnePasswordExtension sharedExtension] isAppExtensionAvailable]) {
         UIButton *onePasswordButton = [UIButton buttonWithType:UIButtonTypeCustom];
         NSBundle *frameworkBundle = [NSBundle bundleForClass:[OnePasswordExtension class]];
@@ -177,7 +181,7 @@
     [self.forgotPasswordButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.forgotPasswordButton setTitleColor:[[UIColor whiteColor] colorWithAlphaComponent:0.4] forState:UIControlStateHighlighted];
     [self.forgotPasswordButton setTitle:[NSLocalizedString(@"signin.forgot_password", nil) uppercasedWithCurrentLocale] forState:UIControlStateNormal];
-    self.forgotPasswordButton.titleLabel.font = [UIFont fontWithMagicIdentifier:@"style.text.small.font_spec_light"];
+    self.forgotPasswordButton.titleLabel.font = UIFont.smallLightFont;
     [self.forgotPasswordButton addTarget:self action:@selector(resetPassword:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.view addSubview:self.forgotPasswordButton];
