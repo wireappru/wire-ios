@@ -391,7 +391,6 @@
 // Full sentence: "A message from %@ was not received. [...] (device d1b23c54f34a). This is a debug information.
 
 "content.system.unknown_message.body" = "Wire'ın bu mesajı gösteremeyecek kadar eski bir sürümünü kullanıyorsunuz.";
-"content.system.unknown_message.body.link" = "Bu neden oluyor?";
 
 "content.file.uploading" = "Yükleniyor…";
 "content.file.downloading" = "İndiriliyor…";
@@ -1179,7 +1178,7 @@
 "error.conversation.cannot_add" = "Adding the participant failed";
 "error.conversation.cannot_remove" = "Removing the participant failed";
 "error.conversation.too_many_members" = "The conversation is full";
-"error.conversation.offline" = "There seems to be a problem with your Internet connection. Please make sure it’s working.";
+"error.conversation.offline" = "İnternet bağlantınızla ilgili bir sorun var gibi görünüyor. Lütfen çalıştığından emin olun.";
 
 "sketchpad.initial_hint" = "Fırça boyutunu değiştirmek için renklere tıklayın";
 

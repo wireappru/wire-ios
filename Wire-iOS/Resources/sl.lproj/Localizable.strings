@@ -391,7 +391,6 @@
 // Full sentence: "A message from %@ was not received. [...] (device d1b23c54f34a). This is a debug information.
 
 "content.system.unknown_message.body" = "Uporabljate starejšo različico Wire, ki ne more prikazati tega sporočila.";
-"content.system.unknown_message.body.link" = "Zakaj se to dogaja?";
 
 "content.file.uploading" = "Nalaganje…";
 "content.file.downloading" = "Prenašanje…";
@@ -1179,7 +1178,7 @@
 "error.conversation.cannot_add" = "Adding the participant failed";
 "error.conversation.cannot_remove" = "Removing the participant failed";
 "error.conversation.too_many_members" = "The conversation is full";
-"error.conversation.offline" = "There seems to be a problem with your Internet connection. Please make sure it’s working.";
+"error.conversation.offline" = "Zdi se, da je problem z vašo spletno povezavo. Prosim preverite, če deluje.";
 
 "sketchpad.initial_hint" = "Tapnite barve, da spremenite velikost čopiča";
 

@@ -391,7 +391,6 @@
 // Full sentence: "A message from %@ was not received. [...] (device d1b23c54f34a). This is a debug information.
 
 "content.system.unknown_message.body" = "Estás usando una versión antigua de Wire que no permite mostrar este mensaje.";
-"content.system.unknown_message.body.link" = "¿Por qué sucede esto?";
 
 "content.file.uploading" = "Cargando …";
 "content.file.downloading" = "Descargando …";
@@ -1179,7 +1178,7 @@
 "error.conversation.cannot_add" = "Adding the participant failed";
 "error.conversation.cannot_remove" = "Removing the participant failed";
 "error.conversation.too_many_members" = "The conversation is full";
-"error.conversation.offline" = "There seems to be a problem with your Internet connection. Please make sure it’s working.";
+"error.conversation.offline" = "Parece haber un problema con tu conexión a Internet. Por favor, asegúrate de que está funcionando.";
 
 "sketchpad.initial_hint" = "Pulsa en los colores para cambiar el tamaño del pincel";
 
