@@ -18,38 +18,92 @@
 
 import UIKit
 
-extension IconLabelButton {
+enum CallActionColorConfiguration {
+    case audio, video
+    
+    var backgroundColorNormal: UIColor {
+        switch self {
+        case .audio: return UIColor.wr_color(fromColorScheme: ColorSchemeColorGraphite, variant: .light).withAlphaComponent(0.08)
+        case .video: return UIColor.white.withAlphaComponent(0.24)
+        }
+    }
+    
+    var backgroundColorSelected: UIColor {
+        switch self {
+        case .audio: return UIColor.wr_color(fromColorScheme: ColorSchemeColorGraphite, variant: .light)
+        case .video: return .white
+        }
+    }
+    
+    var iconColorNormal: UIColor {
+        switch self {
+        case .audio: return .black
+        case .video: return .white
+        }
+    }
+
+    var iconColorSelected: UIColor {
+        switch self {
+        case .audio: return .white
+        case .video: return .black
+        }
+    }
+}
+
+extension IconButton {
     
     static let width: CGFloat = 64
-    static let height: CGFloat = 88
+    static let height: CGFloat = 64
+    
+    static func acceptCall() -> IconButton {
+        return .init(
+            icon: .phone,
+            accessibilityId: "AcceptButton",
+            backgroundColor: ZMAccentColor.strongLimeGreen.color,
+            iconColor: .white
+        )
+    }
+    
+    static func endCall() -> IconButton {
+        return .init(
+            icon: .endCall,
+            accessibilityId: "LeaveCallButton",
+            backgroundColor: ZMAccentColor.vividRed.color,
+            iconColor: .white
+        )
+    }
+    
+    fileprivate convenience init(
+        icon: ZetaIconType,
+        accessibilityId: String,
+        backgroundColor: UIColor,
+        iconColor: UIColor
+        ) {
+        self.init()
+        circular = true
+        setIcon(icon, with: .small, for: .normal)
+        titleLabel?.font = FontSpec(.small, .light).font!
+        accessibilityIdentifier = accessibilityId
+        translatesAutoresizingMaskIntoConstraints = false
+        setBackgroundImageColor(backgroundColor, for: .normal)
+        setIconColor(iconColor, for: .normal)
+        borderWidth = 0
+        widthAnchor.constraint(equalToConstant: IconButton.width).isActive = true
+        heightAnchor.constraint(greaterThanOrEqualToConstant: IconButton.width).isActive = true
+    }
+    
+}
+
+extension IconLabelButton {
+    
+    private static let width: CGFloat = 64
+    private static let height: CGFloat = 88
     
     static func speaker() -> IconLabelButton {
         return .init(
             icon: .speaker,
             label: "voice.speaker_button.title".localized,
             accessibilityId: "CallSpeakerButton"
-        )
-    }
-    
-    static func acceptCall() -> IconLabelButton {
-        return .init(
-            icon: .phone,
-            label: "voice.accept_button.title".localized,
-            accessibilityId: "AcceptButton",
-            backgroundColor: ZMAccentColor.strongLimeGreen.color,
-            iconColor: .white,
-            borderWidth: 0
-        )
-    }
-    
-    static func endCall() -> IconLabelButton {
-        return .init(
-            icon: .endCall,
-            label: "voice.hang_up_button.title".localized,
-            accessibilityId: "LeaveCallButton",
-            backgroundColor: ZMAccentColor.vividRed.color,
-            iconColor: .white,
-            borderWidth: 0
         )
     }
     
@@ -82,10 +136,7 @@ extension IconLabelButton {
     fileprivate convenience init(
         icon: ZetaIconType,
         label: String,
-        accessibilityId: String,
-        backgroundColor: UIColor? = nil,
-        iconColor: UIColor? = nil,
-        borderWidth: CGFloat? = nil
+        accessibilityId: String
         ) {
         self.init()
         iconButton.setIcon(icon, with: .small, for: .normal)
@@ -93,10 +144,20 @@ extension IconLabelButton {
         titleLabel?.font = FontSpec(.small, .light).font!
         accessibilityIdentifier = accessibilityId
         translatesAutoresizingMaskIntoConstraints = false
-        backgroundColor.apply(papply(flip(iconButton.setBackgroundImageColor), .normal))
-        iconColor.apply(papply(flip(iconButton.setIconColor), .normal))
-        borderWidth.apply { iconButton.borderWidth = $0 }
         widthAnchor.constraint(equalToConstant: IconLabelButton.width).isActive = true
         heightAnchor.constraint(greaterThanOrEqualToConstant: IconLabelButton.height).isActive = true
+    }
+    
+    func apply(configuration: CallActionColorConfiguration) {
+        iconButton.setBackgroundImageColor(configuration.backgroundColorNormal, for: .normal)
+        iconButton.setBackgroundImageColor(configuration.backgroundColorSelected, for: .selected)
+        iconButton.setBackgroundImageColor(configuration.backgroundColorNormal.withAlphaComponent(0.4), for: .disabled)
+        iconButton.setBackgroundImageColor(configuration.backgroundColorSelected.withAlphaComponent(0.4), for: [.disabled, .selected])
+        iconButton.setIconColor(configuration.iconColorNormal, for: .normal)
+        iconButton.setIconColor(configuration.iconColorSelected, for: .selected)
+        iconButton.setIconColor(configuration.iconColorNormal.withAlphaComponent(0.4), for: .disabled)
+        iconButton.setIconColor(configuration.iconColorSelected.withAlphaComponent(0.4), for: [.disabled, .selected])
+        setTitleColor(configuration.iconColorNormal, for: .normal)
+        setTitleColor(configuration.iconColorNormal.withAlphaComponent(0.4), for: .disabled)
     }
 }

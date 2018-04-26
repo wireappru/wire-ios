@@ -36,11 +36,9 @@
         self.iconButton = [[IconButton alloc] init];
         self.iconButton.translatesAutoresizingMaskIntoConstraints = NO;
         self.iconButton.userInteractionEnabled = NO;
-        self.iconButton.borderWidth = 1;
+        self.iconButton.borderWidth = 0;
         self.iconButton.circular = YES;
-        [self.iconButton setBorderColor:[UIColor colorWithWhite:1 alpha:0.48] forState:UIControlStateNormal];
-        [self.iconButton setBorderColor:[UIColor clearColor] forState:UIControlStateSelected];
-        [self.iconButton setBorderColor:[UIColor colorWithWhite:1 alpha:0.24] forState:UIControlStateDisabled];
+
         [self.iconButton setIconColor:[UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark] forState:UIControlStateNormal];
         [self.iconButton setIconColor:[UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantLight] forState:UIControlStateSelected];
         [self.iconButton setIconColor:[UIColor colorWithWhite:1 alpha:0.4] forState:UIControlStateDisabled];
