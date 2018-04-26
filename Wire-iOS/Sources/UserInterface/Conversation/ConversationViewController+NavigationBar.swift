@@ -114,7 +114,7 @@ public extension ConversationViewController {
             return [joinCallButton]
         }
 
-        if conversation.conversationType == .oneOnOne {
+        if conversation.conversationType == .oneOnOne || conversation.conversationType == .group {
             return [audioCallButton, videoCallButton]
         }
 

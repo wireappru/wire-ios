@@ -186,6 +186,7 @@ class VoiceChannelOverlay: UIView {
     
     var videoPreview: AVSVideoPreview?
     var videoView: AVSVideoView?
+    var videoGrid: VideoGridView?
     var cameraPreviewCenterHorisontally: NSLayoutConstraint!
     var cameraPreviewInitialPositionX: CGFloat = 0
     
@@ -253,7 +254,7 @@ class VoiceChannelOverlay: UIView {
     }
     
     func applicationDidBecomeActive() {
-        createVideoViewIfNeeded()
+//        createVideoViewIfNeeded()
         createVideoPreviewIfNeeded()
     }
 }
@@ -432,7 +433,7 @@ extension VoiceChannelOverlay {
     }
     
     fileprivate func updateVideoPreviewLocation() {
-        guard let videoPreview = videoPreview, let videoView = videoView else { return }
+        guard let videoPreview = videoPreview, let videoView = videoGrid else { return }
         
         if videoViewFullscreen {
             videoPreview.frame = bounds
@@ -464,7 +465,10 @@ extension VoiceChannelOverlay {
         callDurationFormatter.allowedUnits = [.minute, .second]
         callDurationFormatter.zeroFormattingBehavior = DateComponentsFormatter.ZeroFormattingBehavior(rawValue: 0)
         
-        createVideoViewIfNeeded()
+//        createVideoViewIfNeeded()
+        
+        videoGrid = VideoGridView()
+        addSubview(videoGrid!)
         
         shadow.isUserInteractionEnabled = false
         shadow.backgroundColor = UIColor(white: 0, alpha: 0.4)
@@ -557,7 +561,8 @@ extension VoiceChannelOverlay {
     
     fileprivate func createConstraints(){
         
-        let videoViews: [UIView?] = [shadow, videoNotAvailableBackground]
+        let videoViews: [UIView?] = [shadow, videoNotAvailableBackground, videoGrid]
+//        let videoViews: [UIView?] = [shadow, videoNotAvailableBackground]
         
         constrain(videoViews.flatMap{ $0 }) { views in
             let superview = (views.first?.superview)!

@@ -132,9 +132,9 @@ class VoiceChannelViewController: UIViewController {
     }
     
     func onDoubleTap(_ gestureRecognizer : UITapGestureRecognizer) {
-        guard let videoView = voiceChannelView.videoView else { return }
-        
-        videoView.shouldFill = !videoView.shouldFill;
+//        guard let videoView = voiceChannelView.videoView else { return }
+//
+//        videoView.shouldFill = !videoView.shouldFill;
     }
     
 }
@@ -398,10 +398,15 @@ extension VoiceChannelViewController : WireCallCenterCallStateObserver, Received
         
     }
     
-    func callCenterDidChange(receivedVideoState: ReceivedVideoState, user: ZMUser) {
-        voiceChannelView.incomingVideoActive = receivedVideoState == .started
-        voiceChannelView.remoteIsSendingVideo = receivedVideoState == .started
-        voiceChannelView.lowBandwidth = receivedVideoState == .badConnection       
+    func callCenterDidChange(receivedVideoState: ReceivedVideoState, user: ZMUser) {        
+        switch receivedVideoState {
+        case .started:
+            voiceChannelView.videoGrid?.startVideo(for: user.remoteIdentifier!)
+        case .stopped:
+            voiceChannelView.videoGrid?.stopVideo(for: user.remoteIdentifier!)
+        default:
+            break
+        }
     }
     
     func callCenterDidChange(constantAudioBitRateAudioEnabled enabled: Bool) {

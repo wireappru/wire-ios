@@ -104,6 +104,7 @@
 		16A293DA1F5FFA2E00B4EB16 /* SkeletonViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A293D91F5FFA2E00B4EB16 /* SkeletonViewController.swift */; };
 		16A2C6691AA7752F00DC2905 /* CameraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 16A2C6681AA7752F00DC2905 /* CameraController.m */; };
 		16A2C6721AA8AA6500DC2905 /* CameraControlsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 16A2C6711AA8AA6500DC2905 /* CameraControlsViewController.m */; };
+		16A94AE6208F33F0008A5718 /* VideoGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A94AE5208F33F0008A5718 /* VideoGridView.swift */; };
 		16A95FFE1A6EC3210045E175 /* ZMConversationMessageWindow+Formatting.m in Sources */ = {isa = PBXBuildFile; fileRef = 16A95FFD1A6EC3210045E175 /* ZMConversationMessageWindow+Formatting.m */; };
 		16B2DE2E1CCFB3B0000D7C30 /* InputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16B2DE2D1CCFB3B0000D7C30 /* InputBar.swift */; };
 		16B2DE301CCFB845000D7C30 /* InputBarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16B2DE2F1CCFB845000D7C30 /* InputBarTests.swift */; };
@@ -1321,6 +1322,7 @@
 		16A2C6681AA7752F00DC2905 /* CameraController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraController.m; sourceTree = "<group>"; };
 		16A2C6701AA8AA6500DC2905 /* CameraControlsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraControlsViewController.h; sourceTree = "<group>"; };
 		16A2C6711AA8AA6500DC2905 /* CameraControlsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraControlsViewController.m; sourceTree = "<group>"; };
+		16A94AE5208F33F0008A5718 /* VideoGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoGridView.swift; sourceTree = "<group>"; };
 		16A95FFC1A6EC3210045E175 /* ZMConversationMessageWindow+Formatting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ZMConversationMessageWindow+Formatting.h"; sourceTree = "<group>"; };
 		16A95FFD1A6EC3210045E175 /* ZMConversationMessageWindow+Formatting.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ZMConversationMessageWindow+Formatting.m"; sourceTree = "<group>"; };
 		16AACE731C0CAEBD00E62C43 /* TabBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabBar.swift; sourceTree = "<group>"; };
@@ -4829,6 +4831,7 @@
 				1670AFE61B2095B1002BF0AE /* VoiceChannelCollectionViewLayout.h */,
 				1670AFE71B2095B1002BF0AE /* VoiceChannelCollectionViewLayout.m */,
 				F1B025631E574B3C00900C65 /* VoiceChannelOverlay.swift */,
+				16A94AE5208F33F0008A5718 /* VideoGridView.swift */,
 				F1AA8AD51E5DF36A006A0E68 /* DegradationOverlayView.swift */,
 				87D0F8611C6DF0910071769E /* CameraPreviewView.h */,
 				87D0F8621C6DF0910071769E /* CameraPreviewView.m */,
@@ -6320,6 +6323,7 @@
 				87A1F9DB200CEDCA0040E9A9 /* ClearBackgroundNavigationController.swift in Sources */,
 				7C3083AC1FE15FBF0036AFCC /* CustomSpacingStackView.swift in Sources */,
 				871BC2291D34F8F800DF0793 /* ConfirmAssetViewController.m in Sources */,
+				16A94AE6208F33F0008A5718 /* VideoGridView.swift in Sources */,
 				F16427001FCC5B3C00D2ABFC /* SetTeamNameStepDescription.swift in Sources */,
 				1E6579981B8F3632002E0869 /* UIImage+ZetaIconsNeue.m in Sources */,
 				163B5EF21B4C209C009B4629 /* MediaBarViewController.m in Sources */,
