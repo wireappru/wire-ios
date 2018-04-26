@@ -203,13 +203,10 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
     [self updateVisibleMessagesWindow];
-    
-    if ([self respondsToSelector:@selector(registerForPreviewingWithDelegate:sourceView:)] &&
-        [[UIApplication sharedApplication] keyWindow].traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable) {
-        
-        [self registerForPreviewingWithDelegate:self sourceView:self.view.superview];
+
+    if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable) {
+        [self registerForPreviewingWithDelegate:self sourceView:self.view];
     }
 
     [self scrollToLastUnreadMessageIfNeeded];
@@ -245,7 +242,7 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
 
 - (void)didReceiveMemoryWarning
 {
-    DDLogWarn(@"Received system memory warning.");
+    ZMLogWarn(@"Received system memory warning.");
     [super didReceiveMemoryWarning];
 }
 
@@ -275,10 +272,21 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
 
 - (void)setConversationHeaderView:(UIView *)headerView
 {
-    CGSize fittingSize = CGSizeMake(self.tableView.bounds.size.width, self.tableView.bounds.size.height - 20);
+    CGSize fittingSize = CGSizeMake(self.tableView.bounds.size.width, self.headerHeight);
     CGSize requiredSize = [headerView systemLayoutSizeFittingSize:fittingSize withHorizontalFittingPriority:UILayoutPriorityRequired verticalFittingPriority:UILayoutPriorityDefaultLow];
     headerView.frame = CGRectMake(0, 0, requiredSize.width, requiredSize.height);
     self.tableView.tableHeaderView = headerView;
+}
+
+- (CGFloat)headerHeight
+{
+    CGFloat height = 20;
+    if (self.messageWindow.messages.count == 1) {
+        UITableViewCell *cell = [self cellForMessage:self.messageWindow.messages.firstObject];
+        height += CGRectGetHeight(cell.bounds);
+    }
+    
+    return self.tableView.bounds.size.height - height;
 }
 
 - (void)setSearchQueries:(NSArray<NSString *> *)searchQueries
@@ -534,8 +542,8 @@ const static int ConversationContentViewControllerMessagePrefetchDepth = 10;
         [savableImage saveToLibraryWithCompletion:nil];
     }
     else {
-        [cell.savableImage saveToLibraryWithCompletion:^{
-            if (nil != self.view.window) {
+        [cell.savableImage saveToLibraryWithCompletion:^(BOOL success) {
+            if (nil != self.view.window && success == YES) {
                 UIView *snapshot = [cell.fullImageView snapshotViewAfterScreenUpdates:YES];
                 snapshot.translatesAutoresizingMaskIntoConstraints = YES;
                 CGRect sourceRect = [self.view convertRect:cell.fullImageView.frame fromView:cell.fullImageView.superview];

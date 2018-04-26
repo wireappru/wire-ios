@@ -114,6 +114,7 @@ typedef NS_ENUM(NSUInteger, ProfileViewControllerTabBarIndex) {
     [super viewDidLoad];
     
     self.navigationController.delegate = self.navigationControllerDelegate;
+    self.view.backgroundColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorBarBackground];
     
     if (nil != self.fullUser) {
         self.observerToken = [UserChangeInfo addObserver:self forUser:self.fullUser userSession:[ZMUserSession sharedSession]];
@@ -313,17 +314,9 @@ typedef NS_ENUM(NSUInteger, ProfileViewControllerTabBarIndex) {
 - (void)conversationCreationController:(ConversationCreationController *)controller didSelectName:(NSString *)name participants:(NSSet<ZMUser *> *)participants allowGuests:(BOOL)allowGuests
 {
     [controller dismissViewControllerAnimated:YES completion:^{
-        [UIApplication.sharedApplication wr_updateStatusBarForCurrentControllerAnimated:YES];
         if ([self.delegate respondsToSelector:@selector(profileViewController:wantsToCreateConversationWithName:users:)]) {
             [self.delegate profileViewController:self wantsToCreateConversationWithName:name users:participants];
         }
-    }];
-}
-
-- (void)conversationCreationControllerDidCancel:(ConversationCreationController *)controller
-{
-    [controller dismissViewControllerAnimated:YES completion:^{
-        [UIApplication.sharedApplication wr_updateStatusBarForCurrentControllerAnimated:YES];
     }];
 }
 

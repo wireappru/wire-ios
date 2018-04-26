@@ -32,6 +32,7 @@
 @import WireLinkPreview;
 @import Down;
 
+static NSString* ZMLogTag ZM_UNUSED = @"UI";
 static NSMutableParagraphStyle *cellParagraphStyle;
 static DownStyle *style;
 
@@ -64,7 +65,7 @@ static inline NSDataDetector *linkDataDetector(void)
         detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
         
         if (error) {
-            DDLogError(@"Couldn't create link data detector!!!");
+            ZMLogError(@"Couldn't create link data detector!!!");
         }
     });
     return detector;
@@ -109,6 +110,7 @@ static inline NSDataDetector *linkDataDetector(void)
         style.baseFont = UIFont.normalLightFont;
         style.baseFontColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground];
         style.baseParagraphStyle = cellParagraphStyle;
+        style.listItemPrefixColor = [style.baseFontColor colorWithAlphaComponent:0.64];
     }
 
     if (obfuscated) {

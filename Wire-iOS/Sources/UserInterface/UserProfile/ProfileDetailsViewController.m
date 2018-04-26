@@ -49,6 +49,7 @@
 #import "ProfileIncomingConnectionRequestFooterView.h"
 #import "ProfileUnblockFooterView.h"
 
+static NSString* ZMLogTag ZM_UNUSED = @"UI";
 
 typedef NS_ENUM(NSUInteger, ProfileViewContentMode) {
     ProfileViewContentModeUnknown,
@@ -86,7 +87,7 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
 @property (nonatomic) UILabel *remainingTimeLabel;
 @property (nonatomic) BOOL showGuestLabel;
 @property (nonatomic) AvailabilityTitleView *availabilityView;
-@property (nonatomic) UICustomSpacingStackView *stackView;
+@property (nonatomic) CustomSpacingStackView *stackView;
 
 @end
 
@@ -118,7 +119,7 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
     [self createFooter];
     [self createGuestIndicator];
     
-    self.view.backgroundColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorBackground];
+    self.view.backgroundColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorContentBackground];
     self.stackViewContainer = [[UIView alloc] initForAutoLayout];
     [self.view addSubview:self.stackViewContainer];
     self.teamsGuestIndicator.hidden = !self.showGuestLabel;
@@ -128,7 +129,7 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
     self.remainingTimeLabel.text = remainingTimeString;
     self.remainingTimeLabel.hidden = nil == remainingTimeString;
 
-    self.stackView = [[UICustomSpacingStackView alloc] initWithCustomSpacedArrangedSubviews:@[self.userImageView, self.teamsGuestIndicator, self.remainingTimeLabel, self.availabilityView]];
+    self.stackView = [[CustomSpacingStackView alloc] initWithCustomSpacedArrangedSubviews:@[self.userImageView, self.teamsGuestIndicator, self.remainingTimeLabel, self.availabilityView]];
     self.stackView.axis = UILayoutConstraintAxisVertical;
     self.stackView.spacing = 0;
     self.stackView.alignment = UIStackViewAlignmentCenter;
@@ -177,6 +178,8 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
     self.userImageView.translatesAutoresizingMaskIntoConstraints = NO;
     self.userImageView.size = UserImageViewSizeBig;
     self.userImageView.user = self.bareUser;
+    self.userImageView.imageView.layer.borderWidth = 1;
+    self.userImageView.imageView.layer.borderColor = [UIColor colorWithWhite:0 alpha:0.08].CGColor;
 }
 
 - (void)createGuestIndicator
@@ -400,7 +403,9 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
             break;
             
         case ProfileUserActionRemovePeople:
-            [self presentRemoveFromConversationDialogueWithUser:[self fullUser] conversation:self.conversation viewControllerDismissable:self.viewControllerDismissable];
+            [self presentRemoveDialogueForParticipant:[self fullUser]
+                                     fromConversation:self.conversation
+                                          dismissable:self.viewControllerDismissable];
             break;
             
         case ProfileUserActionAcceptConnectionRequest:
@@ -438,7 +443,7 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
     
     if ([[[UIScreen mainScreen] traitCollection] horizontalSizeClass] == UIUserInterfaceSizeClassRegular) {
         [self dismissViewControllerAnimated:YES completion:^{
-            UINavigationController *presentedViewController = [conversationCreationController wrapInNavigationController:AddParticipantsNavigationController.class];
+            UINavigationController *presentedViewController = [conversationCreationController wrapInNavigationController];
             
             presentedViewController.modalPresentationStyle = UIModalPresentationFormSheet;
             
@@ -449,7 +454,7 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
     }
     else {
         KeyboardAvoidingViewController *avoiding = [[KeyboardAvoidingViewController alloc] initWithViewController:conversationCreationController];
-        UINavigationController *presentedViewController = [avoiding wrapInNavigationController:AddParticipantsNavigationController.class];
+        UINavigationController *presentedViewController = [avoiding wrapInNavigationController];
         
         presentedViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
         presentedViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
@@ -564,7 +569,7 @@ typedef NS_ENUM(NSUInteger, ProfileUserAction) {
 - (void)openOneToOneConversation
 {
     if (self.fullUser == nil) {
-        DDLogError(@"No user to open conversation with");
+        ZMLogError(@"No user to open conversation with");
         return;
     }
     ZMConversation __block *conversation = nil;

@@ -123,6 +123,10 @@ class GiphySearchViewController: UICollectionViewController {
     }
 
     override func viewDidLoad() {
+        super.viewDidLoad()
+
+        extendedLayoutIncludesOpaqueBars = true
+
         noResultsLabel.text = "giphy.error.no_result".localized.uppercased()
         noResultsLabel.isHidden = true
         view.addSubview(noResultsLabel)
@@ -194,8 +198,7 @@ class GiphySearchViewController: UICollectionViewController {
 
         navigationController.navigationBar.backItem?.backBarButtonItem = UIBarButtonItem(title: " ", style: .plain, target: nil, action: nil)
         navigationController.navigationBar.tintColor = ColorScheme.default().color(withName: ColorSchemeColorTextForeground)
-        navigationController.navigationBar.titleTextAttributes = [NSFontAttributeName: FontSpec(.small, .semibold).font!,
-                                                                  NSForegroundColorAttributeName: ColorScheme.default().color(withName: ColorSchemeColorTextForeground)]
+        navigationController.navigationBar.titleTextAttributes = DefaultNavigationBar.titleTextAttributes(for: ColorScheme.default().variant)
         navigationController.navigationBar.barTintColor = ColorScheme.default().color(withName: ColorSchemeColorBackground)
         navigationController.navigationBar.isTranslucent = false
 
@@ -285,10 +288,17 @@ class GiphySearchViewController: UICollectionViewController {
             previewImage = cell.imageView.animatedImage
         }
 
+        pushConfirmationViewController(ziph: ziph, previewImage: previewImage)
+    }
+
+    @discardableResult
+    func pushConfirmationViewController(ziph: Ziph?, previewImage: FLAnimatedImage?, animated: Bool = true) -> GiphyConfirmationViewController {
         let confirmationController = GiphyConfirmationViewController(withZiph: ziph, previewImage: previewImage, searchResultController: searchResultsController)
         confirmationController.title = conversation.displayName.uppercased()
         confirmationController.delegate = self
-        navigationController?.pushViewController(confirmationController, animated: true)
+        navigationController?.pushViewController(confirmationController, animated: animated)
+
+        return confirmationController
     }
 
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {

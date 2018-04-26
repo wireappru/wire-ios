@@ -38,6 +38,7 @@
 @property (nonatomic) UILabel *titleLabel;
 @property (nonatomic) UITextView *termsOfUseText;
 @property (nonatomic) Button *agreeButton;
+@property (nonatomic) UIView *containerView;
 @property (nonatomic) ZMIncompleteRegistrationUser *unregisteredUser;
 
 @end
@@ -59,11 +60,19 @@
 {
     [super viewDidLoad];
     
+    [self createContainerView];
     [self createTitleLabel];
     [self createTermsOfUseText];
     [self createAgreeButton];
     
     [self updateViewConstraints];
+}
+
+- (void)createContainerView {
+    self.containerView = [[UIView alloc] initForAutoLayout];
+    self.containerView.backgroundColor = [UIColor clearColor];
+    
+    [self.view addSubview:self.containerView];
 }
 
 - (void)createTitleLabel
@@ -72,8 +81,9 @@
     self.titleLabel.font = UIFont.largeSemiboldFont;
     self.titleLabel.textColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark];
     self.titleLabel.text = NSLocalizedString(@"registration.terms_of_use.title", nil);
-    
-    [self.view addSubview:self.titleLabel];
+    self.titleLabel.accessibilityTraits |= UIAccessibilityTraitHeader;
+
+    [self.containerView addSubview:self.titleLabel];
 }
 
 - (void)createTermsOfUseText
@@ -94,11 +104,16 @@
     self.termsOfUseText = [[WebLinkTextView alloc] initForAutoLayout];
     self.termsOfUseText.delegate = self;
     self.termsOfUseText.attributedText = [[NSAttributedString alloc] initWithAttributedString:attributedTerms];
-    [self.view addSubview:self.termsOfUseText];
+    [self.containerView addSubview:self.termsOfUseText];
     
     UITapGestureRecognizer *openURLGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                                                action:@selector(openTOS:)];
     [self.termsOfUseText addGestureRecognizer:openURLGestureRecognizer];
+    [self.wr_navigationController.backButton addTarget:self action:@selector(onBackButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)onBackButtonPressed:(UIButton*)sender {
+    [[UnauthenticatedSession sharedSession] cancelWaitForEmailVerification];
 }
 
 - (void)createAgreeButton
@@ -108,7 +123,7 @@
     [self.agreeButton setTitle:NSLocalizedString(@"registration.terms_of_use.agree", nil) forState:UIControlStateNormal];
     [self.agreeButton addTarget:self action:@selector(agreeToTerms:) forControlEvents:UIControlEventTouchUpInside];
     
-    [self.view addSubview:self.agreeButton];
+    [self.containerView addSubview:self.agreeButton];
 }
 
 - (void)updateViewConstraints
@@ -131,6 +146,24 @@
         [self.agreeButton autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:inset];
         [[self.agreeButton.bottomAnchor constraintEqualToAnchor:self.safeBottomAnchor constant:-inset] setActive:YES];
         [self.agreeButton autoSetDimension:ALDimensionHeight toSize:40];
+        
+        if(IS_IPAD_FULLSCREEN) {
+             [NSLayoutConstraint autoSetPriority:UILayoutPriorityDefaultHigh + 1 forConstraints:^{
+                 [self.containerView autoSetDimension:ALDimensionWidth toSize:self.registrationFormViewController.maximumFormSize.width];
+                 [self.containerView autoSetDimension:ALDimensionHeight toSize:self.registrationFormViewController.maximumFormSize.height];
+             }];
+            
+            [NSLayoutConstraint autoSetPriority:UILayoutPriorityDefaultHigh - 1 forConstraints:^{
+                [self.containerView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
+            }];
+            
+            [self.containerView autoPinEdgeToSuperviewEdge:ALEdgeTop withInset:0 relation:NSLayoutRelationGreaterThanOrEqual];
+            [self.containerView autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:0 relation:NSLayoutRelationGreaterThanOrEqual];
+            
+            [self.containerView autoCenterInSuperview];
+        } else {
+            [self.containerView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
+        }
     }
 }
 

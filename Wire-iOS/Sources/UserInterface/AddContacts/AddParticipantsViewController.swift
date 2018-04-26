@@ -40,18 +40,6 @@ extension ZMConversation {
     }
 }
 
-class AddParticipantsNavigationController: UINavigationController {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.navigationBar.tintColor = ColorScheme.default().color(withName: ColorSchemeColorTextForeground)
-        self.navigationBar.setBackgroundImage(UIImage(), for:.default)
-        self.navigationBar.shadowImage = UIImage()
-        self.navigationBar.isTranslucent = true
-        self.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: ColorScheme.default().color(withName: ColorSchemeColorTextForeground),
-                                                  NSFontAttributeName: FontSpec(.medium, .medium).font!]
-    }
-}
-
 public protocol AddParticipantsConversationCreationDelegate: class {
 
     func addParticipantsViewController(_ addParticipantsViewController : AddParticipantsViewController, didPerform action: AddParticipantsViewController.CreateAction)
@@ -113,14 +101,7 @@ public class AddParticipantsViewController: UIViewController {
     convenience public init(conversation: ZMConversation) {
         self.init(context: .add(conversation))
     }
-    
-    override open var title: String? {
-        didSet {
-            navigationItem.titleView = ConversationCreationTitleFactory.createTitleLabel(for: self.title ?? "", variant: variant)
-            navigationItem.titleView?.accessibilityIdentifier = "label.addpeople.title"
-        }
-    }
-    
+        
     public init(context: Context, variant: ColorSchemeVariant = ColorScheme.default().variant) {
         self.variant = variant
         
@@ -156,7 +137,7 @@ public class AddParticipantsViewController: UIViewController {
 
         searchHeaderViewController = SearchHeaderViewController(userSelection: userSelection, variant: self.variant)
         
-        searchGroupSelector = SearchGroupSelector(variant: self.variant)
+        searchGroupSelector = SearchGroupSelector(style: self.variant)
 
         searchResultsViewController = SearchResultsViewController(userSelection: userSelection,
                                                                   variant: self.variant,
@@ -188,6 +169,7 @@ public class AddParticipantsViewController: UIViewController {
             if group == .services {
                 self.searchHeaderViewController.clearInput()
             }
+            
             self.searchResultsViewController.searchGroup = group
             self.performSearch()
         }
@@ -341,11 +323,7 @@ public class AddParticipantsViewController: UIViewController {
     fileprivate func addSelectedParticipants(to conversation: ZMConversation) {
         let selectedUsers = self.userSelection.users
         
-        ZMUserSession.shared()?.enqueueChanges({
-            conversation.addParticipants(selectedUsers)
-        })
-
-        Analytics.shared().tagAddParticipants(source:.conversationDetails, selectedUsers, allowGuests: conversation.allowGuests, in: conversation)
+        conversation.addOrShowError(participants: selectedUsers)
     }
 }
 

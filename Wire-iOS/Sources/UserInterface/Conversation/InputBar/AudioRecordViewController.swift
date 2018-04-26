@@ -20,9 +20,10 @@
 
 import Foundation
 import Cartography
-import CocoaLumberjackSwift
 import MobileCoreServices
 import Classy
+
+private let zmLog = ZMSLog(tag: "UI")
 
 @objc public protocol AudioRecordBaseViewController: NSObjectProtocol {
     weak var delegate: AudioRecordViewControllerDelegate? { get set }
@@ -109,7 +110,7 @@ import Classy
         let upperThird = location.y < buttonOverlay.frame.height / 3
         let shouldSend = upperThird && sender.state == .ended
         
-        guard recorder.stopRecording() else { return DDLogWarn("Stopped recording but did not get file URL") }
+        guard recorder.stopRecording() else { return zmLog.warn("Stopped recording but did not get file URL") }
         
         if shouldSend {
             sendAudio(.afterSlideUp)
@@ -130,6 +131,12 @@ import Classy
             self.audioPreviewView.color = color
         }
         
+        topContainerView.backgroundColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorBackground)
+        bottomContainerView.backgroundColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorBackground)
+        
+        topSeparator.backgroundColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorSeparator)
+        rightSeparator.backgroundColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorSeparator)
+        
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(topContainerTapped))
         topContainerView.addGestureRecognizer(tapRecognizer)
         
@@ -138,11 +145,16 @@ import Classy
         [topSeparator, rightSeparator, audioPreviewView, timeLabel, cancelButton, recordingDotView].forEach(bottomContainerView.addSubview)
         
         timeLabel.accessibilityLabel = "audioRecorderTimeLabel"
+        timeLabel.font = FontSpec(.small, .none).font!
+        timeLabel.textColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground)
         
         topTooltipLabel.text = "conversation.input_bar.audio_message.tooltip.pull_send".localized.uppercased()
         topTooltipLabel.accessibilityLabel = "audioRecorderTopTooltipLabel"
+        topTooltipLabel.font = FontSpec(.small, .none).font!
+        topTooltipLabel.textColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextDimmed)
         
         cancelButton.setIcon(.cancel, with: .tiny, for: UIControlState())
+        cancelButton.setIconColor(UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground), for: .normal)
         cancelButton.addTarget(self, action: #selector(cancelButtonPressed(_:)), for: .touchUpInside)
         cancelButton.accessibilityLabel = "audioRecorderCancel"
         updateRecordingState(recordingState)
@@ -374,7 +386,7 @@ import Classy
     
     func sendAudio(_ context: AudioMessageContext) {
         recorder.stopPlaying()
-        guard let url = recorder.fileURL else { return DDLogWarn("Nil url passed to send as audio file") }
+        guard let url = recorder.fileURL else { return zmLog.warn("Nil url passed to send as audio file") }
         
         
         let effectPath = (NSTemporaryDirectory() as NSString).appendingPathComponent("effect.wav")

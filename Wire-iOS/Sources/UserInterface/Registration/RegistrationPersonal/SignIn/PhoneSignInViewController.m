@@ -36,6 +36,7 @@
 #import "AnalyticsTracker+Registration.h"
 #import "Wire-Swift.h"
 
+static NSString* ZMLogTag ZM_UNUSED = @"UI";
 
 @interface PhoneSignInViewController () <FormStepDelegate, PreLoginAuthenticationObserver, PostLoginAuthenticationObserver, PhoneVerificationStepViewControllerDelegate>
 
@@ -90,7 +91,7 @@
     phoneNumberStepViewController.formStepDelegate = self;
     phoneNumberStepViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
     self.phoneNumberStepViewController = phoneNumberStepViewController;
-    
+    self.phoneNumberStepViewController.phoneNumberViewController.phoneNumberField.confirmButton.accessibilityLabel = NSLocalizedString(@"signin.confirm", @"");
     
     [self addChildViewController:phoneNumberStepViewController];
     [self.view addSubview:phoneNumberStepViewController.view];
@@ -100,6 +101,9 @@
 
 - (void)takeFirstResponder
 {
+    if (UIAccessibilityIsVoiceOverRunning()) {
+        return;
+    }
     [self.phoneNumberStepViewController takeFirstResponder];
 }
 
@@ -200,7 +204,7 @@
 
 - (void)authenticationDidFail:(NSError *)error
 {
-    DDLogDebug(@"authenticationDidFail: error.code = %li", (long)error.code);
+    ZMLogDebug(@"authenticationDidFail: error.code = %li", (long)error.code);
     
     [self.analyticsTracker tagPhoneLoginFailedWithError:error];
     self.navigationController.showLoadingView = NO;
@@ -215,6 +219,11 @@
     else {
         [self showAlertForError:error];
     }
+}
+
+- (void)authenticationReadyToImportBackupWithExistingAccount:(BOOL)existingAccount
+{
+    self.navigationController.showLoadingView = NO;
 }
 
 - (void)authenticationDidSucceed

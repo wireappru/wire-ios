@@ -43,6 +43,8 @@
 
 #import "Wire-Swift.h"
 
+static NSString* ZMLogTag ZM_UNUSED = @"UI";
+
 static CameraControllerCamera CameraViewControllerToCameraControllerCamera(CameraViewControllerCamera camera)
 {
     switch (camera) {
@@ -77,7 +79,7 @@ static CameraControllerCamera CameraViewControllerToCameraControllerCamera(Camer
 /// Stores the camera (edited) image
 @property (nonatomic) NSData *cameraImageData;
 
-@property (nonatomic, copy) void (^acceptedBlock)();
+@property (nonatomic, copy) void (^acceptedBlock)(void);
 @property (nonatomic, strong) ImageMetadata *imageMetadata;
 
 @property (nonatomic, readonly) CameraViewControllerPreviewSize previewSize;
@@ -425,7 +427,7 @@ static CameraControllerCamera CameraViewControllerToCameraControllerCamera(Camer
 
 #pragma mark - Animations / State Changes
 
-- (void)presentConfirmDialogForImageData:(NSData *)imageData mirror:(BOOL)mirror acceptedBlock:(void (^)())acceptedBlock
+- (void)presentConfirmDialogForImageData:(NSData *)imageData mirror:(BOOL)mirror acceptedBlock:(void (^)(void))acceptedBlock
 {
     self.imagePreviewView.image = [UIImage imageFromData:imageData withMaxSize:MAX(CGRectGetWidth(UIScreen.mainScreen.nativeBounds), CGRectGetHeight(UIScreen.mainScreen.nativeBounds))];
     self.imagePreviewView.transform = CGAffineTransformMakeScale(mirror ? -1 : 1, 1);
@@ -549,7 +551,7 @@ static CameraControllerCamera CameraViewControllerToCameraControllerCamera(Camer
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
 {
     if (error != nil) {
-        DDLogError(@"Cannot save image to camera roll: %@", error);
+        ZMLogError(@"Cannot save image to camera roll: %@", error);
     }
 }
 

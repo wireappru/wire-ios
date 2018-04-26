@@ -136,6 +136,7 @@ class AppRootViewController: UIViewController {
         
         CallQualityScoreProvider.shared.nextProvider = analytics
         sessionManagerAnalytics = CallQualityScoreProvider.shared
+        SessionManager.clearPreviousBackups()
 
         SessionManager.create(
             appVersion: appVersion!,
@@ -207,7 +208,7 @@ class AppRootViewController: UIViewController {
             
             // check if needs to reauthenticate
             var needsToReauthenticate = false
-            var addingNewAccount = true
+            var addingNewAccount = (SessionManager.shared?.accountManager.accounts.count == 0)
             if let error = error {
                 let errorCode = (error as NSError).userSessionErrorCode
                 needsToReauthenticate = [ZMUserSessionErrorCode.clientDeletedRemotely,
@@ -370,6 +371,7 @@ class AppRootViewController: UIViewController {
         ConversationListCell.invalidateCachedCellSize()
         let fontScheme = FontScheme(contentSizeCategory: UIApplication.shared.preferredContentSizeCategory)
         CASStyler.default().apply(fontScheme: fontScheme)
+        type(of: self).configureAppearance()
     }
 
     public func performWhenAuthenticated(_ block : @escaping () -> Void) {

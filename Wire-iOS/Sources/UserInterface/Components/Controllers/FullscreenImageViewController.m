@@ -47,6 +47,7 @@
 #import "WireSyncEngine+iOS.h"
 #import "Wire-Swift.h"
 
+static NSString* ZMLogTag ZM_UNUSED = @"UI";
 
 @interface FirstReponderView : UIView
 @end
@@ -171,12 +172,6 @@
     if(self.parentViewController != nil) {
         [self updateZoomWithSize:self.parentViewController.view.frame.size];
     }
-}
-
-- (void)viewWillLayoutSubviews
-{
-    [super viewWillLayoutSubviews];
-    [self updateZoom];
 }
 
 - (BOOL)prefersStatusBarHidden
@@ -584,7 +579,7 @@
 
 - (void)setSelectedByMenu:(BOOL)selected animated:(BOOL)animated
 {
-    DDLogDebug(@"Setting selected: %@ animated: %@", @(selected), @(animated));
+    ZMLogDebug(@"Setting selected: %@ animated: %@", @(selected), @(animated));
     if (selected) {
 
         self.highlightLayer = [CALayer layer];

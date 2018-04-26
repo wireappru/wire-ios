@@ -22,7 +22,7 @@ import Cartography
 // This class wraps the conversation content view controller in order to display the navigation bar on the top
 @objc open class ConversationRootViewController: UIViewController {
 
-    fileprivate(set) var customNavBar: UINavigationBarContainer?
+    let navBarContainer: UINavigationBarContainer
     fileprivate var contentView = UIView()
     var navHeight: NSLayoutConstraint?
     var networkStatusBarHeight: NSLayoutConstraint?
@@ -41,6 +41,16 @@ import Cartography
 
         networkStatusViewController = NetworkStatusViewController()
 
+        let navbar = UINavigationBar()
+        navbar.isTranslucent = false
+        navbar.isOpaque = true
+        navbar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
+        navbar.shadowImage = UIImage()
+        navbar.barTintColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorBarBackground)
+        navbar.tintColor = UIColor.wr_color(fromColorScheme: ColorSchemeColorTextForeground)
+
+        navBarContainer = UINavigationBarContainer(navbar)
+
         super.init(nibName: .none, bundle: .none)
 
         networkStatusViewController.delegate = self
@@ -50,7 +60,6 @@ import Cartography
         conversationController.didMove(toParentViewController: self)
 
         conversationViewController = conversationController
-
 
         configure()
     }
@@ -66,37 +75,29 @@ import Cartography
 
         self.view.backgroundColor = ColorScheme.default().color(withName: ColorSchemeColorBarBackground)
 
-        let navbar = UINavigationBar()
-        navbar.isTranslucent = false
-        navbar.isOpaque = true
-        navbar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
-        navbar.shadowImage = UIImage()
-        navbar.barTintColor = ColorScheme.default().color(withName: ColorSchemeColorBarBackground)
-
-        self.customNavBar = UINavigationBarContainer(navbar)
-
-        self.view.addSubview(self.customNavBar!)
+        self.addToSelf(navBarContainer)
         self.view.addSubview(self.contentView)
         self.addToSelf(networkStatusViewController)
 
+        networkStatusViewController.createConstraintsInContainer(bottomView: navBarContainer.view,
+                                                                 containerView: self.view, 
+                                                                 topMargin: UIScreen.safeArea.top)
 
-        networkStatusViewController.createConstraintsInContainer(bottomView: customNavBar!, containerView: self.view, topMargin: UIScreen.safeArea.top)
- 
-        constrain(customNavBar!, view, contentView, conversationViewController.view) {
-            customNavBar, view, contentView, conversationViewControllerView in
+        constrain(navBarContainer.view, view, contentView, conversationViewController.view) {
+            navBarContainer, view, contentView, conversationViewControllerView in
 
-            customNavBar.left == view.left
-            customNavBar.right == view.right
+            navBarContainer.left == view.left
+            navBarContainer.right == view.right
 
             contentView.left == view.left
             contentView.right == view.right
             contentView.bottom == view.bottom - UIScreen.safeArea.bottom
-            contentView.top == customNavBar.bottom
+            contentView.top == navBarContainer.bottom
 
             conversationViewControllerView.edges == contentView.edges
         }
 
-        self.customNavBar!.navigationBar.pushItem(conversationViewController.navigationItem, animated: false)
+        navBarContainer.navigationBar.pushItem(conversationViewController.navigationItem, animated: false)
     }
 
     override open func viewDidAppear(_ animated: Bool) {

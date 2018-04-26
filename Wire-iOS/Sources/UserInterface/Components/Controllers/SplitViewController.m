@@ -21,6 +21,7 @@
 
 
 #import "SplitViewController.h"
+#import "SplitViewController+internal.h"
 #import "CrossfadeTransition.h"
 #import "SwizzleTransition.h"
 #import "VerticalTransition.h"
@@ -153,9 +154,6 @@ NSString *SplitLayoutObservableDidChangeToLayoutSizeNotification = @"SplitLayout
 
 @interface SplitViewController () <UIGestureRecognizerDelegate>
 
-@property (nonatomic) UIView *leftView;
-@property (nonatomic) UIView *rightView;
-
 @property (nonatomic) NSLayoutConstraint *leftViewOffsetConstraint;
 @property (nonatomic) NSLayoutConstraint *rightViewOffsetConstraint;
 
@@ -184,7 +182,7 @@ NSString *SplitLayoutObservableDidChangeToLayoutSizeNotification = @"SplitLayout
     self.leftView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.leftView];
     
-    self.rightView = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    self.rightView = [[PlaceholderConversationView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.rightView.translatesAutoresizingMaskIntoConstraints = NO;
     self.rightView.backgroundColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorBackground];
     [self.view addSubview:self.rightView];
@@ -234,6 +232,12 @@ NSString *SplitLayoutObservableDidChangeToLayoutSizeNotification = @"SplitLayout
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     
     [self updateForSize:size];
+
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+        [self updateLayoutSizeAndLeftViewVisibility];
+    }];
+
 }
 
 - (void)willTransitionToTraitCollection:(UITraitCollection *)newCollection withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
@@ -258,9 +262,11 @@ NSString *SplitLayoutObservableDidChangeToLayoutSizeNotification = @"SplitLayout
     
     [self updateConstraintsForSize:size];
     [self updateActiveConstraints];
-    [self updateLeftViewVisibility];
 
     self.futureTraitCollection = nil;
+
+    // update right view constraits after size changes
+    [self updateRightAndLeftEdgeConstraints: self.openPercentage];
 }
 
 - (void)updateLayoutSizeForTraitCollection:(UITraitCollection *)traitCollection size:(CGSize)size
@@ -276,7 +282,11 @@ NSString *SplitLayoutObservableDidChangeToLayoutSizeNotification = @"SplitLayout
     }
 }
 
-- (void)updateConstraintsForSize:(CGSize)size
+- (void)updateConstraintsForSize:(CGSize)size {
+    [self updateConstraintsForSize:size willMoveToEmptyView:NO];
+}
+
+- (void)updateConstraintsForSize:(CGSize)size willMoveToEmptyView:(BOOL)toEmptyView
 {
     if (self.layoutSize == SplitViewControllerLayoutSizeCompact) {
         self.leftViewWidthConstraint.constant = size.width;
@@ -284,12 +294,22 @@ NSString *SplitLayoutObservableDidChangeToLayoutSizeNotification = @"SplitLayout
     }
     else if (self.layoutSize == SplitViewControllerLayoutSizeRegularPortrait) {
         self.leftViewWidthConstraint.constant = MIN(CGRound(size.width * 0.43), 336);
-        self.rightViewWidthConstraint.constant = size.width;
+        if(self.rightViewController == nil || toEmptyView) {
+            self.rightViewWidthConstraint.constant = size.width - self.leftViewWidthConstraint.constant;
+        } else {
+            self.rightViewWidthConstraint.constant = size.width;
+        }
     }
     else {
         self.leftViewWidthConstraint.constant = MIN(CGRound(size.width * 0.43), 336);
         self.rightViewWidthConstraint.constant = size.width - self.leftViewWidthConstraint.constant;
     }
+}
+
+- (void)updateLayoutSizeAndLeftViewVisibility
+{
+    [self updateLayoutSizeForTraitCollection:self.traitCollection size:self.view.bounds.size];
+    [self updateLeftViewVisibility];
 }
 
 - (void)updateLeftViewVisibility
@@ -490,6 +510,8 @@ NSString *SplitLayoutObservableDidChangeToLayoutSizeNotification = @"SplitLayout
     if (toViewController != nil) {
         toViewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [self addChildViewController:toViewController];
+    } else {
+        [self updateConstraintsForSize:self.view.bounds.size willMoveToEmptyView:YES];
     }
     
     SplitViewControllerTransitionContext *transitionContext = [[SplitViewControllerTransitionContext alloc] initWithFromViewController:fromViewController toViewController:toViewController containerView:containerView];
@@ -513,6 +535,11 @@ NSString *SplitLayoutObservableDidChangeToLayoutSizeNotification = @"SplitLayout
     [self setLeftViewControllerRevealed:leftViewControllerIsRevealed animated:YES completion:nil];
 }
 
+- (void)resetOpenPercentage
+{
+    self.openPercentage = self.leftViewControllerRevealed ? 1 : 0;
+}
+
 - (void)setLeftViewControllerRevealed:(BOOL)leftViewControllerRevealed animated:(BOOL)animated completion:(nullable dispatch_block_t)completion
 {
     if (animated) {
@@ -522,8 +549,8 @@ NSString *SplitLayoutObservableDidChangeToLayoutSizeNotification = @"SplitLayout
     self.leftView.hidden = NO;
     
     _leftViewControllerRevealed = leftViewControllerRevealed;
-    self.openPercentage = leftViewControllerRevealed ? 1 : 0;
-    
+    [self resetOpenPercentage];
+
     if (self.layoutSize != SplitViewControllerLayoutSizeRegularLandscape) {
         [self.leftViewController beginAppearanceTransition:leftViewControllerRevealed animated:animated];
         [self.rightViewController beginAppearanceTransition:! leftViewControllerRevealed animated:animated];
@@ -557,6 +584,11 @@ NSString *SplitLayoutObservableDidChangeToLayoutSizeNotification = @"SplitLayout
 - (void)setOpenPercentage:(CGFloat)percentage
 {
     _openPercentage = percentage;
+    [self updateRightAndLeftEdgeConstraints: percentage];
+}
+
+- (void)updateRightAndLeftEdgeConstraints:(CGFloat)percentage
+{
     self.rightViewOffsetConstraint.constant = self.leftViewWidthConstraint.constant * percentage;
     self.leftViewOffsetConstraint.constant = 64.0f * (1.0f - percentage);
 }

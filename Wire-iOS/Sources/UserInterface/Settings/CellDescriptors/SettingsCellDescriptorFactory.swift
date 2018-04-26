@@ -75,7 +75,8 @@ import Foundation
                                                         return nil
                                                     },
                                                     previewGenerator: nil,
-                                                    icon: .team)
+                                                    icon: .team,
+                                                    accessoryViewMode: .alwaysHide)
     }
     
     func addAccountOrTeamCell() -> SettingsCellDescriptorType {
@@ -105,7 +106,7 @@ import Foundation
                                                     presentationAction: presentationAction,
                                                     previewGenerator: nil,
                                                     icon: .plus,
-                                                    accessoryViewMode: .alwaysShow)
+                                                    accessoryViewMode: .alwaysHide)
     }
     
     func settingsGroup() -> SettingsControllerGeneratorType & SettingsInternalGroupCellDescriptorType {
@@ -264,7 +265,7 @@ import Foundation
         
         let supportButton = SettingsExternalScreenCellDescriptor(title: "self.help_center.support_website".localized, isDestructive: false, presentationStyle: .modal, presentationAction: { _ in
             Analytics.shared().tagHelp()
-            return BrowserViewController(url: NSURL.wr_support().wr_URLByAppendingLocaleParameter() as URL!)
+            return BrowserViewController(url: NSURL.wr_support().wr_URLByAppendingLocaleParameter() as URL)
         }, previewGenerator: .none)
         
         let contactButton = SettingsExternalScreenCellDescriptor(title: "self.help_center.contact_support".localized, isDestructive: false, presentationStyle: .modal, presentationAction: { _ in
@@ -275,7 +276,7 @@ import Foundation
         let helpSection = SettingsSectionDescriptor(cellDescriptors: [supportButton, contactButton])
         
         let reportButton = SettingsExternalScreenCellDescriptor(title: "self.report_abuse".localized, isDestructive: false, presentationStyle: .modal, presentationAction: { _ in
-            return BrowserViewController(url: NSURL.wr_reportAbuse().wr_URLByAppendingLocaleParameter() as URL!)
+            return BrowserViewController(url: NSURL.wr_reportAbuse().wr_URLByAppendingLocaleParameter() as URL)
         }, previewGenerator: .none)
         
         let reportSection = SettingsSectionDescriptor(cellDescriptors: [reportButton])
@@ -286,14 +287,14 @@ import Foundation
     func aboutSection() -> SettingsCellDescriptorType {
         
         let privacyPolicyButton = SettingsExternalScreenCellDescriptor(title: "about.privacy.title".localized, isDestructive: false, presentationStyle: .modal, presentationAction: { _ in
-            return BrowserViewController(url: (NSURL.wr_privacyPolicy() as NSURL).wr_URLByAppendingLocaleParameter() as URL!)
+            return BrowserViewController(url: (NSURL.wr_privacyPolicy() as NSURL).wr_URLByAppendingLocaleParameter() as URL)
         }, previewGenerator: .none)
         let tosButton = SettingsExternalScreenCellDescriptor(title: "about.tos.title".localized, isDestructive: false, presentationStyle: .modal, presentationAction: { _ in
             let url = NSURL.wr_termsOfServicesURL(forTeamAccount: ZMUser.selfUser().hasTeam).wr_URLByAppendingLocaleParameter() as URL
             return BrowserViewController(url: url)
         }, previewGenerator: .none)
         let licenseButton = SettingsExternalScreenCellDescriptor(title: "about.license.title".localized, isDestructive: false, presentationStyle: .modal, presentationAction: { _ in
-            return BrowserViewController(url: (NSURL.wr_licenseInformation() as NSURL).wr_URLByAppendingLocaleParameter() as URL!)
+            return BrowserViewController(url: (NSURL.wr_licenseInformation() as NSURL).wr_URLByAppendingLocaleParameter() as URL)
         }, previewGenerator: .none)
 
         let shortVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
@@ -327,19 +328,6 @@ import Foundation
             previewGenerator: .none,
             icon: .wireLogo
         )
-    }
-    
-    // MARK: Subgroups
-    
-    func colorsSubgroup() -> SettingsSectionDescriptorType {
-        let cellDescriptors = ZMAccentColor.all().map { (color) -> SettingsCellDescriptorType in
-            let value = SettingsPropertyValue(color.rawValue)
-            return SettingsPropertySelectValueCellDescriptor(settingsProperty: self.settingsPropertyFactory.property(.accentColor), value: value, title: "", identifier: .none, selectAction: { _ in
-                
-                }, backgroundColor: color.color) as SettingsCellDescriptorType
-        }
-        let colorsSection = SettingsSectionDescriptor(cellDescriptors: cellDescriptors)
-        return colorsSection
     }
     
     // MARK: Actions
