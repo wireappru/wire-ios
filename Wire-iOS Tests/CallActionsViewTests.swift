@@ -31,7 +31,6 @@ class CallActionsViewTests: ZMSnapshotTestCase {
 
     override func setUp() {
         super.setUp()
-        recordMode = true
         snapshotBackgroundColor = .darkGray
         sut = CallActionsView()
         sut.translatesAutoresizingMaskIntoConstraints = false
