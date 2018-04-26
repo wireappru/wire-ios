@@ -61,3 +61,45 @@ class VideoGridView: UIStackView {
     }
     
 }
+
+class FixedVideoGridView: UIView {
+    
+    var videoViews: [AVSVideoView] = []
+    
+    func startVideo(for uuid: UUID) {
+        let videoView = AVSVideoView()
+        videoView.userid = uuid.transportString()
+        videoView.shouldFill = true
+        videoView.frame = frameForNextVideoView()
+        
+        addSubview(videoView)
+        videoViews.append(videoView)
+    }
+    
+    func stopVideo(for uuid: UUID) {
+        if let videoView = videoViews.first(where: { $0.userid == uuid.transportString() }) {
+            videoView.removeFromSuperview()
+            videoViews.remove(at: videoViews.index(of: videoView)!)
+        }
+    }
+    
+    func frameForNextVideoView() -> CGRect {
+        let width = bounds.width / 2
+        let height = bounds.height / 2
+        
+        switch videoViews.count {
+        case 0:
+            return CGRect(x: 0, y: 0, width: width, height: height)
+        case 1:
+            return CGRect(x: width, y: 0, width: width, height: height)
+        case 2:
+            return CGRect(x: 0, y: height, width: width, height: height)
+        case 3:
+            return CGRect(x: width, y: height, width: width, height: height)
+        default:
+            return CGRect.zero
+        }
+    }
+    
+    
+}

@@ -186,7 +186,7 @@ class VoiceChannelOverlay: UIView {
     
     var videoPreview: AVSVideoPreview?
     var videoView: AVSVideoView?
-    var videoGrid: VideoGridView?
+    var videoGrid: FixedVideoGridView?
     var cameraPreviewCenterHorisontally: NSLayoutConstraint!
     var cameraPreviewInitialPositionX: CGFloat = 0
     
@@ -467,7 +467,7 @@ extension VoiceChannelOverlay {
         
 //        createVideoViewIfNeeded()
         
-        videoGrid = VideoGridView()
+        videoGrid = FixedVideoGridView()
         addSubview(videoGrid!)
         
         shadow.isUserInteractionEnabled = false
