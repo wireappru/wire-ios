@@ -19,11 +19,15 @@
 import UIKit
 
 extension IconLabelButton {
+    
+    static let width: CGFloat = 64
+    static let height: CGFloat = 88
+    
     static func speaker() -> IconLabelButton {
         return .init(
             icon: .speaker,
             label: "voice.speaker_button.title".localized,
-            accessibilityIdentifier: "CallSpeakerButton"
+            accessibilityId: "CallSpeakerButton"
         )
     }
     
@@ -31,7 +35,10 @@ extension IconLabelButton {
         return .init(
             icon: .phone,
             label: "voice.accept_button.title".localized,
-            accessibilityIdentifier: "AcceptButton"
+            accessibilityId: "AcceptButton",
+            backgroundColor: ZMAccentColor.strongLimeGreen.color,
+            iconColor: .white,
+            borderWidth: 0
         )
     }
     
@@ -39,7 +46,10 @@ extension IconLabelButton {
         return .init(
             icon: .endCall,
             label: "voice.hang_up_button.title".localized,
-            accessibilityIdentifier: "LeaveCallButton"
+            accessibilityId: "LeaveCallButton",
+            backgroundColor: ZMAccentColor.vividRed.color,
+            iconColor: .white,
+            borderWidth: 0
         )
     }
     
@@ -47,7 +57,7 @@ extension IconLabelButton {
         return .init(
             icon: .microphoneWithStrikethrough,
             label: "voice.mute_button.title".localized,
-            accessibilityIdentifier: "CallMuteButton"
+            accessibilityId: "CallMuteButton"
         )
     }
     
@@ -55,7 +65,7 @@ extension IconLabelButton {
         return .init(
             icon: .videoCall,
             label: "voice.video_button.title".localized,
-            accessibilityIdentifier: "CallVideoButton"
+            accessibilityId: "CallVideoButton"
         )
     }
     
@@ -63,7 +73,30 @@ extension IconLabelButton {
         return .init(
             icon: .cameraSwitch,
             label: "voice.flip_video_button.title".localized,
-            accessibilityIdentifier: "CallFlipCameraButton"
+            accessibilityId: "CallFlipCameraButton"
         )
+    }
+    
+    // MARK: - Helper
+    
+    fileprivate convenience init(
+        icon: ZetaIconType,
+        label: String,
+        accessibilityId: String,
+        backgroundColor: UIColor? = nil,
+        iconColor: UIColor? = nil,
+        borderWidth: CGFloat? = nil
+        ) {
+        self.init()
+        iconButton.setIcon(icon, with: .small, for: .normal)
+        subtitleLabel.text = label
+        titleLabel?.font = FontSpec(.small, .light).font!
+        accessibilityIdentifier = accessibilityId
+        translatesAutoresizingMaskIntoConstraints = false
+        backgroundColor.apply(papply(flip(iconButton.setBackgroundImageColor), .normal))
+        iconColor.apply(papply(flip(iconButton.setIconColor), .normal))
+        borderWidth.apply { iconButton.borderWidth = $0 }
+        widthAnchor.constraint(equalToConstant: IconLabelButton.width).isActive = true
+        heightAnchor.constraint(greaterThanOrEqualToConstant: IconLabelButton.height).isActive = true
     }
 }

@@ -953,6 +953,7 @@
 		D58191FD2091CAE8003BA7EC /* CallActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58191FC2091CAE8003BA7EC /* CallActionsView.swift */; };
 		D58192002091CEBF003BA7EC /* UIStackView+Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58191FF2091CEBF003BA7EC /* UIStackView+Helper.swift */; };
 		D58192022091E2C0003BA7EC /* IconLabelButton+CallActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58192012091E2C0003BA7EC /* IconLabelButton+CallActionsView.swift */; };
+		D58192052091F34E003BA7EC /* CallActionsViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58192042091F34E003BA7EC /* CallActionsViewTests.swift */; };
 		D586C51F20405CC200BBA492 /* GroupDetailsFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D586C51E20405CC200BBA492 /* GroupDetailsFooterView.swift */; };
 		D594343A203DCB8F006AA0C0 /* ConversationOptionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5943439203DCB8F006AA0C0 /* ConversationOptionsViewModel.swift */; };
 		D5943440203DCECA006AA0C0 /* ConversationOptionsViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D594343F203DCECA006AA0C0 /* ConversationOptionsViewControllerTests.swift */; };
@@ -2528,6 +2529,7 @@
 		D58191FC2091CAE8003BA7EC /* CallActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallActionsView.swift; sourceTree = "<group>"; };
 		D58191FF2091CEBF003BA7EC /* UIStackView+Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIStackView+Helper.swift"; sourceTree = "<group>"; };
 		D58192012091E2C0003BA7EC /* IconLabelButton+CallActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IconLabelButton+CallActionsView.swift"; sourceTree = "<group>"; };
+		D58192042091F34E003BA7EC /* CallActionsViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallActionsViewTests.swift; sourceTree = "<group>"; };
 		D586C51E20405CC200BBA492 /* GroupDetailsFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupDetailsFooterView.swift; sourceTree = "<group>"; };
 		D5943439203DCB8F006AA0C0 /* ConversationOptionsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConversationOptionsViewModel.swift; sourceTree = "<group>"; };
 		D594343F203DCECA006AA0C0 /* ConversationOptionsViewControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationOptionsViewControllerTests.swift; sourceTree = "<group>"; };
@@ -4981,6 +4983,7 @@
 				BFAD3A1B1CD1078500F0FBED /* Resources */,
 				BF29C9851C6E357100601EE7 /* ZMSnapshotTestCase.h */,
 				BF5127141CC9118F00F23DEA /* ZMSnapshotTestCase+Swift.swift */,
+				D58192042091F34E003BA7EC /* CallActionsViewTests.swift */,
 				D50892FC2056C2AA004D3AE2 /* WirelessExpirationTimeFormatterTests.swift */,
 				BF29C9861C6E357100601EE7 /* ZMSnapshotTestCase.m */,
 				BFFE943D1E7839EB0025AD75 /* CoreDataSnapshotTestCase.swift */,
@@ -7143,6 +7146,7 @@
 				7C9E291A2074F3F100827819 /* EmailVerificationStepViewControllerTests.swift in Sources */,
 				EF1EA4631FB0937000B53063 /* MockUser+filename.swift in Sources */,
 				AF65A25C1D7E202D00EBA38E /* ReactionsListViewControllerTests.swift in Sources */,
+				D58192052091F34E003BA7EC /* CallActionsViewTests.swift in Sources */,
 				874B5DB21CEDF7B80010474C /* AudioMessageCellTests.swift in Sources */,
 				87F6B6361D2E9CF500F057A5 /* EmojiOnlyStringTests.swift in Sources */,
 				87C39A90206BF00A008DA100 /* BackupViewControllerTests.swift in Sources */,
