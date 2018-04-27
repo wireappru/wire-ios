@@ -94,11 +94,122 @@ extension IconButton {
     
 }
 
-extension IconLabelButton {
-    
+class IconLabelButton: ButtonWithLargerHitArea {
     private static let width: CGFloat = 64
     private static let height: CGFloat = 88
     
+    private(set) var iconButton = IconButton()
+    private(set) var subtitleLabel = UILabel()
+    
+    var configuration: CallActionColorConfiguration = .video {
+        didSet {
+            updateState()
+        }
+    }
+    
+    init() {
+        super.init(frame: .zero)
+        setupViews()
+        createConstraints()
+    }
+    
+    fileprivate convenience init(
+        icon: ZetaIconType,
+        label: String,
+        accessibilityId: String
+        ) {
+        self.init()
+        iconButton.setIcon(icon, with: .small, for: .normal)
+        subtitleLabel.text = label
+        accessibilityIdentifier = accessibilityId
+    }
+    
+    @available(*, unavailable)
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        updateState()
+    }
+    
+    private func setupViews() {
+        iconButton.translatesAutoresizingMaskIntoConstraints = false
+        iconButton.isUserInteractionEnabled = false
+        iconButton.borderWidth = 0
+        iconButton.circular = true
+        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        subtitleLabel.textTransform = .upper
+        subtitleLabel.textAlignment = .center
+        titleLabel?.font = FontSpec(.small, .light).font!
+        [iconButton, subtitleLabel].forEach(addSubview)
+    }
+    
+    private func createConstraints() {
+        NSLayoutConstraint.activate([
+            widthAnchor.constraint(equalToConstant: IconLabelButton.width),
+            heightAnchor.constraint(greaterThanOrEqualToConstant: IconLabelButton.height),
+            iconButton.widthAnchor.constraint(equalToConstant: IconLabelButton.width),
+            iconButton.heightAnchor.constraint(equalToConstant: IconLabelButton.width),
+            iconButton.leadingAnchor.constraint(equalTo: leadingAnchor),
+            iconButton.topAnchor.constraint(equalTo: topAnchor),
+            iconButton.trailingAnchor.constraint(equalTo: trailingAnchor),
+            subtitleLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
+            subtitleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+            subtitleLabel.heightAnchor.constraint(equalToConstant: 16)
+        ])
+    }
+    
+    private func updateState() {
+        apply(configuration)
+        subtitleLabel.font = titleLabel?.font
+        subtitleLabel.textColor = titleColor(for: state)
+    }
+    
+    override var isHighlighted: Bool {
+        didSet {
+            iconButton.isHighlighted = isHighlighted
+            updateState()
+        }
+    }
+    
+    override var isSelected: Bool {
+        didSet {
+            iconButton.isSelected = isSelected
+            updateState()
+        }
+    }
+    
+    override var isEnabled: Bool {
+        didSet {
+            iconButton.isEnabled = isEnabled
+            updateState()
+        }
+    }
+    
+    private func apply(_ configuration: CallActionColorConfiguration) {
+        iconButton.setBackgroundImageColor(configuration.backgroundColorNormal, for: .normal)
+        iconButton.setBackgroundImageColor(configuration.backgroundColorSelected, for: .selected)
+        
+        iconButton.setIconColor(configuration.iconColorNormal, for: .normal)
+        iconButton.setIconColor(configuration.iconColorSelected, for: .selected)
+
+        setTitleColor(configuration.iconColorNormal, for: .normal)
+        setTitleColor(configuration.iconColorNormal.withAlphaComponent(0.4), for: .disabled)
+        setTitleColor(configuration.iconColorNormal.withAlphaComponent(0.4), for: [.disabled, .selected])
+        
+        iconButton.setIconColor(configuration.iconColorNormal.withAlphaComponent(0.4), for: .disabled)
+        iconButton.setBackgroundImageColor(configuration.backgroundColorNormal, for: .disabled)
+
+        iconButton.setIconColor(configuration.iconColorSelected.withAlphaComponent(0.4), for: [.disabled, .selected])
+        iconButton.setBackgroundImageColor(configuration.backgroundColorSelected, for: [.disabled, .selected])
+    }
+    
+}
+
+extension IconLabelButton {
+
     static func speaker() -> IconLabelButton {
         return .init(
             icon: .speaker,
@@ -131,32 +242,4 @@ extension IconLabelButton {
         )
     }
     
-    // MARK: - Helper
-    
-    fileprivate convenience init(
-        icon: ZetaIconType,
-        label: String,
-        accessibilityId: String
-        ) {
-        self.init()
-        iconButton.setIcon(icon, with: .small, for: .normal)
-        subtitleLabel.text = label
-        titleLabel?.font = FontSpec(.small, .light).font!
-        accessibilityIdentifier = accessibilityId
-        translatesAutoresizingMaskIntoConstraints = false
-        widthAnchor.constraint(equalToConstant: IconLabelButton.width).isActive = true
-        heightAnchor.constraint(greaterThanOrEqualToConstant: IconLabelButton.height).isActive = true
-    }
-    
-    func apply(configuration: CallActionColorConfiguration) {
-        iconButton.setBackgroundImageColor(configuration.backgroundColorNormal, for: .normal)
-        iconButton.setBackgroundImageColor(configuration.backgroundColorSelected, for: .selected)
-        
-        iconButton.setIconColor(configuration.iconColorNormal, for: .normal)
-        iconButton.setIconColor(configuration.iconColorSelected, for: .selected)
-        iconButton.setIconColor(configuration.iconColorNormal.withAlphaComponent(0.4), for: .disabled)
-        
-        setTitleColor(configuration.iconColorNormal, for: .normal)
-        setTitleColor(configuration.iconColorNormal.withAlphaComponent(0.4), for: .disabled)
-    }
 }

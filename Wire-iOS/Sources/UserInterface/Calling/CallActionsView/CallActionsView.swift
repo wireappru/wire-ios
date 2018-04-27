@@ -151,7 +151,7 @@ final class CallActionsView: UIView {
         firstBottomRowSpacer.isHidden = input.canAccept || isCompact
         secondBottomRowSpacer.isHidden = isCompact
         verticalStackView.axis = isCompact ? .horizontal : .vertical
-        [muteCallButton, videoButton, flipCameraButton, speakerButton].forEach { $0.apply(configuration: input.colors) }
+        [muteCallButton, videoButton, flipCameraButton, speakerButton].forEach { $0.configuration = input.colors }
         alpha = input.isTerminating ? 0.4 : 1
         isUserInteractionEnabled = !input.isTerminating
         lastInput = input

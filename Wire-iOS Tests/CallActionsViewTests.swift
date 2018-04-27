@@ -251,5 +251,5 @@ class CallActionsViewTests: ZMSnapshotTestCase {
         // Then
         verify(view: sut)
     }
-
+    
 }
