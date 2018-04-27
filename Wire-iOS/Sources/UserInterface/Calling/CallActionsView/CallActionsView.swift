@@ -52,8 +52,8 @@ protocol CallActionsViewInputType {
 }
 
 extension CallActionsViewInputType {
-    var colors: CallActionColorConfiguration {
-        return isAudioCall ? .audio : .video
+    func appearance(with variant: ColorSchemeVariant) -> CallActionAppearance {
+        return isAudioCall && variant == .light ? .light : .dark
     }
 }
 
@@ -78,7 +78,13 @@ final class CallActionsView: UIView {
             lastInput.apply(update)
         }
     }
-    
+
+    var variant: ColorSchemeVariant = .light {
+        didSet {
+            lastInput.apply(update)
+        }
+    }
+
     private let verticalStackView = UIStackView(axis: .vertical)
     private let topStackView = UIStackView(axis: .horizontal)
     private let bottomStackView = UIStackView(axis: .horizontal)
@@ -107,7 +113,7 @@ final class CallActionsView: UIView {
         createConstraints()
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    @available(*, unavailable) required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
@@ -151,7 +157,7 @@ final class CallActionsView: UIView {
         firstBottomRowSpacer.isHidden = input.canAccept || isCompact
         secondBottomRowSpacer.isHidden = isCompact
         verticalStackView.axis = isCompact ? .horizontal : .vertical
-        [muteCallButton, videoButton, flipCameraButton, speakerButton].forEach { $0.configuration = input.colors }
+        [muteCallButton, videoButton, flipCameraButton, speakerButton].forEach { $0.appearance = input.appearance(with: variant) }
         alpha = input.isTerminating ? 0.4 : 1
         isUserInteractionEnabled = !input.isTerminating
         lastInput = input

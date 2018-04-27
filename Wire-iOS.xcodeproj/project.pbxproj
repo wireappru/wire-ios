@@ -926,6 +926,9 @@
 		D5197FC1207BAD2100F4622B /* SpinnerSubtitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D524BE62207BA15300542A4E /* SpinnerSubtitleView.swift */; };
 		D524BE5F207B99B800542A4E /* UIViewController+LoadingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D524BE5E207B99B800542A4E /* UIViewController+LoadingTests.swift */; };
 		D525426820934629001C04C1 /* IconLabelButtonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D525426720934629001C04C1 /* IconLabelButtonTests.swift */; };
+		D525426B2093637D001C04C1 /* IconButton+CallActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D525426920936378001C04C1 /* IconButton+CallActions.swift */; };
+		D525426D209363AF001C04C1 /* IconLabelButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D525426C209363AF001C04C1 /* IconLabelButton.swift */; };
+		D525426F209363DC001C04C1 /* CallActionAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D525426E209363DC001C04C1 /* CallActionAppearance.swift */; };
 		D52F2C1E205BCA1D00E067C0 /* UIAlertController+ConnectionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D52F2C1D205BCA1D00E067C0 /* UIAlertController+ConnectionRequest.swift */; };
 		D52F2C20205BE0A600E067C0 /* UIAlertController+ConversationDegraded.swift in Sources */ = {isa = PBXBuildFile; fileRef = D52F2C1F205BE0A600E067C0 /* UIAlertController+ConversationDegraded.swift */; };
 		D53D390C2057F8ED00B87DAD /* TintCorrectedActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53D390B2057F8ED00B87DAD /* TintCorrectedActivityController.swift */; };
@@ -951,7 +954,7 @@
 		D56A2D46207DFE8700DB59F5 /* UIAlertController+ImportWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = D56A2D45207DFE8700DB59F5 /* UIAlertController+ImportWarning.swift */; };
 		D58191FD2091CAE8003BA7EC /* CallActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58191FC2091CAE8003BA7EC /* CallActionsView.swift */; };
 		D58192002091CEBF003BA7EC /* UIStackView+Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58191FF2091CEBF003BA7EC /* UIStackView+Helper.swift */; };
-		D58192022091E2C0003BA7EC /* IconLabelButton+CallActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58192012091E2C0003BA7EC /* IconLabelButton+CallActionsView.swift */; };
+		D58192022091E2C0003BA7EC /* IconLabelButton+CallActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58192012091E2C0003BA7EC /* IconLabelButton+CallActions.swift */; };
 		D58192052091F34E003BA7EC /* CallActionsViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58192042091F34E003BA7EC /* CallActionsViewTests.swift */; };
 		D586C51F20405CC200BBA492 /* GroupDetailsFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D586C51E20405CC200BBA492 /* GroupDetailsFooterView.swift */; };
 		D594343A203DCB8F006AA0C0 /* ConversationOptionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5943439203DCB8F006AA0C0 /* ConversationOptionsViewModel.swift */; };
@@ -2502,6 +2505,9 @@
 		D524BE5E207B99B800542A4E /* UIViewController+LoadingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+LoadingTests.swift"; sourceTree = "<group>"; };
 		D524BE62207BA15300542A4E /* SpinnerSubtitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerSubtitleView.swift; sourceTree = "<group>"; };
 		D525426720934629001C04C1 /* IconLabelButtonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconLabelButtonTests.swift; sourceTree = "<group>"; };
+		D525426920936378001C04C1 /* IconButton+CallActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IconButton+CallActions.swift"; sourceTree = "<group>"; };
+		D525426C209363AF001C04C1 /* IconLabelButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconLabelButton.swift; sourceTree = "<group>"; };
+		D525426E209363DC001C04C1 /* CallActionAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallActionAppearance.swift; sourceTree = "<group>"; };
 		D52F2C1D205BCA1D00E067C0 /* UIAlertController+ConnectionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIAlertController+ConnectionRequest.swift"; sourceTree = "<group>"; };
 		D52F2C1F205BE0A600E067C0 /* UIAlertController+ConversationDegraded.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIAlertController+ConversationDegraded.swift"; sourceTree = "<group>"; };
 		D53D390B2057F8ED00B87DAD /* TintCorrectedActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TintCorrectedActivityController.swift; sourceTree = "<group>"; };
@@ -2526,7 +2532,7 @@
 		D56A2D45207DFE8700DB59F5 /* UIAlertController+ImportWarning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIAlertController+ImportWarning.swift"; sourceTree = "<group>"; };
 		D58191FC2091CAE8003BA7EC /* CallActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallActionsView.swift; sourceTree = "<group>"; };
 		D58191FF2091CEBF003BA7EC /* UIStackView+Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIStackView+Helper.swift"; sourceTree = "<group>"; };
-		D58192012091E2C0003BA7EC /* IconLabelButton+CallActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IconLabelButton+CallActionsView.swift"; sourceTree = "<group>"; };
+		D58192012091E2C0003BA7EC /* IconLabelButton+CallActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IconLabelButton+CallActions.swift"; sourceTree = "<group>"; };
 		D58192042091F34E003BA7EC /* CallActionsViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallActionsViewTests.swift; sourceTree = "<group>"; };
 		D586C51E20405CC200BBA492 /* GroupDetailsFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupDetailsFooterView.swift; sourceTree = "<group>"; };
 		D5943439203DCB8F006AA0C0 /* ConversationOptionsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConversationOptionsViewModel.swift; sourceTree = "<group>"; };
@@ -5269,7 +5275,10 @@
 			isa = PBXGroup;
 			children = (
 				D58191FC2091CAE8003BA7EC /* CallActionsView.swift */,
-				D58192012091E2C0003BA7EC /* IconLabelButton+CallActionsView.swift */,
+				D525426C209363AF001C04C1 /* IconLabelButton.swift */,
+				D525426E209363DC001C04C1 /* CallActionAppearance.swift */,
+				D58192012091E2C0003BA7EC /* IconLabelButton+CallActions.swift */,
+				D525426920936378001C04C1 /* IconButton+CallActions.swift */,
 			);
 			path = CallActionsView;
 			sourceTree = "<group>";
@@ -6565,6 +6574,7 @@
 				CEC0FE3B1C4FBF120093BF0D /* ConversationIgnoredDeviceCell.swift in Sources */,
 				8710673F1C0DC5570035603B /* SettingsPropertySelectValueCellDescriptor.swift in Sources */,
 				87C1A7BC1D8FDFD8002630BB /* VersionInfoViewController.m in Sources */,
+				D525426F209363DC001C04C1 /* CallActionAppearance.swift in Sources */,
 				5E3A6C25206A4E4A00907484 /* LocationPreviewController.swift in Sources */,
 				BF8ECC2D1E570A920015177D /* UIActivityViewController+FileSaving.swift in Sources */,
 				8708B8331DDDFF0D00310A53 /* UserConnectionView.swift in Sources */,
@@ -6798,7 +6808,7 @@
 				87BEB03E1D3E44DE00DE9575 /* CameraCell.swift in Sources */,
 				BAD4D0661B613D4E008585A5 /* ColorKnobView.m in Sources */,
 				871BC2521D34F8F800DF0793 /* MediaPreviewView.m in Sources */,
-				D58192022091E2C0003BA7EC /* IconLabelButton+CallActionsView.swift in Sources */,
+				D58192022091E2C0003BA7EC /* IconLabelButton+CallActions.swift in Sources */,
 				1648EEEF20498F8900CC6B37 /* ContactsSectionController.swift in Sources */,
 				BD979D2C1D8F3AF700E8E3CB /* SettingsTechnicalReportViewController.swift in Sources */,
 				87DCF49D1D34E9E600BB420F /* MapKit+Helper.swift in Sources */,
@@ -6927,6 +6937,7 @@
 				16829EDF2010D60800F579A0 /* InviteTeamMemberSection.swift in Sources */,
 				160DECD71AB329CC000FB575 /* CameraAccessDeniedView.m in Sources */,
 				8FC85452199245770008B66B /* ConversationContentViewController.m in Sources */,
+				D525426D209363AF001C04C1 /* IconLabelButton.swift in Sources */,
 				871BC0071D34F56300DF0793 /* Application+runDuration.m in Sources */,
 				F12CDAEB1E43886A00CEFCEB /* DecriptionHeaderView.swift in Sources */,
 				871BC0091D34F56300DF0793 /* DefaultIntegerClusterizer.m in Sources */,
@@ -7044,6 +7055,7 @@
 				EE265E821F6FF4910087676B /* ChatHeadView.swift in Sources */,
 				BF0555BD1E6D785C00D3E9D4 /* CallCells.swift in Sources */,
 				EF21271B1FB9DFE300625A9B /* TermsOfUseStepViewController.m in Sources */,
+				D525426B2093637D001C04C1 /* IconButton+CallActions.swift in Sources */,
 				871BC3691D34F94200DF0793 /* MediaPreviewViewController.m in Sources */,
 				D5F4387B206BBBB9003F1F14 /* Analytics+HistoryBackup.swift in Sources */,
 				BF606D6F1CAA8A78002BAC94 /* ConversationListBottomBar.swift in Sources */,

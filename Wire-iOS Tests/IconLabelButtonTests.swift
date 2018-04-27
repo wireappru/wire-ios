@@ -19,11 +19,6 @@
 import XCTest
 @testable import Wire
 
-fileprivate struct CallActionsViewInput: CallActionsViewInputType {
-    let canToggleMediaType, isAudioCall, isMuted, canAccept, isTerminating: Bool
-    let mediaState: MediaState
-}
-
 class IconLabelButtonTests: ZMSnapshotTestCase {
     
     fileprivate var button: IconLabelButton!
@@ -42,85 +37,85 @@ class IconLabelButtonTests: ZMSnapshotTestCase {
         super.tearDown()
     }
 
-    func testIconLabelButton_Video_Unselected_Enabled() {
+    func testIconLabelButton_Dark_Unselected_Enabled() {
         // When
-        button.configuration = .video
+        button.appearance = .dark
         
         // Then
         verify(view: button)
     }
     
-    func testIconLabelButton_Video_Unselected_Disabled() {
+    func testIconLabelButton_Dark_Unselected_Disabled() {
         // When
         button.isEnabled = false
-        button.configuration = .video
+        button.appearance = .dark
         
         // Then
         verify(view: button)
     }
     
-    func testIconLabelButton_Video_Selected_Enabled() {
+    func testIconLabelButton_Dark_Selected_Enabled() {
         // When
         button.isSelected = true
-        button.configuration = .video
+        button.appearance = .dark
         
         // Then
         verify(view: button)
     }
     
-    func testIconLabelButton_Video_Selected_Disabled() {
+    func testIconLabelButton_Dark_Selected_Disabled() {
         // When
         button.isSelected = true
         button.isEnabled = false
-        button.configuration = .video
+        button.appearance = .dark
         
         // Then
         verify(view: button)
     }
     
-    func testIconLabelButton_Audio_Unselected_Enabled() {
+    func testIconLabelButton_Light_Unselected_Enabled() {
         // Given
         snapshotBackgroundColor = .white
 
         // When
-        button.configuration = .audio
+        button.appearance = .light
         
         // Then
         verify(view: button)
     }
     
-    func testIconLabelButton_Audio_Unselected_Disabled() {
+    func testIconLabelButton_Light_Unselected_Disabled() {
         // Given
         snapshotBackgroundColor = .white
         
         // When
         button.isEnabled = false
-        button.configuration = .audio
+        button.appearance = .light
         
         // Then
         verify(view: button)
     }
     
-    func testIconLabelButton_Audio_Selected_Enabled() {
+    func testIconLabelButton_Light_Selected_Enabled() {
         // Given
         snapshotBackgroundColor = .white
         
         // When
         button.isSelected = true
-        button.configuration = .audio
+        button.appearance = .light
         
         // Then
         verify(view: button)
     }
     
-    func testIconLabelButton_Audio_Selected_Disabled() {
+    func testIconLabelButton_Light_Selected_Disabled() {
         // Given
         snapshotBackgroundColor = .white
         
         // When
         button.isSelected = true
         button.isEnabled = false
-        button.configuration = .audio
+        button.appearance = .light
         
         // Then
         verify(view: button)
