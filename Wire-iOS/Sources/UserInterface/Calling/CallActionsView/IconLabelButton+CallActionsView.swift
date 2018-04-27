@@ -30,22 +30,22 @@ enum CallActionColorConfiguration {
     
     var backgroundColorSelected: UIColor {
         switch self {
-        case .audio: return UIColor.wr_color(fromColorScheme: ColorSchemeColorGraphite, variant: .light)
-        case .video: return .white
+        case .audio: return .wr_color(fromColorScheme: ColorSchemeColorIconNormal, variant: .light)
+        case .video: return .wr_color(fromColorScheme: ColorSchemeColorIconNormal, variant: .dark)
         }
     }
     
     var iconColorNormal: UIColor {
         switch self {
-        case .audio: return .black
-        case .video: return .white
+        case .audio: return .wr_color(fromColorScheme: ColorSchemeColorIconNormal, variant: .light)
+        case .video: return .wr_color(fromColorScheme: ColorSchemeColorIconNormal, variant: .dark)
         }
     }
 
     var iconColorSelected: UIColor {
         switch self {
-        case .audio: return .white
-        case .video: return .black
+        case .audio: return .wr_color(fromColorScheme: ColorSchemeColorIconNormal, variant: .dark)
+        case .video: return .wr_color(fromColorScheme: ColorSchemeColorIconNormal, variant: .light)
         }
     }
 }
@@ -151,12 +151,11 @@ extension IconLabelButton {
     func apply(configuration: CallActionColorConfiguration) {
         iconButton.setBackgroundImageColor(configuration.backgroundColorNormal, for: .normal)
         iconButton.setBackgroundImageColor(configuration.backgroundColorSelected, for: .selected)
-        iconButton.setBackgroundImageColor(configuration.backgroundColorNormal.withAlphaComponent(0.4), for: .disabled)
-        iconButton.setBackgroundImageColor(configuration.backgroundColorSelected.withAlphaComponent(0.4), for: [.disabled, .selected])
+        
         iconButton.setIconColor(configuration.iconColorNormal, for: .normal)
         iconButton.setIconColor(configuration.iconColorSelected, for: .selected)
         iconButton.setIconColor(configuration.iconColorNormal.withAlphaComponent(0.4), for: .disabled)
-        iconButton.setIconColor(configuration.iconColorSelected.withAlphaComponent(0.4), for: [.disabled, .selected])
+        
         setTitleColor(configuration.iconColorNormal, for: .normal)
         setTitleColor(configuration.iconColorNormal.withAlphaComponent(0.4), for: .disabled)
     }

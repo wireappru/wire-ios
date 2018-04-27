@@ -99,6 +99,24 @@ class CallActionsViewTests: ZMSnapshotTestCase {
         verify(view: sut)
     }
     
+    func testCallActionsView_CanNotToggle_NotMuted_Video_CanNotAccept_SendingVideo_FlipCamera() {
+        // Given
+        let input = CallActionsViewInput(
+            canToggleMediaType: false,
+            isAudioCall: false,
+            isMuted: false,
+            canAccept: false,
+            isTerminating: false,
+            mediaState: .sendingVideo
+        )
+        
+        // When
+        sut.update(with: input)
+        
+        // Then
+        verify(view: sut)
+    }
+    
     func testCallActionsView_NotMuted_CanNotAccept_CanToggleMedia_SendingVideo_FlipCamera() {
         // Given
         let input = CallActionsViewInput(
@@ -165,6 +183,25 @@ class CallActionsViewTests: ZMSnapshotTestCase {
             canAccept: false,
             isTerminating: true,
             mediaState: .notSendingVideo(speakerEnabled: true)
+        )
+        
+        // When
+        sut.update(with: input)
+        
+        // Then
+        verify(view: sut)
+    }
+    
+    func testCallActionsView_Muted_CanAccept_Audio_VideoNotSending_SpearkerDisabled() {
+        // Given
+        snapshotBackgroundColor = .white
+        let input = CallActionsViewInput(
+            canToggleMediaType: false,
+            isAudioCall: true,
+            isMuted: true,
+            canAccept: true,
+            isTerminating: false,
+            mediaState: .notSendingVideo(speakerEnabled: false)
         )
         
         // When

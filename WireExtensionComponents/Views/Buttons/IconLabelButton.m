@@ -38,13 +38,6 @@
         self.iconButton.userInteractionEnabled = NO;
         self.iconButton.borderWidth = 0;
         self.iconButton.circular = YES;
-
-        [self.iconButton setIconColor:[UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark] forState:UIControlStateNormal];
-        [self.iconButton setIconColor:[UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantLight] forState:UIControlStateSelected];
-        [self.iconButton setIconColor:[UIColor colorWithWhite:1 alpha:0.4] forState:UIControlStateDisabled];
-        [self.iconButton setBackgroundImageColor:UIColor.clearColor forState:UIControlStateNormal];
-        [self.iconButton setBackgroundImageColor:[UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark] forState:UIControlStateSelected];
-        [self.iconButton setBackgroundImageColor:UIColor.clearColor forState:UIControlStateDisabled];
         
         [self addSubview:self.iconButton];
         
@@ -52,9 +45,6 @@
         [self.iconButton autoPinEdgeToSuperviewEdge:ALEdgeLeft];
         [self.iconButton autoPinEdgeToSuperviewEdge:ALEdgeRight];
         [self.iconButton autoPinEdgeToSuperviewEdge:ALEdgeTop];
-                
-        [self setTitleColor:[UIColor wr_colorFromColorScheme:ColorSchemeColorTextForeground variant:ColorSchemeVariantDark] forState:UIControlStateNormal];
-        [self setTitleColor:[UIColor colorWithWhite:1 alpha:0.4] forState:UIControlStateDisabled];
         
         self.subtitleLabel = [[UILabel alloc] init];
         self.subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -74,7 +64,6 @@
 - (void)didMoveToWindow
 {
     [super didMoveToWindow];
-    
     [self updateForNewState];
 }
 
@@ -99,18 +88,19 @@
 - (void)setEnabled:(BOOL)enabled
 {
     _priorState = self.state;
-    [super setEnabled:enabled];
-    [self.iconButton setEnabled:enabled];
+    self.userInteractionEnabled = enabled;
+    self.alpha = enabled ? 1 : 0.4;
     [self updateForNewStateIfNeeded];
 }
 
 - (void)updateForNewStateIfNeeded
 {
-    if(self.state != _priorState)
-    {
-        _priorState = self.state;
-        [self updateForNewState];
+    if (self.state == _priorState) {
+        return;
     }
+    
+    _priorState = self.state;
+    [self updateForNewState];
 }
 
 - (void)updateForNewState

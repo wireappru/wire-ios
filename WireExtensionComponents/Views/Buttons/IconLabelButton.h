@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) IconButton *iconButton;
 @property (nonatomic) UILabel *subtitleLabel;
+
 @end
 
 NS_ASSUME_NONNULL_END
