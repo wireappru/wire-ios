@@ -124,7 +124,8 @@ static AppDelegate *sharedAppDelegate = nil;
                                                object:nil];
     
     [self setupHockeyWithCompletion:^() {
-        [self.rootViewController launchWith:launchOptions];
+        //[self.rootViewController launchWith:launchOptions];
+        [self.rootViewController presentViewController:[[PinnableThumbnailViewController alloc] initWithNibName:NULL bundle:NULL] animated:NO completion:NULL];
     }];
     self.launchOptions = launchOptions;
     
