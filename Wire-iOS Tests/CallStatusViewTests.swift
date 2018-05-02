@@ -26,7 +26,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     override func setUp() {
         super.setUp()
         snapshotBackgroundColor = .white
-        sut = CallStatusView(configuration: .init(state: .connecting, type: .audio, variant: .dark, title: "Italy Trip"))
+        sut = CallStatusView(configuration: .init(state: .connecting, type: .audio, variant: .dark, isConstantBitRate: false, title: "Italy Trip"))
         sut.translatesAutoresizingMaskIntoConstraints = false
         sut.widthAnchor.constraint(equalToConstant: 320).isActive = true
         sut.setNeedsLayout()
@@ -40,7 +40,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     
     func testConnectingAudioCallLight() {
         // When
-        sut.configuration = .init(state: .connecting, type: .audio, variant: .light, title: "Italy Trip")
+        sut.configuration = .init(state: .connecting, type: .audio, variant: .light, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -49,7 +49,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     func testConnectingAudioCallDark() {
         // When
         snapshotBackgroundColor = .black
-        sut.configuration = .init(state: .connecting, type: .audio, variant: .dark, title: "Italy Trip")
+        sut.configuration = .init(state: .connecting, type: .audio, variant: .dark, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -57,7 +57,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     
     func testIncomingAudioLight() {
         // When
-        sut.configuration = .init(state: .ringingIncoming(name: "Ulrike"), type: .audio, variant: .light, title: "Italy Trip")
+        sut.configuration = .init(state: .ringingIncoming(name: "Ulrike"), type: .audio, variant: .light, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -66,7 +66,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     func testIncomingAudioDark() {
         // When
         snapshotBackgroundColor = .black
-        sut.configuration = .init(state: .ringingIncoming(name: "Ulrike"), type: .audio, variant: .dark, title: "Italy Trip")
+        sut.configuration = .init(state: .ringingIncoming(name: "Ulrike"), type: .audio, variant: .dark, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -75,7 +75,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     func testIncomingVideoLight() {
         // When
         snapshotBackgroundColor = .black
-        sut.configuration = .init(state: .ringingIncoming(name: "Ulrike"), type: .video, variant: .light, title: "Italy Trip")
+        sut.configuration = .init(state: .ringingIncoming(name: "Ulrike"), type: .video, variant: .light, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -84,7 +84,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     func testIncomingVideoDark() {
         // When
         snapshotBackgroundColor = .black
-        sut.configuration = .init(state: .ringingIncoming(name: "Ulrike"), type: .video, variant: .dark, title: "Italy Trip")
+        sut.configuration = .init(state: .ringingIncoming(name: "Ulrike"), type: .video, variant: .dark, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -92,7 +92,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     
     func testOutgoingLight() {
         // When
-        sut.configuration = .init(state: .ringingOutgoing, type: .audio, variant: .light, title: "Italy Trip")
+        sut.configuration = .init(state: .ringingOutgoing, type: .audio, variant: .light, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -101,7 +101,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     func testOutgoingDark() {
         // When
         snapshotBackgroundColor = .black
-        sut.configuration = .init(state: .ringingOutgoing, type: .video, variant: .dark, title: "Italy Trip")
+        sut.configuration = .init(state: .ringingOutgoing, type: .video, variant: .dark, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -109,7 +109,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     
     func testEstablishedBriefLight() {
         // When
-        sut.configuration = .init(state: .established(duration: 42), type: .audio, variant: .light, title: "Italy Trip")
+        sut.configuration = .init(state: .established(duration: 42), type: .audio, variant: .light, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -118,7 +118,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     func testEstablishedBriefDark() {
         // When
         snapshotBackgroundColor = .black
-        sut.configuration = .init(state: .established(duration: 42), type: .video, variant: .dark, title: "Italy Trip")
+        sut.configuration = .init(state: .established(duration: 42), type: .video, variant: .dark, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -126,7 +126,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     
     func testEstablishedLongLight() {
         // When
-        sut.configuration = .init(state: .established(duration: 321), type: .audio, variant: .light, title: "Italy Trip")
+        sut.configuration = .init(state: .established(duration: 321), type: .audio, variant: .light, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -135,7 +135,24 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     func testEstablishedLongDark() {
         // When
         snapshotBackgroundColor = .black
-        sut.configuration = .init(state: .established(duration: 321), type: .video, variant: .dark, title: "Italy Trip")
+        sut.configuration = .init(state: .established(duration: 321), type: .video, variant: .dark, isConstantBitRate: false, title: "Italy Trip")
+        
+        // Then
+        verify(view: sut)
+    }
+    
+    func testConstantBitRateLight() {
+        // When
+        sut.configuration = .init(state: .established(duration: 321), type: .audio, variant: .light, isConstantBitRate: true, title: "Italy Trip")
+        
+        // Then
+        verify(view: sut)
+    }
+    
+    func testConstantBitRateDark() {
+        // When
+        snapshotBackgroundColor = .black
+        sut.configuration = .init(state: .established(duration: 321), type: .video, variant: .dark, isConstantBitRate: true, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -143,7 +160,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     
     func testReconnectingLight() {
         // When
-        sut.configuration = .init(state: .reconnecting, type: .audio, variant: .light, title: "Italy Trip")
+        sut.configuration = .init(state: .reconnecting, type: .audio, variant: .light, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -152,7 +169,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     func testReconnectingDark() {
         // When
         snapshotBackgroundColor = .black
-        sut.configuration = .init(state: .reconnecting, type: .video, variant: .dark, title: "Italy Trip")
+        sut.configuration = .init(state: .reconnecting, type: .video, variant: .dark, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -160,7 +177,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     
     func testEndingLight() {
         // When
-        sut.configuration = .init(state: .terminating, type: .audio, variant: .light, title: "Italy Trip")
+        sut.configuration = .init(state: .terminating, type: .audio, variant: .light, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
@@ -169,7 +186,7 @@ final class CallStatusViewTests: ZMSnapshotTestCase {
     func testEndingDark() {
         // When
         snapshotBackgroundColor = .black
-        sut.configuration = .init(state: .terminating, type: .video, variant: .dark, title: "Italy Trip")
+        sut.configuration = .init(state: .terminating, type: .video, variant: .dark, isConstantBitRate: false, title: "Italy Trip")
         
         // Then
         verify(view: sut)
