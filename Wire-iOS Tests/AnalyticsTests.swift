@@ -22,11 +22,20 @@ import Wire
 import HockeySDK
 
 class AnalyticsTests : XCTestCase {
+
+    override func setUp() {
+        super.setUp()
+        UserDefaults.shared().removeObject(forKey: "DidMigrateLocalyticsSettingInitially")
+    }
+
+    override func tearDown() {
+        UserDefaults.shared().removeObject(forKey: "DidMigrateLocalyticsSettingInitially")
+        super.tearDown()
+    }
     
     func testThatItMigratesTheOptOutFromLocalytics() {
         // GIVEN
         TrackingManager.shared.disableCrashAndAnalyticsSharing = false
-        UserDefaults.shared().set(false, forKey: "DidMigrateLocalyticsSettingInitially")
         Localytics.integrate(LocalyticsAPIKey)
         Localytics.setOptedOut(true)
         // WHEN
