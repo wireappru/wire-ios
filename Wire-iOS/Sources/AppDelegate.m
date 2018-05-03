@@ -122,10 +122,16 @@ static AppDelegate *sharedAppDelegate = nil;
                                              selector:@selector(userSessionDidBecomeAvailable:)
                                                  name:ZMUserSessionDidBecomeAvailableNotification
                                                object:nil];
-    
+
+    UIView *backgroundView = [[UIView alloc] init];
+    backgroundView.backgroundColor = [UIColor redColor];
+
+    PinnableThumbnailViewController *thumbnail = [[PinnableThumbnailViewController alloc] initWithNibName:nil bundle:nil];
+    [thumbnail setThumbnailContentView:backgroundView contentSize:CGSizeMake(404, 785)];
+
     [self setupHockeyWithCompletion:^() {
         //[self.rootViewController launchWith:launchOptions];
-        [self.rootViewController presentViewController:[[PinnableThumbnailViewController alloc] initWithNibName:NULL bundle:NULL] animated:NO completion:NULL];
+        [self.rootViewController presentViewController:thumbnail animated:NO completion:nil];
     }];
     self.launchOptions = launchOptions;
     
