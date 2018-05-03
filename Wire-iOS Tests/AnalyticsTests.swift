@@ -26,10 +26,12 @@ class AnalyticsTests : XCTestCase {
     override func setUp() {
         super.setUp()
         UserDefaults.shared().removeObject(forKey: "DidMigrateLocalyticsSettingInitially")
+        UserDefaults.shared().removeObject(forKey: "disableCrashAndAnalyticsSharing")
     }
 
     override func tearDown() {
         UserDefaults.shared().removeObject(forKey: "DidMigrateLocalyticsSettingInitially")
+        UserDefaults.shared().removeObject(forKey: "disableCrashAndAnalyticsSharing")
         super.tearDown()
     }
     
