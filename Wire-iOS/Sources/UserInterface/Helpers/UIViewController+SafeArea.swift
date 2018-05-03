@@ -20,6 +20,7 @@
 import Foundation
 
 extension UIViewController {
+
     var safeBottomAnchor: NSLayoutYAxisAnchor {
         if #available(iOS 11, *) {
             return self.view.safeAreaLayoutGuide.bottomAnchor
@@ -37,6 +38,7 @@ extension UIViewController {
             return self.topLayoutGuide.bottomAnchor
         }
     }
+
 }
 
 extension UIView {

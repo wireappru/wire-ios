@@ -47,9 +47,6 @@ import avs
         configureViews()
         configureConstraints()
 
-        view.backgroundColor = .white
-        thumbnailContainerView.backgroundColor = .purple
-
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture))
         thumbnailView.addGestureRecognizer(panGestureRecognizer)
 
@@ -59,6 +56,8 @@ import avs
         super.viewWillAppear(animated)
 
         view.layoutIfNeeded()
+        view.backgroundColor = .white
+
         resetThumbnailPosition()
 
         pinningBehavior.updateFields(in: thumbnailContainerView.bounds)
@@ -118,8 +117,6 @@ import avs
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
 
-        print("Will transition to size")
-
         // Ensure the item stays on screen during a bounds change.
         guard let corner = pinningBehavior.currentCorner else { return }
 
@@ -146,6 +143,12 @@ import avs
     @available(iOS 11, *)
     override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
+        view.layoutIfNeeded()
+        pinningBehavior.updateFields(in: thumbnailContainerView.bounds)
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
         view.layoutIfNeeded()
         pinningBehavior.updateFields(in: thumbnailContainerView.bounds)
     }

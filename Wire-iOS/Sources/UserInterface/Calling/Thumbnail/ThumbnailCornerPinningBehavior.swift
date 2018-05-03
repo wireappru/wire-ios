@@ -50,7 +50,7 @@ final class ThumbnailCornerPinningBehavior: UIDynamicBehavior {
         self.itemTransformBehavior = UIDynamicItemBehavior(items: [item])
         self.itemTransformBehavior.density = 0.01
         self.itemTransformBehavior.resistance = 10
-        self.itemTransformBehavior.friction = 0.0
+        self.itemTransformBehavior.friction = 0.1
         self.itemTransformBehavior.allowsRotation = false
 
         super.init()
@@ -146,9 +146,6 @@ final class ThumbnailCornerPinningBehavior: UIDynamicBehavior {
         let topRight = CGPoint(x: maxX - horizontalPosition, y: verticalPosition)
         let bottomLeft = CGPoint(x: horizontalPosition, y: maxY - verticalPosition)
         let bottomRight = CGPoint(x: maxX - horizontalPosition, y: maxY - verticalPosition)
-
-        print("Bottom right = \(bottomRight), maxY = \(maxY)")
-
 
         // Update regions for the new bounds
 
