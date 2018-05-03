@@ -22,7 +22,7 @@ import avs
 @objc class PinnableThumbnailViewController: UIViewController {
 
     /// The view displaying the contents of the thumbnail.
-    let thumbnailView = ContinuousCornersView(cornerRadius: 12)
+    let thumbnailView: UIView = ContinuousCornersView(cornerRadius: 12)
 
     private let thumbnailContainerView = UIView()
 
@@ -48,6 +48,7 @@ import avs
         configureConstraints()
 
         view.backgroundColor = .white
+        thumbnailContainerView.backgroundColor = .purple
 
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture))
         thumbnailView.addGestureRecognizer(panGestureRecognizer)
@@ -105,8 +106,8 @@ import avs
 
         thumbnailContainerView.translatesAutoresizingMaskIntoConstraints = false
 
-        thumbnailContainerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuideOrFallback.leadingAnchor).isActive = true
-        thumbnailContainerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuideOrFallback.trailingAnchor).isActive = true
+        thumbnailContainerView.leadingAnchor.constraint(equalTo: view.safeLeadingAnchor).isActive = true
+        thumbnailContainerView.trailingAnchor.constraint(equalTo: view.safeTrailingAnchor).isActive = true
         thumbnailContainerView.topAnchor.constraint(equalTo: safeTopAnchor).isActive = true
         thumbnailContainerView.bottomAnchor.constraint(equalTo: safeBottomAnchor).isActive = true
 
@@ -117,13 +118,21 @@ import avs
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
 
+        print("Will transition to size")
+
         // Ensure the item stays on screen during a bounds change.
         guard let corner = pinningBehavior.currentCorner else { return }
 
         pinningBehavior.isEnabled = false
 
-        let bounds = CGRect(origin: CGPoint.zero, size: size)
+        // Calculate the new size of the container
 
+        let insets = view.safeAreaInsetsOfFallback
+
+        let safeSize = CGSize(width: size.width - insets.left - insets.right,
+                              height: size.height - insets.top - insets.bottom)
+
+        let bounds = CGRect(origin: CGPoint.zero, size: safeSize)
         pinningBehavior.updateFields(in: bounds)
 
         coordinator.animate(alongsideTransition: { context in
@@ -132,6 +141,13 @@ import avs
             self.pinningBehavior.isEnabled = true
         })
 
+    }
+
+    @available(iOS 11, *)
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        view.layoutIfNeeded()
+        pinningBehavior.updateFields(in: thumbnailContainerView.bounds)
     }
 
     // MARK: - Panning
@@ -149,7 +165,7 @@ import avs
             // Calculate the target center
 
             let originalFrame = thumbnailView.frame
-            let containerFrame = thumbnailContainerView.frame
+            let containerBounds = thumbnailContainerView.bounds
 
             let translation = recognizer.translation(in: thumbnailContainerView)
             let transform = CGAffineTransform(translationX: translation.x, y: translation.y)
@@ -160,10 +176,10 @@ import avs
             let x: CGFloat
             let halfWidth = originalFrame.width / 2
 
-            if (transformedPoint.x - halfWidth) < containerFrame.minX {
-                x = containerFrame.minX
-            } else if (transformedPoint.x + halfWidth) > containerFrame.maxX {
-                x = containerFrame.maxX - originalFrame.width
+            if (transformedPoint.x - halfWidth) < containerBounds.minX {
+                x = containerBounds.minX
+            } else if (transformedPoint.x + halfWidth) > containerBounds.maxX {
+                x = containerBounds.maxX - originalFrame.width
             } else {
                 x = transformedPoint.x - halfWidth
             }
@@ -173,10 +189,10 @@ import avs
             let y: CGFloat
             let halfHeight = originalFrame.height / 2
 
-            if (transformedPoint.y - halfHeight) < containerFrame.minY {
-                y = containerFrame.minY
-            } else if (transformedPoint.y + halfHeight) > containerFrame.maxY {
-                y = containerFrame.maxY - originalFrame.height
+            if (transformedPoint.y - halfHeight) < containerBounds.minY {
+                y = containerBounds.minY
+            } else if (transformedPoint.y + halfHeight) > containerBounds.maxY {
+                y = containerBounds.maxY - originalFrame.height
             } else {
                 y = transformedPoint.y - halfHeight
             }

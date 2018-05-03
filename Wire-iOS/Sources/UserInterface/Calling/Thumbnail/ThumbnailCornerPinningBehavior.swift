@@ -137,23 +137,26 @@ final class ThumbnailCornerPinningBehavior: UIDynamicBehavior {
         let horizontalPosition = edgeInset + (itemBounds.width / 2)
         let verticalPosition = edgeInset + (itemBounds.height / 2)
 
-        let width = bounds.width
-        let height = bounds.height
+        let maxX = bounds.maxX
+        let maxY = bounds.maxY
 
         // Calculate corners
 
         let topLeft = CGPoint(x: horizontalPosition, y: verticalPosition)
-        let bottomLeft = CGPoint(x: horizontalPosition, y: height - verticalPosition)
-        let bottomRight = CGPoint(x: width - horizontalPosition, y: height - verticalPosition)
-        let topRight = CGPoint(x: width - horizontalPosition, y: verticalPosition)
+        let topRight = CGPoint(x: maxX - horizontalPosition, y: verticalPosition)
+        let bottomLeft = CGPoint(x: horizontalPosition, y: maxY - verticalPosition)
+        let bottomRight = CGPoint(x: maxX - horizontalPosition, y: maxY - verticalPosition)
+
+        print("Bottom right = \(bottomRight), maxY = \(maxY)")
+
 
         // Update regions for the new bounds
 
         func updateFieldRegion(at corner: Corner, point: CGPoint) {
             let field = fieldBehaviors[corner.rawValue]
             field.position = point
-            field.region = UIRegion(size: CGSize(width: width - (horizontalPosition * 2),
-                                                 height: height - (verticalPosition * 2)))
+            field.region = UIRegion(size: CGSize(width: maxX - (horizontalPosition * 2),
+                                                 height: maxY - (verticalPosition * 2)))
         }
 
         updateFieldRegion(at: .topLeft, point: topLeft)
