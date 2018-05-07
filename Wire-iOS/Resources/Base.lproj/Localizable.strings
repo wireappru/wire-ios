@@ -481,11 +481,15 @@
 "voice.alert.camera_warning.title" = "Wire needs access to the Camera.";
 "voice.alert.camera_warning.explanation" = "Go to Settings and allow Wire to access the camera.";
 
+"voice.top_overlay.tap_to_return" = "Tap to return to call";
+"voice.top_overlay.accessibility_title" = "Ongoing call";
+
 // Voice New
 
 "call.status.connecting" = "Connecting…";
 "call.status.incoming.video" = "%@ is video calling…";
 "call.status.incoming.audio" = "%@ is calling…";
+"call.status.incoming" = "Calling…";
 "call.status.outgoing" = "Ringing…";
 "call.status.reconnecting" = "Reconnecting…";
 "call.status.terminating" = "Ending call…";

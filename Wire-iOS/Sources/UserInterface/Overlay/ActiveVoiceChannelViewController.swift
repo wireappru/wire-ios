@@ -25,10 +25,33 @@ class ActiveVoiceChannelViewController : UIViewController {
     
     var callStateObserverToken : Any?
     var answeredCalls: [UUID: Date] = [:]
+    var minimisedCall: UUID? = nil {
+        didSet {
+            updateVisibleVoiceChannelViewController()
+        }
+    }
+    
+    deinit {
+        visibleVoiceChannelTopOverlayVoiceController?.stopCallDurationTimer()
+    }
     
     var visibleVoiceChannelViewController : CallViewController? {
         didSet {
-            transition(to: visibleVoiceChannelViewController, from: oldValue)
+            if let newController = visibleVoiceChannelViewController {
+                newController.dismisser = self
+                let navigationWrapper = newController.wrapInNavigationController()
+                transition(to: navigationWrapper, from: oldValue?.navigationController)
+            }
+            else {
+                transition(to: nil, from: oldValue?.navigationController)
+            }
+        }
+    }
+    
+    var visibleVoiceChannelTopOverlayVoiceController: CallTopOverlayController? {
+        didSet {
+            visibleVoiceChannelTopOverlayVoiceController?.delegate = self
+            ZClientViewController.shared()?.setTopOverlay(to: visibleVoiceChannelTopOverlayVoiceController)
         }
     }
     
@@ -59,19 +82,26 @@ class ActiveVoiceChannelViewController : UIViewController {
     
     func updateVisibleVoiceChannelViewController() {
         let conversation = primaryCallingConversation
-        
-        guard visibleVoiceChannelViewController?.conversation != conversation else {
-            return
-        }
-        
-        if let voiceChannel = conversation?.voiceChannel {
-            visibleVoiceChannelViewController = CallViewController(voiceChannel: voiceChannel)
+       
+        if let conversation = conversation {
+            // Call was minimized
+            if conversation.remoteIdentifier == minimisedCall {
+                visibleVoiceChannelViewController = nil
+                visibleVoiceChannelTopOverlayVoiceController = CallTopOverlayController(conversation: conversation)
+            }
+            else {
+                if let voiceChannel = conversation.voiceChannel {
+                    visibleVoiceChannelViewController = CallViewController(voiceChannel: voiceChannel)
+                }
+                visibleVoiceChannelTopOverlayVoiceController = nil
+            }
         } else {
             visibleVoiceChannelViewController = nil
+            visibleVoiceChannelTopOverlayVoiceController = nil
         }
     }
     
-    func transition(to : CallViewController?, from : CallViewController?) {
+    func transition(to: UIViewController?, from: UIViewController?) {
         guard to != from else { return }
         
         zmLog.debug(String(format: "transitioning to VoiceChannelViewController: %p from: %p", to ?? 0, from ?? 0))
@@ -93,6 +123,7 @@ class ActiveVoiceChannelViewController : UIViewController {
                 { (finished) in
                     toViewController.didMove(toParentViewController: self)
                     fromViewController.removeFromParentViewController()
+                    UIApplication.shared.wr_updateStatusBarForCurrentControllerAnimated(true)
             })
         } else if let toViewController = to {
             addChildViewController(toViewController)
@@ -107,6 +138,7 @@ class ActiveVoiceChannelViewController : UIViewController {
                 toViewController.view.alpha = 1
             }, completion: { (finished) in
                 toViewController.didMove(toParentViewController: self)
+                UIApplication.shared.wr_updateStatusBarForCurrentControllerAnimated(true)
             })
         } else if let fromViewController = from {
             fromViewController.willMove(toParentViewController: nil)
@@ -116,6 +148,7 @@ class ActiveVoiceChannelViewController : UIViewController {
             }, completion: { (finished) in
                 fromViewController.view.removeFromSuperview()
                 fromViewController.removeFromParentViewController()
+                UIApplication.shared.wr_updateStatusBarForCurrentControllerAnimated(true)
             })
         }
     }
@@ -179,8 +212,15 @@ extension ActiveVoiceChannelViewController : WireCallCenterCallStateObserver {
                 return
         }
 
-        if case .established = callState {
+        switch callState {
+        case .established:
             answeredCalls[conversation.remoteIdentifier!] = Date()
+        case .terminating(_):
+            if minimisedCall == conversation.remoteIdentifier! {
+                minimisedCall = nil
+            }
+        default:
+            break
         }
 
         if let presentedController = self.presentedViewController as? CallQualityViewController {
@@ -260,4 +300,17 @@ extension ActiveVoiceChannelViewController : CallQualityViewControllerDelegate {
         controller.dismiss(animated: true, completion: nil)
     }
 
+}
+
+extension ActiveVoiceChannelViewController: ViewControllerDismisser {
+    func dismiss(viewController: UIViewController, completion: (() -> ())?) {
+        minimisedCall = visibleVoiceChannelViewController?.conversation?.remoteIdentifier
+        completion?()
+    }
+}
+
+extension ActiveVoiceChannelViewController: CallTopOverlayControllerDelegate {
+    func voiceChannelTopOverlayWantsToRestoreCall(_ controller: CallTopOverlayController) {
+        minimisedCall = nil
+    }
 }
