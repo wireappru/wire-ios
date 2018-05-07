@@ -34,13 +34,9 @@ class CallViewController: UIViewController {
         self.voiceChannel = voiceChannel
         callInfoConfiguration = CallInfoConfiguration(voiceChannel: voiceChannel)
         callInfoViewController = CallInfoViewController(configuration: callInfoConfiguration)
-        
         super.init(nibName: nil, bundle: nil)
-        
         callInfoViewController.delegate = self
-        
         observerTokens += [voiceChannel.addCallStateObserver(self)]
-        
         updateNavigationItem()
     }
     
@@ -78,12 +74,16 @@ class CallViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    fileprivate func updateConfiguration() {
+        callInfoViewController.configuration = callInfoConfiguration
+    }
+    
 }
 
 extension CallViewController: WireCallCenterCallStateObserver {
     
     func callCenterDidChange(callState: CallState, conversation: ZMConversation, caller: ZMUser, timestamp: Date?) {
-        callInfoViewController.configuration = callInfoConfiguration
+        updateConfiguration()
     }
     
 }
@@ -91,30 +91,36 @@ extension CallViewController: WireCallCenterCallStateObserver {
 extension CallViewController: CallInfoViewControllerDelegate {
     
     func infoViewController(_ viewController: CallInfoViewController, perform action: CallAction) {
+        Calling.log.debug("request to perform call action: \(action)")
         guard let userSession = ZMUserSession.shared() else { return }
         
         switch action {
-        case .acceptCall:
-            conversation?.joinCall()
-        case .terminateCall:
-            voiceChannel.leave(userSession: userSession)
-        case .toggleMuteState:
-            voiceChannel.mute(!AVSMediaManager.sharedInstance().isMicrophoneMuted, userSession: userSession)
-        case .toggleSpeakerState:
-            AVSMediaManager.sharedInstance().toggleSpeaker()
-        default:
-            break
+        case .acceptCall: conversation?.joinCall()
+        case .terminateCall: voiceChannel.leave(userSession: userSession)
+        case .toggleMuteState: voiceChannel.toggleMuteState(userSession: userSession)
+        case .toggleSpeakerState: AVSMediaManager.sharedInstance().toggleSpeaker()
+        case .showParticipantsList: presentParticipantsList()
+        default: break
         }
         
-        callInfoViewController.configuration = callInfoConfiguration
+        updateConfiguration()
     }
     
+    private func presentParticipantsList() {
+        let participantsList = CallParticipantsViewController(scrollableWithConfiguration: callInfoConfiguration)
+        navigationController?.pushViewController(participantsList, animated: true)
+    }
+
+}
+
+extension VoiceChannel {
+    func toggleMuteState(userSession: ZMUserSession) {
+        mute(!AVSMediaManager.sharedInstance().isMicrophoneMuted, userSession: userSession)
+    }
 }
 
 struct CallInfoConfiguration  {
-    
     let voiceChannel: VoiceChannel
-    
 }
 
 extension CallInfoConfiguration: CallInfoViewControllerInput {
@@ -124,7 +130,7 @@ extension CallInfoConfiguration: CallInfoViewControllerInput {
         guard !voiceChannel.isVideoCall else { return .none }
         
         switch voiceChannel.state {
-        case .incoming:
+        case .incoming(_, shouldRing: true, _):
             if let initiator = voiceChannel.initiator {
                 return .avatar(initiator)
             } else {
@@ -136,7 +142,7 @@ extension CallInfoConfiguration: CallInfoViewControllerInput {
             } else {
                 return .none
             }
-        case .unknown, .none, .terminating, .established:
+        case .unknown, .none, .terminating, .established, .incoming(_, shouldRing: false, _):
             if voiceChannel.conversation?.conversationType == .group {
                 let participants = voiceChannel.participants.flatMap({ $0 as? ZMUser }).map({ user in
                     CallParticipantsCellConfiguration.callParticipant(user: user, sendsVideo: false)
@@ -160,7 +166,7 @@ extension CallInfoConfiguration: CallInfoViewControllerInput {
     }
     
     var isTerminating: Bool {
-        if case CallState.terminating = voiceChannel.state {
+        if case .terminating = voiceChannel.state {
             return true
         } else {
             return false
@@ -169,10 +175,8 @@ extension CallInfoConfiguration: CallInfoViewControllerInput {
     
     var canAccept: Bool {
         switch voiceChannel.state {
-        case .incoming(video: _, shouldRing: _, degraded: false):
-            return true
-        default:
-            return false
+        case .incoming(video: _, shouldRing: true, degraded: false): return true
+        default: return false
         }
     }
     
@@ -182,21 +186,17 @@ extension CallInfoConfiguration: CallInfoViewControllerInput {
     
     var state: CallStatusViewState {
         switch voiceChannel.state {
-        case .incoming:
+        case .incoming(_ , shouldRing: true, _):
             return CallStatusViewState.ringingIncoming(name: voiceChannel.initiator?.displayName ?? "")
         case .outgoing:
             return CallStatusViewState.ringingOutgoing
-        case .answered:
-            fallthrough
-        case .establishedDataChannel:
+        case .answered, .establishedDataChannel:
             return CallStatusViewState.connecting
         case .established:
-            return CallStatusViewState.established(duration: voiceChannel.callStartDate?.timeIntervalSinceNow ?? 0)
-        case .terminating:
-            return CallStatusViewState.terminating
-        case .none:
-            fallthrough
-        case .unknown:
+            return CallStatusViewState.established(duration: -(voiceChannel.callStartDate?.timeIntervalSinceNow ?? 0))
+        case .terminating, .incoming(_ , shouldRing: false, _):
+            return .terminating
+        case .none, .unknown:
             return CallStatusViewState.none
         }
     }
@@ -214,7 +214,7 @@ extension CallInfoConfiguration: CallInfoViewControllerInput {
     }
     
     var variant: ColorSchemeVariant {
-        return .light
+        return ColorScheme.default().variant
     }
 
 }
