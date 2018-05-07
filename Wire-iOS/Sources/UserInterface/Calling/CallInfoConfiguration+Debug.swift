@@ -20,7 +20,7 @@ extension CallInfoConfiguration: CustomDebugStringConvertible  {
     var debugDescription: String {
         return """
         <CallInfoConfiguration>
-        accessoryType: \(accessoryType.showAvatar ? "avatar" : "participants (\(accessoryType.rows.count)")
+        accessoryType: \(accessoryType.showAvatar ? "avatar" : "participants (\(accessoryType.participants.count)")
         canToggleMediaType: \(canToggleMediaType)
         isMuted: \(isMuted)
         isTerminating: \(isTerminating)
