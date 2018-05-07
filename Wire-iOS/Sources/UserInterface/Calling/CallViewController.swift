@@ -22,8 +22,10 @@ class CallViewController: UIViewController {
     
     var observerTokens: [Any] = []
     let voiceChannel: VoiceChannel
+    let videoConfiguration: VideoConfiguration
     let callInfoConfiguration: CallInfoConfiguration
     let callInfoViewController: CallInfoViewController
+    let videoGridViewController: VideoGridViewController
     weak var dismisser: ViewControllerDismisser? = nil
     
     var conversation: ZMConversation? {
@@ -32,11 +34,17 @@ class CallViewController: UIViewController {
     
     init(voiceChannel: VoiceChannel) {
         self.voiceChannel = voiceChannel
+        videoConfiguration = VideoConfiguration(voiceChannel: voiceChannel)
         callInfoConfiguration = CallInfoConfiguration(voiceChannel: voiceChannel)
         callInfoViewController = CallInfoViewController(configuration: callInfoConfiguration)
+        videoGridViewController = VideoGridViewController(configuration: videoConfiguration)
+        
         super.init(nibName: nil, bundle: nil)
+
         callInfoViewController.delegate = self
         observerTokens += [voiceChannel.addCallStateObserver(self)]
+        observerTokens += [voiceChannel.addParticipantObserver(self)]
+        
         updateNavigationItem()
     }
     
@@ -46,6 +54,10 @@ class CallViewController: UIViewController {
     }
     
     private func setupViews() {
+        addChildViewController(videoGridViewController)
+        view.addSubview(videoGridViewController.view)
+        videoGridViewController.didMove(toParentViewController: self)
+        
         addChildViewController(callInfoViewController)
         view.addSubview(callInfoViewController.view)
         callInfoViewController.didMove(toParentViewController: self)
@@ -53,6 +65,10 @@ class CallViewController: UIViewController {
     
     private func createConstraints() {
         NSLayoutConstraint.activate([
+            videoGridViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            videoGridViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            videoGridViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            videoGridViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             callInfoViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             callInfoViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             callInfoViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
@@ -76,6 +92,7 @@ class CallViewController: UIViewController {
     
     fileprivate func updateConfiguration() {
         callInfoViewController.configuration = callInfoConfiguration
+        videoGridViewController.configuration = videoConfiguration
     }
     
 }
@@ -83,6 +100,14 @@ class CallViewController: UIViewController {
 extension CallViewController: WireCallCenterCallStateObserver {
     
     func callCenterDidChange(callState: CallState, conversation: ZMConversation, caller: ZMUser, timestamp: Date?) {
+        updateConfiguration()
+    }
+    
+}
+
+extension CallViewController: VoiceChannelParticipantObserver {
+    
+    func voiceChannelParticipantsDidChange(_ changeInfo: VoiceChannelParticipantNotification) {
         updateConfiguration()
     }
     
@@ -117,6 +142,36 @@ extension VoiceChannel {
     func toggleMuteState(userSession: ZMUserSession) {
         mute(!AVSMediaManager.sharedInstance().isMicrophoneMuted, userSession: userSession)
     }
+}
+
+struct VideoConfiguration {
+    
+    let voiceChannel: VoiceChannel
+    
+}
+
+extension VideoConfiguration: VideoGridConfiguration {
+    
+    var floatingVideoStream: UUID? {
+        return nil
+    }
+    
+    var videoStreams: [UUID] {
+        let otherParticipants: [UUID] = voiceChannel.participants.flatMap({ user in
+            guard let user = user as? ZMUser else { return nil }
+            
+            if case let .connected(videoState) = voiceChannel.state(forParticipant: user) {
+                if case .started = videoState {
+                    return user.remoteIdentifier
+                }
+            }
+            
+            return nil
+        })
+        
+        return [ZMUser.selfUser().remoteIdentifier] + otherParticipants
+    }
+    
 }
 
 struct CallInfoConfiguration  {
