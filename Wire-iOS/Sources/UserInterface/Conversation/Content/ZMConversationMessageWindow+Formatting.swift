@@ -1,6 +1,6 @@
 //
 // Wire
-// Copyright (C) 2016 Wire Swiss GmbH
+// Copyright (C) 2018 Wire Swiss GmbH
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,18 +16,19 @@
 // along with this program. If not, see http://www.gnu.org/licenses/.
 //
 
+import Foundation
 
-#import "ImageMessageCell.h"
-@import WireExtensionComponents;
+extension ZMConversationMessageWindow {
+    func isPreviousSenderSame(forMessage message: ZMConversationMessage?) -> Bool {
+        guard let message = message,
+              messages.index(of: message) != NSNotFound,
+              Message.isNormal(message),
+              !Message.isKnock(message) else { return false }
 
-@interface ImageMessageCell (Interal)
+        guard let previousMessage = messagePrevious(to: message),
+              previousMessage.sender == message.sender,
+              Message.isNormal(previousMessage) else { return false }
 
-- (void)setImage:(id<MediaAsset>)image;
-- (BOOL)imageSmallerThanMinimumSize;
-
-@end
-
-@interface ImageMessageCell ()
-@property (nonatomic) BOOL autoStretchVertically;
-@property (nonatomic) UIEdgeInsets defaultLayoutMargins;
-@end
+        return true
+    }
+}
