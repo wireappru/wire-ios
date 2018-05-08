@@ -246,6 +246,19 @@ import Foundation
         developerCellDescriptors.append(shareCryptobox)
         let reloadUIButton = SettingsButtonCellDescriptor(title: "Reload user interface", isDestructive: false, selectAction: SettingsCellDescriptorFactory.reloadUserInterface)
         developerCellDescriptors.append(reloadUIButton)
+        let appendManyMessages = SettingsButtonCellDescriptor(title: "Append 10.000 messages to the top conv (not sending)", isDestructive: true) { _ in
+            let userSession = ZMUserSession.shared()!
+            let conversation = ZMConversationList.conversations(inUserSession: userSession).firstObject! as! ZMConversation
+            
+            (0...10000).forEach { i in
+                let genericMessage = ZMGenericMessage.message(text: "Debugging message \(i): Append many messages to the top conversation; Append many messages to the top conversation;",
+                    nonce: UUID())
+                let clientMessage = conversation.appendClientMessage(with: genericMessage)!
+                clientMessage.expire()
+                clientMessage.linkPreviewState = .done
+            }
+        }
+        developerCellDescriptors.append(appendManyMessages)
 
         let showStatistics = SettingsExternalScreenCellDescriptor(title: "Show database statistics", isDestructive: false, presentationStyle: .navigation, presentationAction: {  DatabaseStatisticsController() })
         developerCellDescriptors.append(showStatistics)
