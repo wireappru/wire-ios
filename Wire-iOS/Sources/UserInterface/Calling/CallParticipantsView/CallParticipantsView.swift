@@ -17,16 +17,22 @@
 //
 
 import Foundation
+import DeepDiff
 
 typealias CallParticipantsList = [CallParticipantsCellConfiguration]
 
 protocol CallParticipantsCellConfigurationConfigurable: Reusable {
-    
     func configure(with configuration: CallParticipantsCellConfiguration, variant: ColorSchemeVariant)
-    
 }
 
-enum CallParticipantsCellConfiguration {
+extension UICollectionView {
+    func reloadData<T: Hashable>(old: [T], new: [T], animated: Bool) {
+        guard animated && !ProcessInfo.processInfo.isRunningTests else { return reloadData() }
+        reload(changes: diff(old: old, new: new), completion: { _ in })
+    }
+}
+
+enum CallParticipantsCellConfiguration: Hashable {
     case callParticipant(user: ZMUser, sendsVideo: Bool)
     case showAll(totalCount: Int)
     
@@ -52,6 +58,13 @@ enum CallParticipantsCellConfiguration {
         }
     }
     
+    var hashValue: Int {
+        switch self {
+        case let .callParticipant(user: user, sendsVideo: sendsVideo): return user.hashValue ^ sendsVideo.hashValue
+        case let .showAll(totalCount: count): return count.hashValue
+        }
+    }
+
 }
 
 extension CallParticipantsCellConfiguration: Equatable {
@@ -73,7 +86,7 @@ class CallParticipantsView: UICollectionView, Themeable {
     
     var rows = CallParticipantsList() {
         didSet {
-            reloadData()
+            reloadData(old: oldValue, new: rows, animated: !oldValue.isEmpty)
         }
     }
     
