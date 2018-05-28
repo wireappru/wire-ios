@@ -68,7 +68,6 @@ import Foundation
         guard true == ZMUserSession.shared()?.isCallOngoing else { return completion() }
         let controller = UIAlertController.ongoingCallStartCallConfirmation { confirmed in
             guard confirmed else { return }
-            ZMUserSession.shared()?.callCenter?.endAllCalls()
             completion()
         }
         target.present(controller, animated: true)
@@ -78,7 +77,6 @@ import Foundation
         guard true == ZMUserSession.shared()?.isCallOngoing else { return completion() }
         let controller = UIAlertController.ongoingCallJoinCallConfirmation { confirmed in
             guard confirmed else { return }
-            ZMUserSession.shared()?.callCenter?.endAllCalls()
             completion()
         }
         target.present(controller, animated: true)
