@@ -168,11 +168,6 @@ import Foundation
     func advancedGroup() -> SettingsCellDescriptorType {
         var items: [SettingsSectionDescriptor] = []
         
-        let sendDataToWire = SettingsPropertyToggleCellDescriptor(settingsProperty: self.settingsPropertyFactory.property(.disableCrashAndAnalyticsSharing), inverse: true)
-        let usageLabel = "self.settings.privacy_analytics_section.title".localized
-        let usageInfo = "self.settings.privacy_analytics_menu.description.title".localized
-        let sendUsageSection = SettingsSectionDescriptor(cellDescriptors: [sendDataToWire], header: usageLabel, footer: usageInfo)
-        
         let troubleshootingSectionTitle = "self.settings.advanced.troubleshooting.title".localized
         let troubleshootingTitle = "self.settings.advanced.troubleshooting.submit_debug.title".localized
         let troubleshootingSectionSubtitle = "self.settings.advanced.troubleshooting.submit_debug.subtitle".localized
@@ -215,7 +210,7 @@ import Foundation
 
         let versionSection = SettingsSectionDescriptor(cellDescriptors: [versionCell])
 
-        items.append(contentsOf: [sendUsageSection, troubleshootingSection, pushSection, versionSection])
+        items.append(contentsOf: [troubleshootingSection, pushSection, versionSection])
         
         return SettingsGroupCellDescriptor(
             items: items,
@@ -370,7 +365,7 @@ import Foundation
         
         let builder = ZMExternal.builder()
         _ = builder?.setOtrKey("broken_key".data(using: .utf8))
-        let genericMessage = ZMGenericMessage.genericMessage(pbMessage: builder!.build(), messageID: UUID().transportString(), expiresAfter: nil)
+        let genericMessage = ZMGenericMessage.genericMessage(pbMessage: builder!.build(), messageID: UUID(), expiresAfter: nil)
         
         userSession.enqueueChanges {
             conversation.appendClientMessage(with: genericMessage, expires: false, hidden: false)

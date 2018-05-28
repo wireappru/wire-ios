@@ -144,7 +144,6 @@ class AppRootViewController: UIViewController {
             analytics: sessionManagerAnalytics,
             delegate: appStateController,
             application: UIApplication.shared,
-            launchOptions: launchOptions,
             blacklistDownloadInterval: Settings.shared().blacklistDownloadInterval) { sessionManager in
             self.sessionManager = sessionManager
             self.sessionManagerCreatedSessionObserverToken = sessionManager.addSessionManagerCreatedSessionObserver(self)
@@ -153,9 +152,15 @@ class AppRootViewController: UIViewController {
             self.sessionManager?.requestToOpenViewDelegate = self
             sessionManager.updateCallNotificationStyleFromSettings()
             sessionManager.useConstantBitRateAudio = Settings.shared().callingConstantBitRate
+            sessionManager.start(launchOptions: launchOptions)
                 
             self.quickActionsManager = QuickActionsManager(sessionManager: sessionManager,
                                                            application: UIApplication.shared)
+                
+            sessionManager.urlHandler.delegate = self
+            if let url = launchOptions[UIApplicationLaunchOptionsKey.url] as? URL {
+                sessionManager.urlHandler.openURL(url, options: [:])
+            }
         }
     }
 
@@ -251,6 +256,12 @@ class AppRootViewController: UIViewController {
             executeAuthenticatedBlocks()
             let clientViewController = ZClientViewController()
             clientViewController.isComingFromRegistration = completedRegistration
+
+            /// show the dialog only when lastAppState is .unauthenticated, i.e. the user login to a new device
+            clientViewController.needToShowDataUsagePermissionDialog = false
+            if case .unauthenticated(_) = appStateController.lastAppState {
+                clientViewController.needToShowDataUsagePermissionDialog = true
+            }
 
             Analytics.shared().team = ZMUser.selfUser().team
 
@@ -548,5 +559,37 @@ public extension SessionManager {
         }
         
         return nil
+    }
+}
+
+extension AppRootViewController: SessionManagerURLHandlerDelegate {
+    func sessionManagerShouldExecute(URLAction: RawURLAction, callback: @escaping (Bool) -> (Void)) {
+        switch URLAction {
+        case .connectBot:
+            guard let _ = ZMUser.selfUser().team else {
+                callback(false)
+                return
+            }
+            
+            let alert = UIAlertController(title: "url_action.title".localized,
+                                          message: "url_action.connect_to_bot.message".localized,
+                                          preferredStyle: .alert)
+            
+            let agreeAction = UIAlertAction(title: "url_action.confirm".localized,
+                                            style: .default) { _ in
+                                                callback(true)
+            }
+            
+            alert.addAction(agreeAction)
+            
+            let cancelAction = UIAlertAction(title: "general.cancel".localized,
+                                             style: .cancel) { _ in
+                                                callback(false)
+            }
+            
+            alert.addAction(cancelAction)
+            
+            self.present(alert, animated: true, completion: nil)
+        }
     }
 }

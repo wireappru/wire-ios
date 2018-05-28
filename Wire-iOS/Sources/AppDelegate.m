@@ -23,7 +23,7 @@
 #import "Wire-Swift.h"
 
 // Helpers
-#import "Constants.h"
+
 #import "AppDelegate+Hockey.h"
 #import "Application+runDuration.h"
 #import "ZClientViewController.h"
@@ -111,8 +111,9 @@ static AppDelegate *sharedAppDelegate = nil;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    ZMLogInfo(@"application:didFinishLaunchingWithOptions START %@ (applicationState = %ld)", launchOptions, (long)application.applicationState);
+    [ZMSLog switchCurrentLogToPrevious];
     
+    ZMLogInfo(@"application:didFinishLaunchingWithOptions START %@ (applicationState = %ld)", launchOptions, (long)application.applicationState);
     
     [self setupBackendEnvironment];
 
@@ -172,6 +173,13 @@ static AppDelegate *sharedAppDelegate = nil;
     self.launchType = ApplicationLaunchUnknown;
     
     [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (BOOL)application:(UIApplication *)app
+            openURL:(NSURL *)url
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+    return [self.sessionManager.urlHandler openURL:url options:options];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
@@ -294,7 +302,7 @@ performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken
 {
-    ZMLogWarn(@"Received APNS token: %@", newDeviceToken);
+    ZMLogInfo(@"Received APNS token: %@", newDeviceToken);
     
     [[SessionManager shared] didRegisteredForRemoteNotificationsWith:newDeviceToken];
 }

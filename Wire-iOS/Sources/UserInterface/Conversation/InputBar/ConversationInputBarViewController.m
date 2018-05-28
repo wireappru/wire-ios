@@ -153,17 +153,26 @@ static NSString* ZMLogTag ZM_UNUSED = @"UI";
 
 @implementation ConversationInputBarViewController
 
+
+/**
+ init with a ZMConversation objcet
+
+ @param conversation provide nil only for tests
+ @return a ConversationInputBarViewController
+ */
 - (instancetype)initWithConversation:(ZMConversation *)conversation
 {
     self = [super init];
     if (self) {
-        self.conversation = conversation;
-        self.sendController = [[ConversationInputBarSendController alloc] initWithConversation:self.conversation];
-        self.conversationObserverToken = [ConversationChangeInfo addObserver:self forConversation:self.conversation];
+        if (conversation != nil) {
+            self.conversation = conversation;
+            self.sendController = [[ConversationInputBarSendController alloc] initWithConversation:self.conversation];
+            self.conversationObserverToken = [ConversationChangeInfo addObserver:self forConversation:self.conversation];
+            self.typingObserverToken = [conversation addTypingObserver:self];
+            self.typingUsers = conversation.typingUsers;
+        }
         self.sendButtonState = [[ConversationInputBarButtonState alloc] init];
-        self.typingObserverToken = [conversation addTypingObserver:self];
-        self.typingUsers = conversation.typingUsers;
-        
+
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
         
@@ -192,6 +201,8 @@ static NSString* ZMLogTag ZM_UNUSED = @"UI";
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    [self setupCallStateObserver];
     
     [self createSingleTapGestureRecognizer];
     
@@ -223,7 +234,7 @@ static NSString* ZMLogTag ZM_UNUSED = @"UI";
     [self.gifButton addTarget:self action:@selector(giphyButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.locationButton addTarget:self action:@selector(locationButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     
-    if (self.conversationObserverToken == nil) {
+    if (self.conversationObserverToken == nil && self.conversation != nil) {
         self.conversationObserverToken = [ConversationChangeInfo addObserver:self forConversation:self.conversation];
     }
     
@@ -345,16 +356,24 @@ static NSString* ZMLogTag ZM_UNUSED = @"UI";
 {
     self.audioRecordViewController = [[AudioRecordViewController alloc] init];
     self.audioRecordViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
-    self.audioRecordViewController.view.hidden = true;
     self.audioRecordViewController.delegate = self;
-    
+
+
+    self.audioRecordViewContainer = [UIView new];
+    self.audioRecordViewContainer.backgroundColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorBackground];
+    self.audioRecordViewContainer.hidden = YES;
+
     [self addChildViewController:self.audioRecordViewController];
-    [self.inputBar addSubview:self.audioRecordViewController.view];
-    [self.audioRecordViewController.view autoPinEdge:ALEdgeLeading toEdge:ALEdgeLeading ofView:self.inputBar.buttonContainer];
-    
+    [self.inputBar addSubview:self.audioRecordViewContainer];
+    [self.audioRecordViewContainer autoPinEdgesToSuperviewEdges];
+
+    [self.audioRecordViewContainer addSubview:self.audioRecordViewController.view];
+
     CGRect recordButtonFrame = [self.inputBar convertRect:self.audioButton.bounds fromView:self.audioButton];
     CGFloat width = CGRectGetMaxX(recordButtonFrame) + 56;
     [self.audioRecordViewController.view autoSetDimension:ALDimensionWidth toSize:width];
+
+    [self.audioRecordViewController.view autoPinEdgeToSuperviewEdge:ALEdgeLeading];
     [self.audioRecordViewController.view autoPinEdgeToSuperviewEdge:ALEdgeBottom];
     [self.audioRecordViewController.view autoPinEdge:ALEdgeTop toEdge:ALEdgeTop ofView:self.inputBar withOffset:0.5];
 }
@@ -795,9 +814,8 @@ static NSString* ZMLogTag ZM_UNUSED = @"UI";
     }
 }
 
-- (void)keyboardDidHide:(NSNotification *)notification
-{
-    if (!self.inRotation) {
+- (void)keyboardDidHide:(NSNotification *)notification {
+    if (!self.inRotation && !self.audioRecordKeyboardViewController.isRecording) {
         self.mode = ConversationInputBarViewControllerModeTextInput;
     }
 }
@@ -996,7 +1014,7 @@ static NSString* ZMLogTag ZM_UNUSED = @"UI";
 
 - (void)giphyButtonPressed:(id)sender
 {
-    if (![AppDelegate checkNetwork]) {
+    if (![AppDelegate isOffline]) {
         
         [Analytics.shared tagMediaAction:ConversationMediaActionGif inConversation:self.conversation];
     

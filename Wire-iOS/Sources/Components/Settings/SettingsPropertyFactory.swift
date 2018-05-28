@@ -61,6 +61,7 @@ class SettingsPropertyFactory {
     var mediaManager: AVSMediaManagerInterface?
     weak var userSession: ZMUserSessionInterface?
     var selfUser: SettingsSelfUser?
+    var marketingConsent: SettingsPropertyValue = .none
     
     static let userDefaultsPropertiesToKeys: [SettingsPropertyName: String] = [
         SettingsPropertyName.disableMarkdown            : UserDefaultDisableMarkdown,
@@ -89,12 +90,23 @@ class SettingsPropertyFactory {
         self.mediaManager = mediaManager
         self.userSession = userSession
         self.selfUser = selfUser
+
+        if let user = self.selfUser as? ZMUser, let userSession = ZMUserSession.shared() {
+            user.fetchMarketingConsent(in: userSession, completion: { [weak self] result in
+                switch result {
+                case .failure(_):
+                    self?.marketingConsent = .none
+                case .success(let result):
+                    self?.marketingConsent = SettingsPropertyValue.bool(value: result)
+                }
+            })
+        }
     }
     
     func property(_ propertyName: SettingsPropertyName) -> SettingsProperty {
         
         switch(propertyName) {
-            // Profile
+        // Profile
         case .profileName:
             let getAction: GetAction = { [unowned self] (property: SettingsBlockProperty) -> SettingsPropertyValue in
                 return SettingsPropertyValue.string(value: self.selfUser?.name ?? "")
@@ -193,7 +205,32 @@ class SettingsPropertyFactory {
                 }
             }
             return SettingsBlockProperty(propertyName: propertyName, getAction: getAction, setAction: setAction)
-            
+        case .receiveNewsAndOffers:
+
+            let getAction : GetAction = { [unowned self] (property: SettingsBlockProperty) -> SettingsPropertyValue in
+                return self.marketingConsent
+            }
+
+            let setAction : SetAction = { [unowned self] (property: SettingsBlockProperty, value: SettingsPropertyValue) throws -> () in
+                switch value {
+                case .number(let number):
+                    AppDelegate.shared().window.rootViewController?.showLoadingView = true
+
+                    self.userSession?.performChanges {
+                        ZMUser.selfUser().setMarketingConsent(to: number.boolValue, in: ZMUserSession.shared()!, completion: { [weak self] _ in
+                            AppDelegate.shared().window.rootViewController?.showLoadingView = false
+
+                            self?.marketingConsent = SettingsPropertyValue.number(value: number)
+                        })
+                    }
+
+                default:
+                    throw SettingsPropertyError.WrongValue("Incorrect type: \(value) for key \(propertyName)")
+                }
+            }
+
+            return SettingsBlockProperty(propertyName: propertyName, getAction: getAction, setAction: setAction)
+
         case .notificationContentVisible:
             let getAction : GetAction = { [unowned self] (property: SettingsBlockProperty) -> SettingsPropertyValue in
                 if let value = self.userSession?.isNotificationContentHidden {

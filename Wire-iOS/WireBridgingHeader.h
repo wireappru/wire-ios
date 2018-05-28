@@ -103,6 +103,7 @@
 #import "ConversationListViewController.h"
 #import "ConversationListViewController+Private.h"
 #import "FullscreenImageViewController.h"
+#import "FullscreenImageViewController+internal.h"
 #import "KeyboardAvoidingViewController.h"
 #import "PhoneNumberViewController.h"
 #import "CountryCodeTableViewController.h"
@@ -120,6 +121,8 @@
 #import "RegistrationFormController.h"
 #import "PhoneSignInViewController.h"
 #import "NoHistoryViewController.h"
+#import "TermsOfUseStepViewController.h"
+#import "TermsOfUseStepViewController+Private.h"
 
 // Helper objects
 #import "PushTransition.h"

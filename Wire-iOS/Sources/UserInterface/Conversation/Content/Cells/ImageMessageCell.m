@@ -85,6 +85,7 @@ static const CGFloat ImageToolbarMinimumSize = 192;
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        self.variant = [ColorScheme defaultColorScheme].variant;
         _autoStretchVertically = YES;
         [self createImageMessageViews];
         [self createConstraints];
@@ -377,17 +378,11 @@ static const CGFloat ImageToolbarMinimumSize = 192;
             // We did not download the medium image yet, start the progress animation
             [self.loadingView startProgressAnimation];
             self.loadingView.hidden = NO;
-            self.imageViewContainer.backgroundColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorPlaceholderBackground variant:[ColorScheme defaultColorScheme].variant];
+
+            self.imageViewContainer.backgroundColor = [UIColor wr_colorFromColorScheme:ColorSchemeColorPlaceholderBackground variant:self.variant];
 
         }
     }
-}
-
-- (void)updateImageBorder
-{
-    BOOL showBorder = !self.imageSmallerThanMinimumSize;
-    self.fullImageView.layer.borderWidth = showBorder ? UIScreen.hairline : 0;
-    self.fullImageView.layer.borderColor = [UIColor colorWithWhite:0 alpha:0.08].CGColor;
 }
 
 - (void)setImage:(id<MediaAsset>)image

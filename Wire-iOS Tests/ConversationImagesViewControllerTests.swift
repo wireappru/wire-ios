@@ -33,7 +33,7 @@ class ConversationImagesViewControllerTests: CoreDataSnapshotTestCase {
         snapshotBackgroundColor = UIColor.white
     
         let image = self.image(inTestBundleNamed: "unsplash_matterhorn.jpg")
-        let initialMessage = otherUserConversation.appendMessage(withImageData: image.data())!
+        let initialMessage = otherUserConversation.appendMessage(withImageData: image.data()!)!
         let imagesCategoryMatch = CategoryMatch(including: .image, excluding: .none)
         let collection = MockCollection(messages: [ imagesCategoryMatch : [initialMessage] ])
         let delegate = AssetCollectionMulticastDelegate()
@@ -43,7 +43,7 @@ class ConversationImagesViewControllerTests: CoreDataSnapshotTestCase {
     }
     
     func testThatItDisplaysCorrectToolbarForImage_Normal() {
-        sut.view.bounds.size = CGSize(width: 375.0, height: 667.0)
+        sut.setBoundsSizeAsIPhone4_7Inch()
         verify(view: sut.view)
     }
     
@@ -53,7 +53,7 @@ class ConversationImagesViewControllerTests: CoreDataSnapshotTestCase {
         message.isEphemeral = true
         sut.currentMessage = message
         
-        sut.view.bounds.size = CGSize(width: 375.0, height: 667.0)
+        sut.setBoundsSizeAsIPhone4_7Inch()
         verify(view: sut.view)
     }
 }
